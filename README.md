@@ -1,6 +1,6 @@
 ## RT-Thread VSCode扩展介绍
 
-RT-Thread VSCode扩展是一个用于辅助RT-Thread (>v5.0.0)开发的VSCode扩展，它遵循简化同时灵活扩展的模式，对VSCode尽可能不侵入太多的方式，同时又可以通过RT-Thread本身脚本来定制化功能的方式。
+RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 开发的VSCode辅助工具。该插件遵循简化与灵活扩展的设计原则，旨在最小化对VSCode干预，同时允许用户利用RT-Thread的脚本功能来实现个性化定制。
 
 ### env脚本状态
 
