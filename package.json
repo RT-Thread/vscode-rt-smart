@@ -1,0 +1,126 @@
+{
+    "name": "rt-thread-smart",
+    "publisher": "rt-thread",
+    "displayName": "RT-Thread Smart Extension",
+    "description": "Smart Helper Extension for RT-Thread Development",
+    "version": "0.4.10",
+    "repository": {
+        "url": "https://github.com/RT-Thread/vscode-rt-smart"
+    },
+    "engines": {
+        "vscode": "^1.93.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "workspaceContains:rtconfig.h",
+        "onView:rt-thread"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "rt-thread",
+                    "title": "RT-Thread",
+                    "icon": "resources/images/rt-thread.png"
+                }
+            ]
+        },
+        "views": {
+            "rt-thread": [
+                {
+                    "type": "tree",
+                    "id": "projectFilesId",
+                    "name": "Project Files"
+                },
+                {
+                    "type": "tree",
+                    "id": "treeId",
+                    "name": "Commands"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "extension.showHome",
+                "title": "Show RT-Thread Home"
+            },
+            {
+                "command": "extension.buildProject",
+                "title": "Build RT-Thread"
+            },
+            {
+                "command": "extension.executeCommand",
+                "title": "Execute Cmd under RT-Thread Terminal"
+            },
+            {
+                "command": "extension.clickProject",
+                "title": "Open Project File"
+            },
+            {
+                "command": "extension.refreshRTThread",
+                "title": "Refresh",
+                "icon": "$(sync)"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "extension.refreshRTThread",
+                    "when": "view == projectFilesId",
+                    "group": "navigation"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Custom Commands(menu)",
+            "properties": {
+                "smart.menuCommands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            }
+        },
+        "keybindings": [
+            {
+                "command": "extension.buildProject",
+                "key": "ctrl+shift+b"
+            },
+            {
+                "command": "extension.openMenu",
+                "key": "ctrl+shift+m"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "dependencies": {
+        "marked": "^14.1.3"
+    },
+    "extensionDependencies": [
+        "ms-python.python"
+    ],
+    "devDependencies": {
+        "@types/vscode": "^1.93.0",
+        "@types/mocha": "^10.0.7",
+        "@types/node": "20.x",
+        "@typescript-eslint/eslint-plugin": "^8.3.0",
+        "@typescript-eslint/parser": "^8.3.0",
+        "eslint": "^9.9.1",
+        "typescript": "^5.5.4",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1"
+    }
+}
