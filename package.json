@@ -29,6 +29,15 @@
             ]
         },
         "views": {
+            "explorer": [
+                {
+                    "type": "tree",
+                    "id": "groupsId",
+                    "name": "RT-Thread Groups",
+                    "contextualTitle": "RT-Thread Groups",
+                    "when": "isRTThread"
+                }
+            ],
             "rt-thread": [
                 {
                     "type": "tree",
@@ -49,7 +58,8 @@
             },
             {
                 "command": "extension.buildProject",
-                "title": "Build RT-Thread"
+                "title": "Build RT-Thread",
+                "icon": "$(github-action)"
             },
             {
                 "command": "extension.executeCommand",
@@ -69,7 +79,12 @@
             "view/title": [
                 {
                     "command": "extension.refreshRTThread",
-                    "when": "view == projectFilesId",
+                    "when": "view == projectFilesId || view == groupsId",
+                    "group": "navigation"
+                },
+                {
+                    "command": "extension.buildProject",
+                    "when": "(view == projectFilesId || view == groupsId) && isRTThread",
                     "group": "navigation"
                 }
             ]
@@ -84,6 +99,10 @@
                         "type": "string"
                     },
                     "default": []
+                },
+                "smart.parallelBuidNumber": {
+                    "type": "number",
+                    "default": 1
                 }
             }
         },

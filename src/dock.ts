@@ -2,8 +2,9 @@ import path from 'path';
 import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
-import { isRTThreadProject, getExtensionContext, getWorkspaceFolder } from './extension';
-import { buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem } from './project/tree';
+import { isRTThreadProject, getWorkspaceFolder } from './extension';
+import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem } from './project/tree';
+import { cmds } from './cmds/index';
 
 class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
@@ -20,6 +21,7 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
         }
 
         if (!element) {
+            let children = [];
             let home = new vscode.TreeItem("Home", vscode.TreeItemCollapsibleState.None);
             home.iconPath = new vscode.ThemeIcon("home");
             home.label = "Home";
@@ -28,18 +30,15 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 title: "show home page",
                 arguments: [],
             };
+            children.push(home);
 
-            let build = new vscode.TreeItem("Build", vscode.TreeItemCollapsibleState.Expanded);
-            build.iconPath = new vscode.ThemeIcon("github-action");
-            build.label = "build";
+            for (const [key, value] of Object.entries(cmds)) {
+                let item = new vscode.TreeItem(value.name, value.isExpanded? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed);
+                item.iconPath = new vscode.ThemeIcon(value.iconId);
+                item.label = value.label;
 
-            let setting = new vscode.TreeItem("Settings", vscode.TreeItemCollapsibleState.Expanded);
-            setting.iconPath = new vscode.ThemeIcon("gear");
-            setting.label = "settings";
-
-            let packages = new vscode.TreeItem("Packages", vscode.TreeItemCollapsibleState.Collapsed);
-            packages.iconPath = new vscode.ThemeIcon("extensions");
-            packages.label = "packages";
+                children.push(item);
+            };
 
             let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
             about.iconPath = new vscode.ThemeIcon("info");
@@ -49,89 +48,99 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 title: "show about page",
                 arguments: [],
             }
+            children.push(about);
 
-            return [home, build, setting, packages, about];
+            return children;
         } else {
-            if (element.label === 'build') {
-                let cleanItem = new vscode.TreeItem("clean");
-                cleanItem.iconPath = new vscode.ThemeIcon("clear-all");
-                cleanItem.command = {
-                    command: "extension.executeCommand",
-                    title: "clean",
-                    arguments: ["scons -c"],
-                };
+            let children:any = [];
 
-                const cpus = os.cpus().length;
-                const sconsCmd = `scons -j${cpus}`;
+            for (const [key, value] of Object.entries(cmds)) {
+                if (element.label == value.label) {
+                    for (const cmdItem of value.subcmds) {
+                        let item = new vscode.TreeItem(cmdItem.name);
+                        item.iconPath = new vscode.ThemeIcon(cmdItem.iconId);
+                        item.command = {
+                            command: "extension.executeCommand",
+                            title: cmdItem.cmd.title,
+                            arguments: cmdItem.cmd.arguments,
+                        };
 
-                let cleanBuildItem = new vscode.TreeItem("clean & build");
-                cleanBuildItem.iconPath = new vscode.ThemeIcon("sync");
-                cleanBuildItem.command = {
-                    command: "extension.executeCommand",
-                    title: "clean & build",
-                    arguments: ["scons -c", sconsCmd],
-                };
+                        children.push(item);
+                    };
 
-                const buildItemLable = `build -cpu=${cpus}`;
-                let buildItem = new vscode.TreeItem(buildItemLable);
-                buildItem.iconPath = new vscode.ThemeIcon("zap");
-                buildItem.command = {
-                    command: "extension.executeCommand",
-                    title: "build",
-                    arguments: [sconsCmd],
-                };
-
-                return [cleanItem, cleanBuildItem, buildItem];
-            }
-            else if (element.label === "settings") {
-                let menuconfigItem = new vscode.TreeItem("menuconfig");
-                menuconfigItem.iconPath = new vscode.ThemeIcon("checklist");
-                menuconfigItem.command = {
-                    command: "extension.executeCommand",
-                    title: "menuconfig",
-                    arguments: ["scons --menuconfig"],
-                };
-
-                let vscodeItem = new vscode.TreeItem("vscode settings");
-                vscodeItem.iconPath = new vscode.ThemeIcon("compare-changes");
-                vscodeItem.command = {
-                    command: "extension.executeCommand",
-                    title: "vscode",
-                    arguments: ["scons --cdb", "scons --target=vsc"],
-                };
-
-                let sdkSettingsItem = new vscode.TreeItem("sdk settings");
-                sdkSettingsItem.iconPath = new vscode.ThemeIcon("settings");
-                sdkSettingsItem.command = {
-                    command: "extension.executeCommand",
-                    title: "sdk-setting",
-                    arguments: ["sdk"],
+                    return children;
                 }
-
-                return [menuconfigItem, vscodeItem, sdkSettingsItem];
-            }
-            else if (element.label === "packages") {
-                let pkgsListItem = new vscode.TreeItem("list");
-                pkgsListItem.iconPath = new vscode.ThemeIcon("list-unordered");
-                pkgsListItem.command = {
-                    command: "extension.executeCommand",
-                    title: "packages-list",
-                    arguments: ["pkgs --list"],
-                };
-
-                let pkgsUpdateItem = new vscode.TreeItem("update");
-                pkgsUpdateItem.iconPath = new vscode.ThemeIcon("sync");
-                pkgsUpdateItem.command = {
-                    command: "extension.executeCommand",
-                    title: "packages-update",
-                    arguments: ["pkgs --update"],
-                }
-
-                return [pkgsListItem, pkgsUpdateItem];
             }
 
             return Promise.resolve([]);
         }
+    }
+}
+
+class GroupsDataProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
+    private groupsRoot: ProjectTreeItem[] = [];
+
+    private _onDidChangeTreeData: vscode.EventEmitter<ProjectTreeItem | undefined> = new vscode.EventEmitter<ProjectTreeItem | undefined>();
+    readonly onDidChangeTreeData: vscode.Event<ProjectTreeItem | undefined> = this._onDidChangeTreeData.event;
+
+    private createTreeItems(): ProjectTreeItem[] {
+        let jsonPath = getWorkspaceFolder() + "/.vscode/project.json";
+        if (fs.existsSync(jsonPath)) {
+            try {
+                const json = fs.readFileSync(jsonPath, 'utf8');
+                const jsonNode = JSON.parse(json);
+
+                if (jsonNode.hasOwnProperty("Groups")) {
+                    return buildGroupsTree(jsonNode);
+                }
+            }
+            catch (err) {
+                return buildEmptyProjectTree();
+            }
+        }
+
+        /* build empty project tree */
+        return buildEmptyProjectTree();
+    }
+
+    getTreeItem(element: ProjectTreeItem): vscode.TreeItem {
+        return element;
+    }
+
+    getChildren(element?: ProjectTreeItem): vscode.ProviderResult<ProjectTreeItem[]> {
+        let children: ProjectTreeItem[];
+
+        if (element) {
+            const treeElement = element.children;
+
+            if (treeElement) {
+                if (treeElement.length > 0) {
+                }
+                else if (element.contextType == "project_folder") {
+                    listFolderTreeItem(element);
+                }
+            }
+            else if (element.contextType == "project_folder") {
+                listFolderTreeItem(element);
+            }
+            children = element.children;
+        } else {
+            const tree = this.createTreeItems();
+            this.groupsRoot = tree;
+            children = tree;
+        }
+
+        return children;
+    }
+
+    refresh(): void {
+        // clear all node and rebuilt tree
+        this.groupsRoot = [];
+        this._onDidChangeTreeData.fire(undefined);
+
+        // re-create Project Tree
+        this.createTreeItems();
+        this._onDidChangeTreeData.fire(undefined);
     }
 }
 
@@ -196,18 +205,56 @@ class ProjectFilesDataProvider implements vscode.TreeDataProvider<ProjectTreeIte
         this.projectRoot = [];
         this._onDidChangeTreeData.fire(undefined);
 
+        // re-create Project Tree
         this.createTreeItems();
         this._onDidChangeTreeData.fire(undefined);
     }
 }
 
+let _groupsDataProvider: GroupsDataProvider | undefined;
+let _projectFilesDataProvider: ProjectFilesDataProvider | undefined;
+
+function refreshProjectFilesAndGroups() {
+    if (_groupsDataProvider) {
+        _groupsDataProvider.refresh();
+    }
+
+    if (_projectFilesDataProvider) {
+        _projectFilesDataProvider.refresh();
+    }
+}
+
 export function initDockView(context: vscode.ExtensionContext) {
-    const projectFilesDataprovider = new ProjectFilesDataProvider();
+    if (isRTThreadProject()) {
+        _groupsDataProvider = new GroupsDataProvider();
+        const groupView = vscode.window.createTreeView('groupsId', {
+            treeDataProvider: _groupsDataProvider, showCollapseAll: true
+        });
+        context.subscriptions.push(groupView);
+    }
+
+    _projectFilesDataProvider = new ProjectFilesDataProvider();
     const view = vscode.window.createTreeView('projectFilesId', {
-        treeDataProvider: projectFilesDataprovider, showCollapseAll: true
+        treeDataProvider: _projectFilesDataProvider, showCollapseAll: true
     });
     context.subscriptions.push(view);
-    vscode.commands.registerCommand('extension.refreshRTThread', () => projectFilesDataprovider.refresh());
+    vscode.commands.registerCommand('extension.refreshRTThread', () => refreshProjectFilesAndGroups());
+
+    // update$(cpus)
+    const cpus = os.cpus().length;
+    for (const [key, value] of Object.entries(cmds)) {
+        for (let i = 0; i < value.subcmds.length; i ++) {
+            if (value.subcmds[i].name.includes('$(cpus)')) {
+                value.subcmds[i].name = value.subcmds[i].name.replace('$(cpus)', cpus.toString());
+            }
+
+            for (let j = 0; j < value.subcmds[i].cmd.arguments.length; j ++) {
+                if (value.subcmds[i].cmd.arguments[j].includes('$(cpus)')) {
+                    value.subcmds[i].cmd.arguments[j] = value.subcmds[i].cmd.arguments[j].replace('$(cpus)', cpus.toString());
+                }
+            }
+        }
+    }
 
     const treeDataprovider = new CmdTreeDataProvider();
     context.subscriptions.push(vscode.window.registerTreeDataProvider("treeId", treeDataprovider));

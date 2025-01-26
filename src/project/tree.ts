@@ -85,7 +85,7 @@ export function getTreeIcon(isDir: boolean, value: string): string {
         } else if (value.endsWith(".h")) {
             icon = "file_type_cheader.svg";
         } else if (value.endsWith(".s") || value.endsWith(".S")) {
-            icon = "file_type_assembly.svg"
+            icon = "file_type_assembly.png"
         } else if (value.endsWith(".py") || value.endsWith("SConscript") || value.endsWith("SConstruct")) {
             icon = "file_type_python.svg";
         } else if (value.endsWith(".txt")) {
@@ -119,26 +119,10 @@ export function getTreeIcon(isDir: boolean, value: string): string {
     return icon;
 }
 
-export function buildProjectTree(node: any): ProjectTreeItem[] {
+
+export function buildGroupsTree(node: any): ProjectTreeItem[] {
     const projectItems: ProjectTreeItem[] = [];
     let extensionPath:string = getExtensionPath() || ".";
-
-    const rtthreadItem = new ProjectTreeItem('RT-Thread', vscode.TreeItemCollapsibleState.Expanded, 'project_root', node['RT-Thread']);
-    rtthreadItem.iconPath = new vscode.ThemeIcon('folder');
-    rtthreadItem.iconPath = {
-        light: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "default_folder.svg")),
-        dark: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "default_folder.svg"))
-    };
-    rtthreadItem.tooltip = rtthreadItem.fn;
-    listFolderTreeItem(rtthreadItem);
-    projectItems.push(rtthreadItem);
-
-    const projectItem = new ProjectTreeItem('Groups', vscode.TreeItemCollapsibleState.Expanded, 'project_root');
-    projectItem.iconPath = {
-        light: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "folder_type_component.svg")),
-        dark: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "folder_type_component.svg"))
-    };
-    projectItems.push(projectItem);
 
     let groups : Array<any> = node['Groups'];
     groups.forEach((item, index) => {
@@ -165,8 +149,25 @@ export function buildProjectTree(node: any): ProjectTreeItem[] {
             fileItem.tooltip = fn;
             treeItem.children.push(fileItem);
         });
-        projectItem.children.push(treeItem);
+        projectItems.push(treeItem);
     });
+
+    return projectItems;
+}
+
+export function buildProjectTree(node: any): ProjectTreeItem[] {
+    const projectItems: ProjectTreeItem[] = [];
+    let extensionPath:string = getExtensionPath() || ".";
+
+    const rtthreadItem = new ProjectTreeItem('RT-Thread', vscode.TreeItemCollapsibleState.Expanded, 'project_root', node['RT-Thread']);
+    rtthreadItem.iconPath = new vscode.ThemeIcon('folder');
+    rtthreadItem.iconPath = {
+        light: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "default_folder.svg")),
+        dark: vscode.Uri.file(path.join(extensionPath, 'resources', 'images', "default_folder.svg"))
+    };
+    rtthreadItem.tooltip = rtthreadItem.fn;
+    listFolderTreeItem(rtthreadItem);
+    projectItems.push(rtthreadItem);
 
     return projectItems;
 }
@@ -174,9 +175,9 @@ export function buildProjectTree(node: any): ProjectTreeItem[] {
 export function buildEmptyProjectTree() {
     const projectItems: ProjectTreeItem[] = [];
 
-    const treeItem = new ProjectTreeItem("No projects found", vscode.TreeItemCollapsibleState.None, "project_root");
+    const treeItem = new ProjectTreeItem("No .vscode/project.json found.", vscode.TreeItemCollapsibleState.None, "project_root");
     treeItem.iconPath = new vscode.ThemeIcon("warning");
-    treeItem.tooltip = "Please update vscode settings to use project tree";
+    treeItem.tooltip = "Please update vscode settings to generate project.json file.";
 
     projectItems.push(treeItem);
 

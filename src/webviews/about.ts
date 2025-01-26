@@ -69,6 +69,13 @@ export function openAboutWebview(context: vscode.ExtensionContext) {
                         panel.webview.postMessage({command: 'setReadme', data: readme});
                     }
                     return;
+
+                case 'openURL':
+                    let url : string = message.args[0];
+                    if (url) {
+                        vscode.env.openExternal(vscode.Uri.parse(url));
+                    }
+                    return;
             }},
             undefined
         );
