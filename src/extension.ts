@@ -4,7 +4,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { openWebView } from './home';
+import { openHomeWebview } from './webviews/home';
+import { openAboutWebview } from './webviews/about';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { Constants } from './constants';
@@ -43,13 +44,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 executeCommand('scons');
             });
             vscode.commands.registerCommand('extension.showHome', () => {
-                openWebView('RT-Thread Home', "https://www.baidu.com", context);
+                openHomeWebview(context);
             });
+            vscode.commands.registerCommand('extension.showAbout', () => {
+                openAboutWebview(context);
+            });            
             vscode.commands.registerCommand('extension.executeCommand', (arg1, arg2) => {
                 if (arg1)
                 {
-                    // if (arg1.includes('menuconfig'))
-                    //    vscode.commands.executeCommand('workbench.action.toggleMaximizedPanel');
                     executeCommand(arg1);
                 }
                 if (arg2)

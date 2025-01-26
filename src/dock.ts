@@ -5,103 +5,6 @@ import fs from 'fs';
 import { isRTThreadProject, getExtensionContext, getWorkspaceFolder } from './extension';
 import { buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem } from './project/tree';
 
-class DockerViewProvider implements vscode.WebviewViewProvider {
-    public _view?: vscode.WebviewView;
-    public _context: vscode.ExtensionContext;
-
-    constructor(context: vscode.ExtensionContext) {
-        this._context = context;
-    }
-
-    public resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken
-    ): Thenable<void> | void {
-        this._view = webviewView;
-
-        webviewView.webview.options = {
-            enableScripts: true,
-        }
-
-        webviewView.webview.html = this.initialWebviewContent(webviewView.webview);
-        webviewView.webview.onDidReceiveMessage(message => {
-            switch (message.command) {
-                case 'showHome':
-                    vscode.commands.executeCommand('extension.showHome');
-                    return;
-            }
-        },
-            undefined,
-            this._context?.subscriptions
-        );
-    }
-
-    initialWebviewContent(webview: vscode.Webview) {
-        const iconPathOnDisk = vscode.Uri.file(path.join(this._context.extensionPath, 'resources', 'images', 'rt-thread-logo.png'));
-        const iconUri = webview.asWebviewUri(iconPathOnDisk);
-
-        const pythonExtensionId = 'ms-python.python';
-        const pythonExtension = vscode.extensions.getExtension(pythonExtensionId);
-        const pythonExtensionVersion = pythonExtension ? pythonExtension.packageJSON.version : 'Not installed';
-
-        const extensionId = 'rt-thread.rt-thread-smart';
-        const extension = vscode.extensions.getExtension(extensionId);
-        const extensionVersion = extension ? extension.packageJSON.version : 'Not installed';
-
-        return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Button with Icon</title>
-            <style>
-                .button-with-icon {
-                    padding: 10px 20px;
-                    border: 1px dashed black;
-                    background-color: #00000000;
-                    color: white;
-                    cursor: pointer;
-                    border-radius: 3px;
-                    font-size: 20px;
-                    margin: 10px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                .button-with-icon img {
-                    width: 64px; /* 设置图标大小 */
-                    height: 64px;
-                    margin-right: 5px;
-                }
-            </style>
-        </head>
-        <body>
-            <button id="homeButtonId" class="button-with-icon">
-                <img src="${iconUri}" alt="Icon">
-            </button>
-
-            <br>
-            RT-Thread Extension<br>
-            <b>Version ${extensionVersion}</b><br><hr>
-            Depended on Extension:<br>
-            Python - ${pythonExtensionVersion}<br>
-
-            <script>
-            const vscode = acquireVsCodeApi();
-
-            document.getElementById('homeButtonId').addEventListener('click', function() {
-            vscode.postMessage({ command: 'showHome' });
-            });
-            </script>
-        </body>
-        </html>
-        `;
-    }
-}
-
 class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
         return element;
@@ -138,7 +41,16 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             packages.iconPath = new vscode.ThemeIcon("extensions");
             packages.label = "packages";
 
-            return [home, build, setting, packages];
+            let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
+            about.iconPath = new vscode.ThemeIcon("info");
+            about.label = "About";
+            about.command = {
+                command: "extension.showAbout",
+                title: "show about page",
+                arguments: [],
+            }
+
+            return [home, build, setting, packages, about];
         } else {
             if (element.label === 'build') {
                 let cleanItem = new vscode.TreeItem("clean");
