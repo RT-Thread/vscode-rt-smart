@@ -9,14 +9,14 @@ import { openAboutWebview } from './webviews/about';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { Constants } from './constants';
-import { getMenuItems } from './smart';
+import { getMenuItems, getParallelBuildNumber } from './smart';
 import { initDockView } from './dock';
 import { setupVEnv } from './venv';
 
 let _context: vscode.ExtensionContext;
-let is_thread = false;
+let isRTThread = false;
 export function isRTThreadProject() {
-    return is_thread;
+    return isRTThread;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -28,7 +28,8 @@ export async function activate(context: vscode.ExtensionContext) {
         const rtconfigPath = path.join(workspacePath, 'rtconfig.h');
         if (fs.existsSync(rtconfigPath)) {
             /* The workspace is a RT-Thread Project*/
-            is_thread = true;
+            isRTThread = true;
+            vscode.commands.executeCommand('setContext', 'isRTThread', true);
 
             // if it's Windows system
             if (os.platform() === 'win32') {
@@ -40,12 +41,6 @@ export async function activate(context: vscode.ExtensionContext) {
             initOnDidChangeListener(context);
 
             // register commands
-            vscode.commands.registerCommand('extension.buildProject', () => {
-                executeCommand('scons');
-            });
-            vscode.commands.registerCommand('extension.showHome', () => {
-                openHomeWebview(context);
-            });
             vscode.commands.registerCommand('extension.showAbout', () => {
                 openAboutWebview(context);
             });            
@@ -66,9 +61,15 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             })
         }
+        else {
+            vscode.commands.executeCommand('setContext', 'isRTThread', false);
+        }
     }
 
-    /* initialize dock view */
+    vscode.commands.registerCommand('extension.showHome', () => {
+        openHomeWebview(context);
+    });
+    /* initialize dock view always */
     initDockView(context);
 }
 
@@ -90,12 +91,22 @@ function setupStatusBarItems(context: vscode.ExtensionContext) {
     buildIcon.tooltip = 'Build RT-Thread Kernel';
     buildIcon.command = 'extension.buildProject';
     buildIcon.show();
+    vscode.commands.registerCommand('extension.buildProject', () => {
+        const buildNumber = getParallelBuildNumber();
+
+        if (buildNumber > 1) {
+            executeCommand(`scons -j${buildNumber}`);
+        }
+        else {
+            executeCommand('scons');
+        }
+    });
 
     let menuItems = getMenuItems();
     if (menuItems && menuItems.length > 0) {
         const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         statusItem.text = '$(menu) 自定义构建...';
-        statusItem.tooltip = 'build with custom command';
+        statusItem.tooltip = 'build with custom commands';
         statusItem.command = 'extension.openMenu';
         statusItem.show();
 

@@ -4,7 +4,7 @@
         <br>
         <div v-html="readmeMarkdown"></div>
 
-        <el-button type="primary">Open RT-Thread/Github</el-button>
+        <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
     </div>
 </template>
 
@@ -15,11 +15,14 @@ import { sendCommand } from '../api/vscode';
 
 let readmeMarkdown = ref('');
 
+const openRTThreadGitHub = () => {
+    sendCommand('openURL', ['https://github.com/RT-Thread/rt-thread']);
+};
+
 onMounted(() => {
     sendCommand('renderReadme');
     window.addEventListener('message', event => {
         const message = event.data;
-        console.log(message);
 
         switch (message.command) {
             case 'setReadme':

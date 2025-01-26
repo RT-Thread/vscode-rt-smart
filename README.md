@@ -8,6 +8,11 @@ RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 
 
 ### 版本说明
 
+**v0.4.11**
+- 添加Vue3、Element Plus的前端页面功能；
+- 更改RT-Thread Groups 到文件浏览视图，并增加编译图标按钮；
+- 增加并行编译数量选项 `smart.parallelBuidNumber`；
+
 **v0.4.10**
 - 加入Project Files功能，可以显示RT-Thread目录以及Groups
   - 需要RT-Thread升级到最新版本，在生成vscode的配置时，也同时生成project.json文件，用于显示目录结构
