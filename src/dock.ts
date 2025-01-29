@@ -2,7 +2,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
-import { isRTThreadProject, getWorkspaceFolder } from './extension';
+import { getWorkspaceFolder, isRTThreadProject } from './api';
 import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem } from './project/tree';
 import { cmds } from './cmds/index';
 
@@ -13,11 +13,17 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
 
     getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
         if (isRTThreadProject() != true) {
-            let noProject = new vscode.TreeItem("Not a RT-Thread Project");
-            noProject.iconPath = new vscode.ThemeIcon("warning");
-            noProject.label = "Not a RT-Thread Project";
+            // only show Home command
+            let home = new vscode.TreeItem("Home", vscode.TreeItemCollapsibleState.None);
+            home.iconPath = new vscode.ThemeIcon("home");
+            home.label = "Home";
+            home.command = {
+                command: "extension.showHome",
+                title: "show home page",
+                arguments: [],
+            };
 
-            return [noProject];
+            return [home];
         }
 
         if (!element) {

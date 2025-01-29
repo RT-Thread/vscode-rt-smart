@@ -1,0 +1,43 @@
+[
+    {
+        "manufacturer": "ST",
+        "boards": [
+            {
+                "name": "stm32f407-rt-spark",
+                "description" : "RT-Thread官方的星火一号开发板，基于STM32F407",
+                "board": "stm32f407-rt-spark",
+                "path": "bsp/stm32/stm32f407-rt-spark"
+        
+            },
+            {
+                "name": "stm32f412-st-nucleo",
+                "description": "ST官方的STM32F412 Nucleo开发板",
+                "board": "stm32f412-st-nucleo",
+                "path":"bsp/stm32/stm32f412-st-nucleo"
+            }
+        ]
+    },
+    {
+        "manufacturer": "QEMU",
+        "boards": [
+            {
+                "name": "qemu-vexpress-a9",
+                "description": "VExpress A9评估板卡，可以使用QEMU ARM来模拟ARM Cortex-A 32位系列机器",
+                "board": "qemu-vexpress-a9",
+                "path": "bsp/qemu-vexpress-a9"        
+            },
+            {
+                "name": "qemu-virt64-aarch64",
+                "description": "QEMU模拟的virt aarch64机器",
+                "board": "qemu-virt64-aarch64",
+                "path": "bsp/qemu-virt64-aarch64"
+            },
+            {
+                "name": "qemu-virt64-riscv64",
+                "description": "QEMU模拟的virt riscv64机器",
+                "board": "qemu-virt64-riscv64",
+                "path": "bsp/qemu-virt64-riscv64"
+            }
+        ]
+    }
+]

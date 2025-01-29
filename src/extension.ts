@@ -8,19 +8,17 @@ import { openHomeWebview } from './webviews/home';
 import { openAboutWebview } from './webviews/about';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
-import { Constants } from './constants';
 import { getMenuItems, getParallelBuildNumber } from './smart';
 import { initDockView } from './dock';
 import { setupVEnv } from './venv';
+import { initAPI } from './api';
 
 let _context: vscode.ExtensionContext;
-let isRTThread = false;
-export function isRTThreadProject() {
-    return isRTThread;
-}
 
 export async function activate(context: vscode.ExtensionContext) {
+    let isRTThread: boolean = false;
     const workspaceFolders = vscode.workspace.workspaceFolders;
+
     _context = context;
     if (workspaceFolders) {
         const workspacePath = workspaceFolders[0].uri.fsPath;
@@ -29,6 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (fs.existsSync(rtconfigPath)) {
             /* The workspace is a RT-Thread Project*/
             isRTThread = true;
+            initAPI(context, isRTThread);
             vscode.commands.executeCommand('setContext', 'isRTThread', true);
 
             // if it's Windows system
@@ -62,8 +61,13 @@ export async function activate(context: vscode.ExtensionContext) {
             })
         }
         else {
+            isRTThread = false;
             vscode.commands.executeCommand('setContext', 'isRTThread', false);
+            initAPI(context, isRTThread);
         }
+    }
+    else {
+        initAPI(context, isRTThread);
     }
 
     vscode.commands.registerCommand('extension.showHome', () => {
@@ -71,18 +75,6 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     /* initialize dock view always */
     initDockView(context);
-}
-
-export function getExtensionPath() {
-    return vscode.extensions.getExtension(Constants.EXTENSION_ID)?.extensionPath;
-}
-
-export function getWorkspaceFolder() {
-    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-}
-
-export function getExtensionContext() {
-    return _context;
 }
 
 function setupStatusBarItems(context: vscode.ExtensionContext) {
