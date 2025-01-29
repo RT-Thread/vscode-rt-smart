@@ -2,14 +2,15 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "commonjs",
-        "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "./out",
-        "rootDir": "src", 
         "moduleResolution": "node",
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "rootDir": "src", 
+        "strict": true,
     },
     "exclude": ["node_modules", "out", "src/vue", "src/test"]
 }
