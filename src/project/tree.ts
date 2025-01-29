@@ -2,7 +2,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import os, { getPriority } from 'os';
 import fs from 'fs';
-import { getWorkspaceFolder, getExtensionPath } from '../extension';
+import { getWorkspaceFolder, getExtensionPath } from '../api';
 
 /*
  * contexType -> contextValue as following value:

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getExtensionPath, getWorkspaceFolder } from './extension';
+import { getExtensionPath, getWorkspaceFolder } from './api';
 import { Constants } from './constants';
 
 let _terminal: vscode.Terminal | undefined;
