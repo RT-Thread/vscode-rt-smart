@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 export namespace Constants {
-    export const VERSION = 'v0.1.0';
+    export const VERSION = 'v0.4.11';
     export const TERMINAL_LABLE = 'RT-Thread';
     export const EXTENSION_ID = 'rt-thread.rt-thread-smart';
     export const TERMINAL_LOGO = `\x1b[0;32mWelcome to RT-Thread Build Terminal\x1b[0m`;

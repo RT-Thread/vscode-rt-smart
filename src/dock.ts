@@ -60,16 +60,26 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
         } else {
             let children:any = [];
 
+            const kconfig = vscode.extensions.getExtension('rt-thread.rt-thread-kconfig');
+
             for (const [key, value] of Object.entries(cmds)) {
                 if (element.label == value.label) {
                     for (const cmdItem of value.subcmds) {
                         let item = new vscode.TreeItem(cmdItem.name);
                         item.iconPath = new vscode.ThemeIcon(cmdItem.iconId);
-                        item.command = {
-                            command: "extension.executeCommand",
-                            title: cmdItem.cmd.title,
-                            arguments: cmdItem.cmd.arguments,
-                        };
+                        if (cmdItem.name == 'menuconfig' && kconfig != undefined) {
+                            item.command = {
+                                command: "rt-thread-kconfig.menuconfig.windows",
+                                title: cmdItem.cmd.title
+                            }
+                        }
+                        else {
+                            item.command = {
+                                command: "extension.executeCommand",
+                                title: cmdItem.cmd.title,
+                                arguments: cmdItem.cmd.arguments,
+                            };    
+                        }
 
                         children.push(item);
                     };
