@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch: # 手动触发
 
 jobs:
   build:
@@ -24,3 +25,49 @@ jobs:
 
     - name: compile
       run: npm run compile
+
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install && cd src/vue && npm install && cd ../..
+
+    - name: Compile the extension
+      run: npm run compile
+
+    - name: Package the extension
+      run: |
+        npm install -g @vscode/vsce
+        vsce package
+      env:
+        NODE_ENV: production
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: "Release v${{ github.run_number }}"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload VSIX to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./vscode-rt-smart-*.vsix
+        asset_name: vscode-rt-smart.vsix
+        asset_content_type: application/octet-stream
