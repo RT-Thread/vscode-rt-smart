@@ -1,6 +1,5 @@
 import path from 'path';
 import * as vscode from 'vscode';
-import os, { getPriority } from 'os';
 import fs from 'fs';
 import { getWorkspaceFolder, getExtensionPath } from '../api';
 
@@ -8,7 +7,8 @@ import { getWorkspaceFolder, getExtensionPath } from '../api';
  * contexType -> contextValue as following value:
  * project_root,
  * project_group,
- * project_file
+ * project_file,
+ * project_bsp
  */
 
 export class ProjectTreeItem extends vscode.TreeItem {
@@ -53,7 +53,17 @@ export class ProjectTreeItem extends vscode.TreeItem {
                     arguments: [
                         this
                     ]
-                };                    
+                };
+            }
+            else if (contextType == 'project_bsp') {
+                this.command = {
+                    title: this.name,
+                    command: 'extension.switchProject',
+                    tooltip: this.name,
+                    arguments: [
+                        this
+                    ]
+                };
             }
         }
     }
@@ -78,7 +88,10 @@ export function getTreeIcon(isDir: boolean, value: string): string {
     if (isDir) {
         icon = "default_folder.svg";
     } else {
-        if (value.endsWith(".c")) {
+        if (value == "project") {
+            icon = "chip";
+        }
+        else if (value.endsWith(".c")) {
             icon = "file_type_c.svg";
         } else if (value.endsWith(".cpp") || value.endsWith(".cc") || value.endsWith(".cxx")) {
             icon = "file_type_cpp.svg";
@@ -118,7 +131,6 @@ export function getTreeIcon(isDir: boolean, value: string): string {
     }
     return icon;
 }
-
 
 export function buildGroupsTree(node: any): ProjectTreeItem[] {
     const projectItems: ProjectTreeItem[] = [];
@@ -170,6 +182,13 @@ export function buildProjectTree(node: any): ProjectTreeItem[] {
     projectItems.push(rtthreadItem);
 
     return projectItems;
+}
+
+export function buildBSPTree(node: any) {
+    let workspacePath = getWorkspaceFolder() || "";
+    let bspFolder = path.join(workspacePath, node['bsps'].folder);
+
+    return listStarsTreeItem(bspFolder, node['bsps']);
 }
 
 export function buildEmptyProjectTree() {
@@ -259,4 +278,62 @@ export function listFolderTreeItem(treeItem: ProjectTreeItem) {
 	});
 
 	treeItem.children = children;
+}
+
+export function listStarsTreeItem(bspFolder:string, node: any) {
+	let children: ProjectTreeItem[] = [];
+
+    node.stars.forEach(function (item: string) {
+        let parentPath = path.join(bspFolder, item);
+        let fPath = path.join(parentPath, "rtconfig.h");
+        if (fs.existsSync(fPath)) {
+            let parent = children;
+            let value = String(item);
+
+            let items = item.split(/[\/\\]/);
+            if (items.length >= 2) {
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].label == items[0]) {
+                        parent = children[i].children;
+                        break;
+                    }
+                }
+
+                // not found, create a new parent node
+                if (parent === children) {
+                    const pnode: ProjectTreeItem = new ProjectTreeItem(items[0], vscode.TreeItemCollapsibleState.Collapsed, "project_folder", path.join(bspFolder, items[0]));
+
+                    children.push(pnode);
+                    parent = pnode.children;
+                }
+
+                // rename the node name
+                value = items.slice(1, items.length).join(path.sep);
+            }
+
+            let fn = parentPath;
+            let childItem = new ProjectTreeItem(value, vscode.TreeItemCollapsibleState.None, "project_bsp", fn);
+            childItem.iconPath = new vscode.ThemeIcon("chip");
+            childItem.tooltip = fn;
+            parent.push(childItem);
+        }
+    });
+
+    return children;
+}
+
+import {fastBuildProject, configProject, openTerminalProject, setCurrentProject} from './cmd';
+export function initProjectTree(context:vscode.ExtensionContext) {
+    vscode.commands.registerCommand('extension.fastBuildProject', (arg) => {
+        fastBuildProject(arg);
+    });
+    vscode.commands.registerCommand('extension.configProject', (arg) => {
+        configProject(arg);
+    });
+    vscode.commands.registerCommand('extension.openTerminalProject', (arg) => {
+        openTerminalProject(arg);
+    });
+    vscode.commands.registerCommand('extension.switchProject', (arg) => {
+        setCurrentProject(arg);
+    });
 }

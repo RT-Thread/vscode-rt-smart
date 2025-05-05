@@ -51,6 +51,16 @@ export let cmds: Object = {
                 }
             },
             {
+                name : "fix config",
+                iconId : "layers-active",
+                cmd : {
+                    title : "fix-config",
+                    arguments : [
+                        "scons --pyconfig-silent"
+                    ]
+                }
+            },
+            {
                 name : "vscode settings",
                 iconId : "compare-changes",
                 cmd : {
