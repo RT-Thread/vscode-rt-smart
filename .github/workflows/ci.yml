@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20' # 使用与你的扩展兼容的Node.js版本
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install && cd src/vue && npm install && cd ../..
+
+    - name: compile
+      run: npm run compile
