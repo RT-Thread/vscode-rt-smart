@@ -6,16 +6,20 @@ import * as path from 'path';
 import { executeCommand } from './terminal';
 
 let _context: vscode.ExtensionContext;
-let _isRTThread = false;
 let _bi: any[] = [];
 
 export function isRTThreadProject() {
-    return _isRTThread;
+    let status = _context.workspaceState.get<boolean>('isRTThread') || false;
+    return status;
 }
 
-export function initAPI(context:vscode.ExtensionContext, isRTThreadEnv: boolean) {
+export function isRTThreadWorksapce() {
+    let status = _context.workspaceState.get<boolean>('isRTThreadWorksapce') || false;
+    return status;
+}
+
+export function initAPI(context:vscode.ExtensionContext) {
     _context = context;
-    _isRTThread = isRTThreadEnv;
 
     // read resources/bi.json for boards information
     _bi = readJsonObject(path.join(getExtensionPath(), "resources", "bi.json"));
@@ -149,7 +153,7 @@ export async function openFolder(uri?: string) {
             canSelectFolders: true,
             canSelectFiles: false,
             canSelectMany: false,
-          });      
+          });
     }
     else {
         selectedFolder = await vscode.window.showOpenDialog({

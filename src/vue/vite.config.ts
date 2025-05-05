@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         about: resolve(__dirname, 'about/index.html'),
         home: resolve(__dirname, 'home/index.html'),
+        projects: resolve(__dirname, 'projects/index.html'),
       }
     },
     outDir: '../../out',

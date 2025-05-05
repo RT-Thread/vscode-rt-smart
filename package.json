@@ -73,10 +73,40 @@
                 "command": "extension.refreshRTThread",
                 "title": "Refresh",
                 "icon": "$(sync)"
+            },
+            {
+                "command": "extension.showWorkspaceSettings",
+                "title": "Show Workspace Settings",
+                "icon": "$(settings-gear)"
+            },
+            {
+                "command": "extension.switchProject",
+                "title": "Switch project to this bsp",
+                "icon": "$(pass-filled)"
+            },
+            {
+                "command": "extension.fastBuildProject",
+                "title": "Build (-j CPU)...",
+                "icon": "$(github-action)"
+            },
+            {
+                "command": "extension.configProject",
+                "title": "Menuconfig",
+                "icon": "$(gear)"
+            },
+            {
+                "command": "extension.openTerminalProject",
+                "title": "Open RT-Thread Terminal",
+                "icon": "$(console)"
             }
         ],
         "menus": {
             "view/title": [
+                {
+                    "command": "extension.showWorkspaceSettings",
+                    "when": "(view == projectFilesId || view == groupsId) && isRTThreadWorksapce",
+                    "group": "navigation"
+                },
                 {
                     "command": "extension.refreshRTThread",
                     "when": "view == projectFilesId || view == groupsId",
@@ -86,6 +116,28 @@
                     "command": "extension.buildProject",
                     "when": "(view == projectFilesId || view == groupsId) && isRTThread",
                     "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "extension.switchProject",
+                    "when": "view == projectFilesId && viewItem == project_bsp",
+                    "group": "inline"
+                },
+                {
+                    "command": "extension.fastBuildProject",
+                    "when": "view == projectFilesId && viewItem == project_bsp",
+                    "group": "inline"
+                },
+                {
+                    "command": "extension.configProject",
+                    "when": "view == projectFilesId && viewItem == project_bsp",
+                    "group": "inline"
+                },
+                {
+                    "command": "extension.openTerminalProject",
+                    "when": "view == projectFilesId && viewItem == project_bsp",
+                    "group": "inline"
                 }
             ]
         },

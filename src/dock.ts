@@ -2,8 +2,8 @@ import path from 'path';
 import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
-import { getWorkspaceFolder, isRTThreadProject } from './api';
-import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem } from './project/tree';
+import { getWorkspaceFolder, isRTThreadProject, isRTThreadWorksapce } from './api';
+import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem, buildBSPTree } from './project/tree';
 import { cmds } from './cmds/index';
 
 class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
@@ -12,7 +12,13 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     }
 
     getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
-        if (isRTThreadProject() != true) {
+        const isRTT = isRTThreadProject();
+        const isRTTWorksapce = isRTThreadWorksapce();
+        if (isRTT != true && isRTTWorksapce != true) {
+            console.log("not RT-Thread project or workspace, return empty tree item.");
+        }
+
+        if (isRTThreadProject() != true && isRTThreadWorksapce() != true) {
             // only show Home command
             let home = new vscode.TreeItem("Home", vscode.TreeItemCollapsibleState.None);
             home.iconPath = new vscode.ThemeIcon("home");
@@ -114,6 +120,22 @@ class GroupsDataProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
                 return buildEmptyProjectTree();
             }
         }
+        else {
+            jsonPath = getWorkspaceFolder() + "/.vscode/workspace.json";
+            if (fs.existsSync(jsonPath)) {
+                try {
+                    const json = fs.readFileSync(jsonPath, 'utf8');
+                    const jsonNode = JSON.parse(json);
+    
+                    if (jsonNode.hasOwnProperty("bsps")) {
+                        return buildBSPTree(jsonNode);
+                    }
+                }
+                catch (err) {
+                    return buildEmptyProjectTree();
+                }
+            }
+        }
 
         /* build empty project tree */
         return buildEmptyProjectTree();
@@ -212,6 +234,21 @@ class ProjectFilesDataProvider implements vscode.TreeDataProvider<ProjectTreeIte
             }
         }
 
+        let workspacePath = getWorkspaceFolder() + "/.vscode/workspace.json";
+        if (fs.existsSync(workspacePath)) {
+            try {
+                const json = fs.readFileSync(workspacePath, 'utf8');
+                const jsonNode = JSON.parse(json);
+
+                if (jsonNode.hasOwnProperty("bsps")) {
+                    return buildBSPTree(jsonNode);
+                }
+            }
+            catch (err) {
+                return buildEmptyProjectTree();
+            }
+        }
+
         /* build empty project tree */
         return buildEmptyProjectTree();
     }
@@ -253,6 +290,7 @@ export function initDockView(context: vscode.ExtensionContext) {
     const view = vscode.window.createTreeView('projectFilesId', {
         treeDataProvider: _projectFilesDataProvider, showCollapseAll: true
     });
+
     context.subscriptions.push(view);
     vscode.commands.registerCommand('extension.refreshRTThread', () => refreshProjectFilesAndGroups());
 
