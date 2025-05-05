@@ -16,11 +16,11 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18' # 使用与你的扩展兼容的Node.js版本
+        node-version: '20' # 使用与你的扩展兼容的Node.js版本
         cache: 'npm'
 
     - name: Install dependencies
       run: npm install && cd src/vue && npm install && cd ../..
 
-    - name: comile
+    - name: compile
       run: npm run compile
