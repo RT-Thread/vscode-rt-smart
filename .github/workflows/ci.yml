@@ -53,6 +53,10 @@ jobs:
       env:
         NODE_ENV: production
 
+    - name: Get VSIX file name
+      id: get_vsix
+      run: echo "VSIX_FILE=$(ls *.vsix)" >> $GITHUB_ENV
+
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -68,6 +72,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vscode-rt-smart-*.vsix
-        asset_name: vscode-rt-smart.vsix
+        asset_path: ${{ env.VSIX_FILE }}
+        asset_name: ${{ env.VSIX_FILE }}
         asset_content_type: application/octet-stream
