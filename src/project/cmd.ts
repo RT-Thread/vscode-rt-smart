@@ -1,5 +1,6 @@
 import * as os from 'os';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 import { getWorkspaceFolder } from '../api';
 import { executeCommand } from '../terminal';
@@ -40,6 +41,9 @@ export function openTerminalProject(arg: any) {
 export function setCurrentProject(arg: any) {
     if (arg) {
         _currentProject = arg.fn;
+
+        let cmd = 'scons -C ' + arg.fn + ' --target=vsc_workspace';
+        executeCommand(cmd);
     }
 
     return;

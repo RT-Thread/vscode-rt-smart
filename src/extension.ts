@@ -14,6 +14,7 @@ import { setupVEnv } from './venv';
 import { initAPI } from './api';
 import { openWorkspaceProjectsWebview } from './webviews/project';
 import { initProjectTree } from './project/tree';
+import { DecorationProvider } from './project/fileDecorationProvider';
 
 let _context: vscode.ExtensionContext;
 
@@ -47,6 +48,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 isRTThreadWorksapce = true;
                 vscode.commands.executeCommand('setContext', 'isRTThreadWorksapce', true);
                 context.workspaceState.update('isRTThreadWorksapce', isRTThreadWorksapce);
+
+                new DecorationProvider(context);
             }
         }
         else {
