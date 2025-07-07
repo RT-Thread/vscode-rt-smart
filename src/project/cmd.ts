@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 
 import { getWorkspaceFolder } from '../api';
 import { executeCommand } from '../terminal';
+import { readWorkspaceJson, writeWorkspaceJson } from '../webviews/project';
 
 let _currentProject: string = '';
 
@@ -44,6 +45,13 @@ export function setCurrentProject(arg: any) {
 
         let cmd = 'scons -C ' + arg.fn + ' --target=vsc_workspace';
         executeCommand(cmd);
+
+        // update workspace.json file
+        let workspaceJson = readWorkspaceJson();
+        if (workspaceJson) {
+            workspaceJson.currentProject = arg.fn;
+            writeWorkspaceJson(workspaceJson);
+        }
     }
 
     return;

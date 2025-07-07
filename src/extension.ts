@@ -15,6 +15,7 @@ import { initAPI } from './api';
 import { openWorkspaceProjectsWebview } from './webviews/project';
 import { initProjectTree } from './project/tree';
 import { DecorationProvider } from './project/fileDecorationProvider';
+import { getCurrentProjectInWorkspace } from './webviews/project';
 
 let _context: vscode.ExtensionContext;
 
@@ -50,6 +51,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 context.workspaceState.update('isRTThreadWorksapce', isRTThreadWorksapce);
 
                 new DecorationProvider(context);
+
+                // get current project from workspace.json file
+                let currentProject = getCurrentProjectInWorkspace();
+                if (currentProject) {
+                    DecorationProvider.getInstance().markFile(vscode.Uri.file(currentProject));
+                }
             }
         }
         else {

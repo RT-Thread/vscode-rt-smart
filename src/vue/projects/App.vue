@@ -5,10 +5,11 @@
         可以在感兴趣的BSP/工程项上✔，然后保存配置，将会在侧边栏中显示对应列表。<br>
         <hr>
 
-        <el-button @click="reloadBSPProjects" hidden>加载列表</el-button>
-        <el-button @click="collapseAll">折叠全部列表</el-button>
-
-        <el-button type="primary" @click="saveBSPProjects">保存列表配置</el-button>
+        <div style="text-align: right; margin-bottom: 10px;">
+            <el-button @click="reloadBSPProjects" style="display: none;">加载列表</el-button>
+            <el-button @click="collapseAll">折叠全部列表</el-button>
+            <el-button type="primary" @click="saveBSPProjects">保存列表配置</el-button>
+        </div>
 
         <el-table ref="tableRef" v-loading="loading" :data="tableData" style="width: 100%" row-key="id" 
             :expand-row-keys="expandedRowKeys">
@@ -20,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
 
@@ -42,9 +43,11 @@ const reloadBSPProjects = () => {
 
 const saveBSPProjects = () => {
     let args:string[] = [];
-    const selectedRows = tableRef.value.getSelectionRows();
-    if (selectedRows.length > 0) {
-        args = selectedRows.map(row => row.path);
+    if (tableRef.value) {
+        const selectedRows = (tableRef.value as any).getSelectionRows();
+        if (selectedRows.length > 0) {
+            args = selectedRows.map(row => row.path);
+        }
     }
 
     sendCommand('saveBSPProjects', [args]);
@@ -59,14 +62,20 @@ onMounted(() => {
 
         switch (message.command) {
             case 'updateProjects':
-                // console.log(message);
                 tableData.value = message.data.dirs;
                 let stars:string[] = message.data.stars;
-                tableData.value.forEach((item, index) => {
-                    if (stars.includes(item.path)) {
-                        tableRef.value?.toggleRowSelection({ id: item.id }, true)
-                    }
+                
+                // 使用 nextTick 确保 DOM 更新完成后再执行选择操作
+                nextTick(() => {
+                    tableData.value.forEach((item, index) => {
+                        if (stars.includes(item.path)) {
+                            if (tableRef.value) {
+                                (tableRef.value as any).toggleRowSelection(item, true);
+                            }
+                        }
+                    });
                 });
+                
                 loading.value = false; // 停止加载动画
                 break;
 

@@ -58,4 +58,8 @@ export class DecorationProvider implements FileDecorationProvider {
             this._onDidChangeFileDecorations.fire(uri);
         }
     }
+
+    public async unmarkAllFiles() {
+        this.markedFiles.clear();
+    }
 }

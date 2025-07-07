@@ -122,41 +122,40 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
             });
         });
         panel.webview.onDidReceiveMessage(message => {
+            
             switch (message.command) {
                 case 'searchBSPProjects':
-                    let workspaceJson = path.join(getWorkspaceFolder() + '/' + '.vscode', 'workspace.json');
-                    if (fs.existsSync(workspaceJson)) {
-                        let j = JSON.parse(fs.readFileSync(workspaceJson, 'utf8'));
-                        if (j.hasOwnProperty("bsps")) {
-                            let bsps = j["bsps"];
-                            if (bsps.hasOwnProperty("folder")) {
-                                let bspFolder = getWorkspaceFolder() + '/' + bsps.folder;
+                    {
+                        let workspaceJson = readWorkspaceJson();
+                        if (workspaceJson) {
+                            if (workspaceJson.hasOwnProperty("bsps")) {
+                                let bsps = workspaceJson["bsps"];
+                                if (bsps.hasOwnProperty("folder")) {
+                                    let bspFolder = getWorkspaceFolder() + '/' + bsps.folder;
 
-                                findRtconfigDirectories(bspFolder).then((dirs) => {
-                                    let stars:string[] = [];
-                                    if (bsps.hasOwnProperty("stars")) {
-                                        stars = bsps.stars;
-                                    }
+                                    findRtconfigDirectories(bspFolder).then((dirs) => {
+                                        let stars:string[] = [];
+                                        if (bsps.hasOwnProperty("stars")) {
+                                            stars = bsps.stars;
+                                        }
 
-                                    panel.webview.postMessage({command: 'updateProjects', data: {dirs: dirs, stars: stars}});
-                                });
+                                        panel.webview.postMessage({command: 'updateProjects', data: {dirs: dirs, stars: stars}});
+                                    });
+                                }
                             }
                         }
                     }
-
                     break;
                 
                 case 'saveBSPProjects':
-                    let stars = message.args[0];
-                    // save the stars to the workspace.json file
-                    let workspaceFile = path.join(getWorkspaceFolder() + '/' + '.vscode', 'workspace.json');
-                    if (fs.existsSync(workspaceFile)) {
-                        let j = JSON.parse(fs.readFileSync(workspaceFile, 'utf8'));
-                        if (j.hasOwnProperty("bsps")) {
-                            let bsps = j["bsps"];
-                            bsps.stars = stars;
-                            fs.writeFileSync(workspaceFile, JSON.stringify(j, null, 4), 'utf8');
-                        }
+                    {
+                        let stars = message.args[0];
+                        // save the stars to the workspace.json file
+                        let workspaceJson = readWorkspaceJson();
+                        if (workspaceJson) {
+                            workspaceJson.bsps.stars = stars;
+                            writeWorkspaceJson(workspaceJson);
+                        }    
                     }
                     break;
             }},
@@ -167,4 +166,37 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
     }
 
     return workspaceViewPanel;
+}
+
+// read workspace.json file
+export function readWorkspaceJson() {
+    let workspaceJson = path.join(getWorkspaceFolder() + '/' + '.vscode', 'workspace.json');
+    if (fs.existsSync(workspaceJson)) {
+        return JSON.parse(fs.readFileSync(workspaceJson, 'utf8'));
+    }
+    return null;
+}
+
+// write workspace.json file
+export function writeWorkspaceJson(data: any) {
+    let workspaceJson = path.join(getWorkspaceFolder() + '/' + '.vscode', 'workspace.json');
+    fs.writeFileSync(workspaceJson, JSON.stringify(data, null, 4), 'utf8');
+}
+
+// set current project in workspace.json file
+export function setCurrentProjectInWorkspace(project: string) {
+    let workspaceJson = readWorkspaceJson();
+    if (workspaceJson) {
+        workspaceJson.currentProject = project;
+        writeWorkspaceJson(workspaceJson);
+    }
+}
+
+// get current project from workspace.json file
+export function getCurrentProjectInWorkspace() {
+    let workspaceJson = readWorkspaceJson();
+    if (workspaceJson) {
+        return workspaceJson.currentProject;
+    }
+    return null;
 }
