@@ -1,6 +1,12 @@
 <template>
     <div class="container">
-        <img class="logo_img" :src="imgUrl['head-logo']" alt="" /> | workspace工程列表
+        <div class="header_logo">
+          <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
+          <div class="logo_text">
+            <p>扩展工具 - workspace工程列表</p>
+            <span>v{{ extensionInfo.version }}</span>
+          </div>
+        </div>
         <br><br>
         可以在感兴趣的BSP/工程项上✔，然后保存配置，将会在侧边栏中显示对应列表。<br>
         <hr>
@@ -25,6 +31,7 @@ import { onMounted, ref, nextTick } from 'vue';
 import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
+import { extensionInfo } from '../home/data';
 
 const loading = ref(false); // 是否加载中
 
@@ -89,5 +96,39 @@ onMounted(() => {
 <style scoped>
 .container {
     padding: 20px;
+}
+
+.header_logo {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+
+    .logo_img {
+        width: 228px;
+        height: 68px;
+    }
+
+    .logo_text {
+        color: #333;
+        padding-top: 15px;
+
+        p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        span {
+            font-size: 12px;
+        }
+    }
+}
+
+.page_title {
+    font-size: 16px;
+    color: #666;
+    margin-top: 10px;
 }
 </style>
