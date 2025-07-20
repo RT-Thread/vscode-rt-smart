@@ -1,6 +1,12 @@
 <template>
     <div class="container">
-        <img class="logo_img" :src="imgUrl['head-logo']" alt="" /> | workspace工程列表
+        <div class="header_logo">
+          <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
+          <div class="logo_text">
+            <p>扩展工具 - workspace工程列表</p>
+            <span>v{{ extensionInfo.version }}</span>
+          </div>
+        </div>
         <br><br>
         可以在感兴趣的BSP/工程项上✔，然后保存配置，将会在侧边栏中显示对应列表。<br>
         <hr>
@@ -21,10 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
+import { extensionInfo } from '../home/data';
 
 const loading = ref(false); // 是否加载中
 
@@ -44,9 +51,11 @@ const reloadBSPProjects = () => {
 
 const saveBSPProjects = () => {
     let args: string[] = [];
-    const selectedRows = tableRef.value?.getSelectionRows();
-    if (selectedRows && selectedRows.length > 0) {
-        args = selectedRows.map((row: any) => row.path);
+    if (tableRef.value) {
+        const selectedRows = (tableRef.value as any).getSelectionRows();
+        if (selectedRows.length > 0) {
+            args = selectedRows.map(row => row.path);
+        }
     }
 
     sendCommand('saveBSPProjects', [args]);
@@ -63,12 +72,17 @@ onMounted(() => {
             case 'updateProjects':
                 tableData.value = message.data.dirs;
                 let stars: string[] = message.data.stars;
-                tableData.value.forEach((item: any, index: number) => {
-                    if (stars.includes(item.path)) {
-                        tableRef.value?.toggleRowSelection(item, true);
-                    }
+
+                nextTick(() => {
+                    tableData.value.forEach((item: any, index: number) => {
+                        if (stars.includes(item.path)) {
+                            if (tableRef.value) {
+                                (tableRef.value as any).toggleRowSelection(item, true);
+                            }
+                        }
+                    });
                 });
-                
+
                 loading.value = false; // 停止加载动画
                 break;
 
@@ -82,5 +96,39 @@ onMounted(() => {
 <style scoped>
 .container {
     padding: 20px;
+}
+
+.header_logo {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+
+    .logo_img {
+        width: 228px;
+        height: 68px;
+    }
+
+    .logo_text {
+        color: #333;
+        padding-top: 15px;
+
+        p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        span {
+            font-size: 12px;
+        }
+    }
+}
+
+.page_title {
+    font-size: 16px;
+    color: #666;
+    margin-top: 10px;
 }
 </style>
