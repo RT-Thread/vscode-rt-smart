@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
 import { getWorkspaceFolder, isRTThreadProject, isRTThreadWorksapce } from './api';
-import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem, buildBSPTree } from './project/tree';
+import { buildGroupsTree, buildProjectTree, buildEmptyProjectTree, ProjectTreeItem, listFolderTreeItem, buildBSPTree, setTreeDataChangeEmitter } from './project/tree';
 import { cmds } from './cmds/index';
 
 class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
@@ -188,6 +188,10 @@ class ProjectFilesDataProvider implements vscode.TreeDataProvider<ProjectTreeIte
     private _onDidChangeTreeData: vscode.EventEmitter<ProjectTreeItem | undefined> = new vscode.EventEmitter<ProjectTreeItem | undefined>();
     readonly onDidChangeTreeData: vscode.Event<ProjectTreeItem | undefined> = this._onDidChangeTreeData.event;
 
+    getTreeDataChangeEmitter(): vscode.EventEmitter<ProjectTreeItem | undefined> {
+        return this._onDidChangeTreeData;
+    }
+
     getTreeItem(element: ProjectTreeItem): vscode.TreeItem {
         return element;
     }
@@ -290,6 +294,8 @@ export function initDockView(context: vscode.ExtensionContext) {
     const view = vscode.window.createTreeView('projectFilesId', {
         treeDataProvider: _projectFilesDataProvider, showCollapseAll: true
     });
+
+    setTreeDataChangeEmitter(_projectFilesDataProvider.getTreeDataChangeEmitter());
 
     context.subscriptions.push(view);
     vscode.commands.registerCommand('extension.refreshRTThread', () => refreshProjectFilesAndGroups());

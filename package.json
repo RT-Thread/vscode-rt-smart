@@ -98,6 +98,10 @@
                 "command": "extension.openTerminalProject",
                 "title": "Open RT-Thread Terminal",
                 "icon": "$(console)"
+            },
+            {
+                "command": "extension.handleTreeItemClick",
+                "title": "Handle Tree Item Click"
             }
         ],
         "menus": {
@@ -119,11 +123,6 @@
                 }
             ],
             "view/item/context": [
-                {
-                    "command": "extension.switchProject",
-                    "when": "view == projectFilesId && viewItem == project_bsp",
-                    "group": "inline"
-                },
                 {
                     "command": "extension.fastBuildProject",
                     "when": "view == projectFilesId && viewItem == project_bsp",

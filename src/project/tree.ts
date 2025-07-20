@@ -2,6 +2,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import fs from 'fs';
 import { getWorkspaceFolder, getExtensionPath } from '../api';
+import { DecorationProvider } from './fileDecorationProvider';
 
 /*
  * contexType -> contextValue as following value:
@@ -10,6 +11,12 @@ import { getWorkspaceFolder, getExtensionPath } from '../api';
  * project_file,
  * project_bsp
  */
+
+// 全局变量记录当前选中的project_bsp项目
+let currentSelectedBspItem: ProjectTreeItem | null = null;
+
+// 添加树视图刷新事件发射器
+let _onDidChangeTreeData: vscode.EventEmitter<ProjectTreeItem | undefined> | null = null;
 
 export class ProjectTreeItem extends vscode.TreeItem {
     children: ProjectTreeItem[];
@@ -58,12 +65,16 @@ export class ProjectTreeItem extends vscode.TreeItem {
             else if (contextType == 'project_bsp') {
                 this.command = {
                     title: this.name,
-                    command: 'extension.switchProject',
+                    command: 'extension.handleTreeItemClick',
                     tooltip: this.name,
                     arguments: [
                         this
                     ]
                 };
+
+                // with resourceUri, the item will be rendered as a file icon
+                // then the item can be marked with a decoration
+                this.resourceUri = vscode.Uri.file(this.fn);
             }
         }
     }
@@ -333,7 +344,47 @@ export function initProjectTree(context:vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.openTerminalProject', (arg) => {
         openTerminalProject(arg);
     });
-    vscode.commands.registerCommand('extension.switchProject', (arg) => {
-        setCurrentProject(arg);
+
+    // Add double-clicked
+    let lastClickTime = 0;
+    let lastClickedItem: ProjectTreeItem | null = null;
+    
+    vscode.commands.registerCommand('extension.handleTreeItemClick', (item: ProjectTreeItem) => {
+        const currentTime = Date.now();
+        const doubleClickThreshold = 500; // 500ms内的两次点击被认为是双击
+        
+        if (item.contextType === 'project_bsp') {
+            if (lastClickedItem === item && (currentTime - lastClickTime) < doubleClickThreshold) {
+                if (currentSelectedBspItem && currentSelectedBspItem.fn === item.fn) {
+                    return;
+                }
+
+                // double clicked
+                if (currentSelectedBspItem && currentSelectedBspItem.fn != item.fn) {
+                    DecorationProvider.getInstance().unmarkFile(vscode.Uri.file(currentSelectedBspItem.fn));
+                }
+
+                currentSelectedBspItem = item;
+                DecorationProvider.getInstance().markFile(vscode.Uri.file(item.fn));
+                setCurrentProject(item);
+
+                if (_onDidChangeTreeData) {
+                    _onDidChangeTreeData.fire(undefined);
+                }
+                
+                // reset status
+                lastClickTime = 0;
+                lastClickedItem = null;
+            } else {
+                // one-clicked, just record it.
+                lastClickTime = currentTime;
+                lastClickedItem = item;
+            }
+        }
     });
+}
+
+// 导出函数用于设置树视图刷新事件发射器
+export function setTreeDataChangeEmitter(emitter: vscode.EventEmitter<ProjectTreeItem | undefined>) {
+    _onDidChangeTreeData = emitter;
 }
