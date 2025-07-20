@@ -7,19 +7,5 @@
         "dev": "vite",
         "build": "vue-tsc && vite build",
         "preview": "vite preview"
-    },
-    "dependencies": {
-        "@types/vscode": "^1.96.0",
-        "@vue/shared": "^3.x.x",
-        "element-plus": "^2.4.2",
-        "vue": "^3.3.8",
-        "vue-router": "^4.5.0"
-    },
-    "devDependencies": {
-        "@vitejs/plugin-vue": "^5.2.1",
-        "less": "^4.2.2",
-        "typescript": "^5.2.2",
-        "vite": "^6.0.11",
-        "vue-tsc": "^2.2.0"
     }
 }
