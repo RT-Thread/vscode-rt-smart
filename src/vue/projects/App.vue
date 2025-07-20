@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
@@ -44,9 +44,11 @@ const reloadBSPProjects = () => {
 
 const saveBSPProjects = () => {
     let args: string[] = [];
-    const selectedRows = tableRef.value?.getSelectionRows();
-    if (selectedRows && selectedRows.length > 0) {
-        args = selectedRows.map((row: any) => row.path);
+    if (tableRef.value) {
+        const selectedRows = (tableRef.value as any).getSelectionRows();
+        if (selectedRows.length > 0) {
+            args = selectedRows.map(row => row.path);
+        }
     }
 
     sendCommand('saveBSPProjects', [args]);
@@ -63,12 +65,17 @@ onMounted(() => {
             case 'updateProjects':
                 tableData.value = message.data.dirs;
                 let stars: string[] = message.data.stars;
-                tableData.value.forEach((item: any, index: number) => {
-                    if (stars.includes(item.path)) {
-                        tableRef.value?.toggleRowSelection(item, true);
-                    }
+
+                nextTick(() => {
+                    tableData.value.forEach((item: any, index: number) => {
+                        if (stars.includes(item.path)) {
+                            if (tableRef.value) {
+                                (tableRef.value as any).toggleRowSelection(item, true);
+                            }
+                        }
+                    });
                 });
-                
+
                 loading.value = false; // 停止加载动画
                 break;
 
