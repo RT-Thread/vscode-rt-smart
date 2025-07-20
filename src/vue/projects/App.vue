@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
 
@@ -31,7 +32,7 @@ const collapseAll = () => {
     expandedRowKeys.value = []; // 清空展开的行
 };
 
-const tableRef = ref(null);
+const tableRef = ref<InstanceType<typeof ElTable>>();
 const tableData = ref([
     { id: "1", name: 'qemu-virt64-riscv', path: 'qemu-virt64-riscv'}
 ]);
@@ -41,10 +42,10 @@ const reloadBSPProjects = () => {
 };
 
 const saveBSPProjects = () => {
-    let args:string[] = [];
-    const selectedRows = tableRef.value.getSelectionRows();
-    if (selectedRows.length > 0) {
-        args = selectedRows.map(row => row.path);
+    let args: string[] = [];
+    const selectedRows = tableRef.value?.getSelectionRows();
+    if (selectedRows && selectedRows.length > 0) {
+        args = selectedRows.map((row: any) => row.path);
     }
 
     sendCommand('saveBSPProjects', [args]);
@@ -61,10 +62,10 @@ onMounted(() => {
             case 'updateProjects':
                 // console.log(message);
                 tableData.value = message.data.dirs;
-                let stars:string[] = message.data.stars;
-                tableData.value.forEach((item, index) => {
+                let stars: string[] = message.data.stars;
+                tableData.value.forEach((item: any, index: number) => {
                     if (stars.includes(item.path)) {
-                        tableRef.value?.toggleRowSelection({ id: item.id }, true)
+                        tableRef.value?.toggleRowSelection(item, true);
                     }
                 });
                 loading.value = false; // 停止加载动画
