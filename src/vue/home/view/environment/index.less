@@ -6,6 +6,27 @@
         width: 80%;
         min-width: 800px;
 
+        .env-status-box {
+            background-color: #f5f7fa;
+            border: 1px solid #e4e7ed;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+
+            .info-box {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+
+                .env-actions {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    min-width: 120px;
+                }
+            }
+        }
+
         .info-box {
             display: flex;
             justify-content: space-between;
@@ -19,10 +40,14 @@
 
                 .info-content {
                     display: flex;
+                    flex-direction: column;
                     margin-bottom: 6px;
 
-                    p {
-                        width: 84px;
+                    .status-title {
+                        width: 100%;
+                        margin-bottom: 8px;
+                        font-weight: bold;
+                        color: #333;
                     }
 
                     .info-text {
@@ -30,6 +55,7 @@
                         flex-direction: column;
                         row-gap: 4px;
                         list-style: none;
+                        margin-left: 16px;
                     }
                 }
 
@@ -37,6 +63,49 @@
                     width: 100%;
                     display: flex;
                     flex-direction: column;
+                    margin-top: 16px;
+
+                    .progress-status {
+                        font-weight: bold;
+                        color: #409eff;
+                        margin-bottom: 8px;
+                    }
+
+                    .progress-log {
+                        background-color: #f8f9fa;
+                        border: 1px solid #e9ecef;
+                        border-radius: 4px;
+                        padding: 8px;
+                        font-family: monospace;
+                        font-size: 12px;
+
+                        .log-title {
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 8px;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                        }
+
+                        .log-content {
+                            max-height: 200px;
+                            overflow-y: auto;
+                            border: 1px solid #ddd;
+                            border-radius: 3px;
+                            padding: 8px;
+                            background-color: #fff;
+                        }
+
+                        .log-message {
+                            margin-bottom: 2px;
+                            color: #666;
+                            white-space: pre-wrap;
+                            line-height: 1.4;
+                            
+                            &:last-child {
+                                margin-bottom: 0;
+                            }
+                        }
+                    }
 
                     :deep(.el-progress__text) {
                         color: #333;

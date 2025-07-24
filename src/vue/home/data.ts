@@ -100,6 +100,16 @@ export const envInfo = ref<any>({
     progressNum: 0,
     selectRow: null,
 
+    // Env 安装状态相关
+    envStatus: {
+        installed: false,
+        path: "~/.env",
+        envVersion: undefined,
+        envGitRev: undefined
+    },
+    isInstalling: false,
+    installProgress: [],
+
     version : "v2.0.1",
     path: "~/.env",
 

@@ -13,7 +13,7 @@
                                     configInfo.editRow &&
                                     scope.row.id === configInfo.editRow.id && editStatus
                                 "></el-input>
-                                <span v-else>{{ scope.row[item.field] }}</span>
+                                <span v-else>{{ scope.row[item.field] || '(未设置)' }}</span>
                             </div>
                         </template>
                     </el-table-column>
