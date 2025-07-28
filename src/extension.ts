@@ -16,6 +16,7 @@ import { openWorkspaceProjectsWebview } from './webviews/project';
 import { initProjectTree } from './project/tree';
 import { DecorationProvider } from './project/fileDecorationProvider';
 import { getCurrentProjectInWorkspace } from './webviews/project';
+import { initCurrentProject } from './project/cmd';
 
 let _context: vscode.ExtensionContext;
 
@@ -56,6 +57,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 let currentProject = getCurrentProjectInWorkspace();
                 if (currentProject) {
                     DecorationProvider.getInstance().markFile(vscode.Uri.file(currentProject));
+                    // 初始化当前项目到 cmd.ts 的 _currentProject 变量
+                    initCurrentProject(currentProject);
                 }
             }
         }

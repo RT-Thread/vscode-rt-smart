@@ -8,6 +8,12 @@ import { readWorkspaceJson, writeWorkspaceJson } from '../webviews/project';
 
 let _currentProject: string = '';
 
+export function initCurrentProject(projectPath: string) {
+    if (projectPath) {
+        _currentProject = projectPath;
+    }
+}
+
 export function fastBuildProject(arg: any) {
     if (arg) {
         const cpus = os.cpus().length;

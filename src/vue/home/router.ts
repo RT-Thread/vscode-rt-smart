@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import CreatProject from './view/create-project/index.vue'
 import Environment from './view/environment/index.vue'
 import SymbolicAnalysis from './view/symbolic-analysis/index.vue'
-import Config from './view/config/index.vue'
+import Sdk from './view/sdk/index.vue'
 import LayoutView from './view/layout/index.vue'
 
 export const routes = [
@@ -60,18 +60,18 @@ export const routes = [
         ]
     },
     {
-        path: '/config',
+        path: '/sdk',
         component: LayoutView,
         meta: {
-            title: '配置'
+            title: 'SDK管理器'
         },
-        redirect: '/config',
+        redirect: '/sdk',
         children: [
             {
-                path: '/config',
-                component: Config,
+                path: '/sdk',
+                component: Sdk,
                 meta: {
-                    title: '配置'
+                    title: 'SDK管理器'
                 },
             },
         ]

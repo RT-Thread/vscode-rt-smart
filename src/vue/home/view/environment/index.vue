@@ -1,6 +1,30 @@
 <template>
     <div class="content">
         <div class="body-box">
+            <!-- RT-Thread 根目录配置区域 -->
+            <div class="rt-config-box">
+                <div class="config-card">
+                    <div class="card-header">
+                        <h3 class="card-title">RT-Thread 根目录配置</h3>
+                        <el-button type="primary" plain @click="editRtThreadConfig">编辑</el-button>
+                    </div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <label>名称：</label>
+                            <span>RT-Thread</span>
+                        </div>
+                        <div class="config-item">
+                            <label>路径：</label>
+                            <span>{{ envInfo.rtThreadConfig.path || '(未设置)' }}</span>
+                        </div>
+                        <div class="config-item">
+                            <label>描述：</label>
+                            <span>RT-Thread 主干版本</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Env 安装状态区域 -->
             <div class="env-status-box">
                 <div class="info-box">
@@ -59,51 +83,32 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bottom-box">
-                <div class="title">指定工具链情况</div>
-                <div class="table-box">
-                    <el-table @current-change="handleCurrentChange" highlight-current-row
-                        :data="envInfo.environmentData" style="width: 100%">
-                        <el-table-column v-for="item in envInfo.environmentTitleList" :key="item.title"
-                            :prop="item.field" :label="item.title" />
-                    </el-table>
-                    <div class="btn-box">
-                        <el-button type="primary" plain @click="addFun">添加</el-button>
-                        <el-button type="primary" plain @click="deleteFun">删除</el-button>
-                        <br>
-                        <el-button type="primary" plain @click="editFun">编辑</el-button>
-                        <el-button type="primary" plain @click="saveFun">保存</el-button>
-                    </div>
-                </div>
-            </div>
         </div>
-        <el-dialog v-model="envInfo.dialogVisible" width="630">
+        
+        <!-- RT-Thread 根目录配置对话框 -->
+        <el-dialog v-model="envInfo.rtConfigDialogVisible" width="630" title="RT-Thread 根目录配置">
             <div class="form-box">
-                <el-form :data="envInfo.addToolchain" label-width="70">
+                <el-form :data="envInfo.editRtConfig" label-width="70">
                     <el-form-item label="名称">
                         <div class="row-box">
-                            <el-input v-model="envInfo.addToolchain.name" placeholder="请输入内容" />
-                            <p></p>
+                            <el-input disabled v-model="envInfo.editRtConfig.name" placeholder="RT-Thread" />
                         </div>
                     </el-form-item>
                     <el-form-item label="路径">
                         <div class="row-box">
-                            <el-input v-model="envInfo.addToolchain.path" placeholder="请输入内容" />
-                            <el-button type="primary" plain @click="getToolChainFolderFunction">浏览</el-button>
+                            <el-input v-model="envInfo.editRtConfig.path" placeholder="请输入RT-Thread根目录路径" />
+                            <el-button type="primary" plain @click="browseRtThreadFolder">浏览</el-button>
                         </div>
                     </el-form-item>
                     <el-form-item label="描述">
-                        <el-input v-model="envInfo.addToolchain.description" placeholder="请输入内容" />
+                        <el-input disabled v-model="envInfo.editRtConfig.description" placeholder="RT-Thread 主干版本" />
                     </el-form-item>
                 </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button type="primary" plain @click="confirmFun">确定</el-button>
-                    <el-button type="primary" plain @click="envInfo.dialogVisible = false">
-                        取消
-                    </el-button>
+                    <el-button type="primary" plain @click="confirmRtConfig">确定</el-button>
+                    <el-button type="primary" plain @click="envInfo.rtConfigDialogVisible = false">取消</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -113,7 +118,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { envInfo } from "../../data";
-import { sendCommand, sendCommandData, showMessage } from "../../../api/vscode"
+import { sendCommand, sendCommandData } from "../../../api/vscode"
 import { ElMessageBox } from 'element-plus';
 
 const installButtonDisabled = ref(true);
@@ -196,6 +201,9 @@ onMounted(() => {
     // 初始检查 Env 状态
     checkEnvStatus();
     
+    // 获取RT-Thread配置
+    sendCommand("getConfig");
+    
     // 监听消息（这部分需要在 webview 层面处理）
     window.addEventListener('message', (event) => {
         const message = event.data;
@@ -218,90 +226,47 @@ onMounted(() => {
                 // 清除进度日志
                 clearProgressLog();
                 break;
+            case 'setItemFolder':
+                // 设置RT-Thread根目录路径
+                if (envInfo.value.rtConfigDialogVisible) {
+                    envInfo.value.editRtConfig.path = message.data;
+                }
+                break;
+            case 'setConfig':
+                // 设置配置数据
+                if (message.data && message.data.length > 0) {
+                    envInfo.value.rtThreadConfig.path = message.data[0].path || '';
+                }
+                break;
         }
     });
 });
 
-const addFun = () => {
-    envInfo.value.addToolchain = {
-        name: "",
-        path: "",
-        description: "",
+// RT-Thread 根目录配置相关函数
+const editRtThreadConfig = () => {
+    envInfo.value.editRtConfig = {
+        name: "RT-Thread",
+        path: envInfo.value.rtThreadConfig.path,
+        description: "RT-Thread 主干版本"
     };
-    envInfo.value.editMode = false;
-    envInfo.value.dialogVisible = true;
+    envInfo.value.rtConfigDialogVisible = true;
 };
 
-const deleteFun = () => {
-    if (envInfo.value.selectRow != null) {
-        let envData = envInfo.value.environmentData;
-        let value = envInfo.value.selectRow;
-        if (value.name) {
-            envInfo.value.environmentData = envData.filter(
-                (key: any) => key != value
-            );
-        }
-
-        envInfo.value.selectRow = null;
-    }
-    else {
-        showMessage("请选择需要删除的数据");
-    }
+const browseRtThreadFolder = () => {
+    sendCommandData("browseItemFolder", envInfo.value.editRtConfig.path || {});
 };
 
-const saveFun = () => {
-    let cfg : any = [];
-
-    envInfo.value.environmentData.forEach((element: { name: string; path: string; description: string; }) => {
-        let item = {name: element.name, path: element.path, description: element.description};
-        cfg.push(item);
-    });
-    sendCommand("setSDKConfig", [cfg]);
-};
-
-const editFun = () => {
-    if (envInfo.value.selectRow != null) {
-        envInfo.value.addToolchain.name = envInfo.value.selectRow.name;
-        envInfo.value.addToolchain.path = envInfo.value.selectRow.path;
-        envInfo.value.addToolchain.description = envInfo.value.selectRow.description;
-
-        envInfo.value.editMode = true;
-        envInfo.value.dialogVisible = true;
-    }
-};
-
-const confirmFun = () => {
-    if (Object.values(envInfo.value.addToolchain).some((value) => value != null && value != '')) {
-        envInfo.value.dialogVisible = false;
-        if (envInfo.value.editMode) {
-            let index = envInfo.value.environmentData.indexOf(envInfo.value.selectRow);
-            envInfo.value.environmentData[index].name = envInfo.value.addToolchain.name;
-            envInfo.value.environmentData[index].path = envInfo.value.addToolchain.path;
-            envInfo.value.environmentData[index].description = envInfo.value.addToolchain.description;
-        }
-        else {
-            envInfo.value.environmentData.unshift(envInfo.value.addToolchain);
-        }
-        envInfo.value.editMode = false;
-    } else {
-        showMessage("请完善新增信息！");
-    }
-};
-
-let isInstalling = ref<boolean>(false);
-const installEnv = () => {
-    isInstalling.value = true;
-    setTimeout(() => {
-        isInstalling.value = false;
-    }, 3000);
-}
-
-const getToolChainFolderFunction = () => {
-    sendCommandData("browseToolchainFolder", envInfo.value.addToolchain.path);
-};
-
-const handleCurrentChange = (val: any) => {
-    envInfo.value.selectRow = val;
+const confirmRtConfig = () => {
+    envInfo.value.rtThreadConfig.path = envInfo.value.editRtConfig.path;
+    
+    let configItem = {
+        name: envInfo.value.editRtConfig.name,
+        path: envInfo.value.editRtConfig.path,
+        description: envInfo.value.editRtConfig.description
+    };
+    
+    sendCommand("setConfig", [[configItem]]);
+    envInfo.value.rtConfigDialogVisible = false;
 };
 
 </script>

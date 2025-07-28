@@ -112,8 +112,26 @@ export const envInfo = ref<any>({
 
     version : "v2.0.1",
     path: "~/.env",
+    
+    // RT-Thread 根目录配置
+    rtThreadConfig: {
+        name: "RT-Thread",
+        path: "d:/workspace/rt-thread",
+        description: "RT-Thread 主干版本"
+    },
+    rtConfigDialogVisible: false,
+    editRtConfig: {
+        name: "",
+        path: "",
+        description: ""
+    },
+    
+    radioChange: 0,
+});
 
-    environmentTitleList: [
+export const sdkInfo = ref<any>({
+    selectRow: null,
+    sdkTitleList: [
         {
             title: "名称",
             field: "name",
@@ -127,7 +145,7 @@ export const envInfo = ref<any>({
             field: "description",
         },
     ],
-    environmentData: [
+    sdkData: [
         {
             name: "gcc",
             path: "d:/tools/toolchains/arm-none-eabi-gcc",
@@ -137,37 +155,6 @@ export const envInfo = ref<any>({
     dialogVisible: false,
     editMode: false,
     addToolchain: {
-        name: "",
-        path: "",
-        description: ""
-    },
-    radioChange: 0,
-});
-
-export const configInfo = ref<any>({
-    configTitleList: [
-        {
-            title: "名称",
-            field: "name",
-        },
-        {
-            title: "路径",
-            field: "path",
-        },
-        {
-            title: "描述",
-            field: "description",
-        },
-    ],
-    configData: [
-        {
-            name: "RT-Thread",
-            path: "d:/workspace/rt-thread",
-            description: "RT-Thread 主干版本",
-        }
-    ],
-    dialogVisible: false,
-    editConfigItem: {
         name: "",
         path: "",
         description: ""

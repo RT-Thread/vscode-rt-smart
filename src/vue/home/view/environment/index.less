@@ -6,6 +6,54 @@
         width: 80%;
         min-width: 800px;
 
+        .rt-config-box {
+            margin-bottom: 20px;
+
+            .config-card {
+                background-color: #f5f7fa;
+                border: 1px solid #e4e7ed;
+                border-radius: 6px;
+                padding: 20px;
+
+                .card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+
+                    .card-title {
+                        margin: 0;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #333;
+                    }
+                }
+
+                .config-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+
+                    .config-item {
+                        display: flex;
+                        align-items: center;
+                        font-size: 14px;
+
+                        label {
+                            width: 80px;
+                            font-weight: 500;
+                            color: #606266;
+                        }
+
+                        span {
+                            color: #333;
+                            flex: 1;
+                        }
+                    }
+                }
+            }
+        }
+
         .env-status-box {
             background-color: #f5f7fa;
             border: 1px solid #e4e7ed;
@@ -115,68 +163,20 @@
         }
     }
 
-    .bottom-box {
-        width: 100%;
-
-        .title {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 22px;
-        }
-
-        :deep(.el-table--fit) {
-            border: none;
-
-            .el-table__inner-wrapper:before {
-                width: 0;
-            }
-        }
-
-        .table-box {
-            width: 100%;
-            display: flex;
-            column-gap: 20px;
-            .el-radio-group {
-                width: 100%;
-            }
-            :deep(.el-table tr) {
-                font-size: 14px;
-                color: #333;
-                height: 48px;
-            }
-
-            .btn-box {
-                width: 98px;
-                display: flex;
-                flex-direction: column;
-                row-gap: 25px;
-                margin-top: 40px;
-            }
-        }
-    }
-
-    .el-button {
-        width: 98px;
-        height: 40px;
-        margin: 0;
-    }
-
     .form-box {
         width: 100%;
         margin-bottom: 30px;
         padding: 24px 24px 0 0;
         box-sizing: border-box;
-        .file-box {
-            width: 0;
-        }
+
         .row-box {
             width: 100%;
             display: flex;
             align-items: center;
             column-gap: 14px;
 
-            p {
-                width: 109px;
+            .el-input {
+                flex: 1;
             }
         }
 
@@ -193,5 +193,11 @@
         display: flex;
         justify-content: flex-end;
         column-gap: 14px;
+    }
+
+    .el-button {
+        width: 98px;
+        height: 40px;
+        margin: 0;
     }
 }

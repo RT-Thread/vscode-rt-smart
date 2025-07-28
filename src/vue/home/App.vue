@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUpdated, ref } from 'vue';
-import { extensionInfo, projectInfo, envInfo, configInfo } from "./data";
+import { extensionInfo, projectInfo, envInfo } from "./data";
 import { sendCommand } from '../api/vscode';
 
 onUpdated(() => {
@@ -26,18 +26,21 @@ onMounted(() => {
 
                 envInfo.value.version = message.data.env.version;
                 envInfo.value.path = message.data.env.path;
-                envInfo.value.environmentData = message.data.SDKConfig;
-                configInfo.value.configData = message.data.configInfo;
+                
+                // 设置RT-Thread配置数据
+                if (message.data.configInfo && message.data.configInfo.length > 0) {
+                    envInfo.value.rtThreadConfig.path = message.data.configInfo[0].path || '';
+                }
                 break;
 
             case 'setToolchainFolder':
                 // message like {command: 'setToolchainFolder', data: 'path'}
-                envInfo.value.addToolchain.path = message.data;
+                // 这个消息现在由SDK管理器处理
                 break;
 
             case 'setItemFolder':
                 // message like {command: 'setItemFolder', data: 'path'}
-                configInfo.value.editConfigItem.path = message.data;
+                // 这个消息现在由environment页面处理
                 break;
 
             case 'setProjectFolder':
@@ -46,7 +49,7 @@ onMounted(() => {
                 break;
 
             case 'setSDKConfig':
-                envInfo.value.environmentData = message.data;
+                // SDK配置现在由SDK管理器页面处理
                 break;
 
             default:
