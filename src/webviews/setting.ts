@@ -3,11 +3,11 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { spawn } from 'child_process';
-import { getEnvROOT, getExtensionVersion, installEnv, createProject, readJsonObject, openFolder, writeJsonObject, getBoardInfo } from '../api';
+import { getEnvROOT, getExtensionVersion, installEnv, readJsonObject, openFolder, writeJsonObject } from '../api';
 
-let homeViewPanel: vscode.WebviewPanel | null = null;
-const name = "home";
-const title = "RT-Thread Home";
+let settingViewPanel: vscode.WebviewPanel | null = null;
+const name = "setting";
+const title = "RT-Thread Setting";
 
 const cfgFn = path.join(os.homedir(), '.env/cfg.json');
 const sdkCfgFn = path.join(os.homedir(), '.env/tools/scripts/sdk_cfg.json');
@@ -18,23 +18,6 @@ let extensionInfo = {
 		path: "~/.env",
 		version: "0.0.1"
 	},
-	projectList: [
-		{
-			manufacturer: "ST",
-			boards: [
-				"stm32f412-st-nucleo",
-				"stm32f407-rt-spark"
-			]
-		},
-		{
-			manufacturer: "QEMU",
-			boards: [
-				"qemu-vexpress-a9",
-				"qemu-virt64-aarch64",
-				"qemu-virt64-riscv64"
-			]
-		}
-	],
 	SDKConfig : {},
 	configInfo : [{name: "RT-Thread", path: "d:/workspace/rt-thread", description: "RT-Thread主干路径"}]
 };
@@ -344,9 +327,9 @@ async function getLocation(): Promise<'CN' | 'GLOBAL'> {
     }
 }
 
-export function openHomeWebview(context: vscode.ExtensionContext) {
-    if (homeViewPanel) {
-        homeViewPanel.reveal(vscode.ViewColumn.One);
+export function openSettingWebview(context: vscode.ExtensionContext) {
+    if (settingViewPanel) {
+        settingViewPanel.reveal(vscode.ViewColumn.One);
     }
     else {
         const rootDir = path.join(context.extensionPath, 'out');
@@ -362,7 +345,7 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
 
         // handle close webview event
         panel.onDidDispose(() => {
-            homeViewPanel = null;
+            settingViewPanel = null;
         });
 
         // update extensionInfo
@@ -374,8 +357,7 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
             extensionInfo.env.version = envInfo.version;
         }
 		extensionInfo.SDKConfig = readJsonObject(sdkCfgFn);
-        extensionInfo.projectList = getBoardInfo();
-        // console.log(extensionInfo.projectList);
+        
         // read RT-Thread folder
         let cfg:any [] = readJsonObject(cfgFn);
         if (cfg.length > 0 && cfg[0].path) {
@@ -412,17 +394,6 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
             switch (message.command) {
                 case 'getExtensionInfo':
                     panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
-                    return ;
-                case 'createProject':
-                    let projectInfo = message.args[0];
-                    createProject(projectInfo.folder, projectInfo);
-                    return;
-                case 'browseProjectFolder':
-                    defaultPath = message.args[0];
-                    let projectFolder = await openFolder(defaultPath);
-                    if (projectFolder) {
-                        panel.webview.postMessage({command: 'setProjectFolder', data: projectFolder});
-                    }
                     return ;
                 case 'browseToolchainFolder':
                     defaultPath = message.args[0];
@@ -509,8 +480,8 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
             }
         })
     
-        homeViewPanel = panel;
+        settingViewPanel = panel;
     }
 
-    return homeViewPanel;
+    return settingViewPanel;
 }

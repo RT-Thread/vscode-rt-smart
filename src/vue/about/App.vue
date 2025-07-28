@@ -1,10 +1,20 @@
 <template>
     <div class="container">
-        <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-        <br>
-        <div v-html="readmeMarkdown"></div>
+        <el-header class="header_box">
+            <div class="header_logo">
+              <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
+              <div class="logo_text">
+                <p>扩展工具 - 关于</p>
+                <span>v{{ extensionInfo.version }}</span>
+              </div>
+            </div>
+        </el-header>
 
-        <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
+        <div class="content_area">
+            <div v-html="readmeMarkdown"></div>
+
+            <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
+        </div>
     </div>
 </template>
 
@@ -12,6 +22,7 @@
 import { onMounted, ref } from 'vue';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
+import { extensionInfo } from '../setting/data';
 
 let readmeMarkdown = ref('');
 
@@ -38,6 +49,51 @@ onMounted(() => {
 
 <style scoped>
 .container {
+    padding: 0;
+}
+
+.header_box {
+    background-color: #fff;
+    border-bottom: 1px solid #e6e6e6;
+    padding: 0 20px;
+}
+
+.header_logo {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    font-size: 18px;
+    color: #333;
+    height: 100%;
+
+    .logo_img {
+        width: 228px;
+        height: 68px;
+    }
+
+    .logo_text {
+        color: #333;
+        padding-top: 15px;
+
+        p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        span {
+            font-size: 12px;
+        }
+    }
+}
+
+.content_area {
     padding: 20px;
+}
+
+.page_title {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+    font-weight: 500;
 }
 </style>

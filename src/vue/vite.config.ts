@@ -19,8 +19,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         about: resolve(__dirname, 'about/index.html'),
-        home: resolve(__dirname, 'home/index.html'),
+        setting: resolve(__dirname, 'setting/index.html'),
         projects: resolve(__dirname, 'projects/index.html'),
+        'create-project': resolve(__dirname, 'create-project/index.html'),
       },
       output: {
         manualChunks: undefined, // 避免生成太多chunk

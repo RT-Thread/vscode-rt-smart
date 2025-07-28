@@ -6,30 +6,6 @@ export let extensionInfo = ref<any>({
     version: "0.4.11"
 });
 
-export let projectInfo = ref<any>({
-    folder: "",
-    name: "",
-    board: "",
-    manufacturer: "",
-    projectList: [
-        {
-            manufacturer: "stm32",
-            boards: [
-                "stm32f407-rt-spark"
-            ],
-        },
-        {
-            manufacturer: "qemu",
-            boards: [
-                "qemu-vexpress-a9"
-            ]
-        }
-    ],
-    linkRTT: false,
-    linkDriver: false,
-    readme: "README.md"
-});
-
 export const analysisInfo = ref<any>({
     mapFile: "rt-thread.map",
     mapFileUrl: "",
@@ -114,7 +90,7 @@ export const envInfo = ref<any>({
     path: "~/.env",
     
     // RT-Thread 根目录配置
-    rtThreadConfig: {
+    rtConfig: {
         name: "RT-Thread",
         path: "d:/workspace/rt-thread",
         description: "RT-Thread 主干版本"

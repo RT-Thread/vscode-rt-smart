@@ -1,28 +1,33 @@
 <template>
     <div class="container">
-        <div class="header_logo">
-          <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-          <div class="logo_text">
-            <p>扩展工具 - workspace工程列表</p>
-            <span>v{{ extensionInfo.version }}</span>
-          </div>
-        </div>
-        <br><br>
-        可以在感兴趣的BSP/工程项上✔，然后保存配置，将会在侧边栏中显示对应列表。<br>
-        <hr>
+        <el-header class="header_box">
+            <div class="header_logo">
+              <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
+              <div class="logo_text">
+                <p>扩展工具 - workspace工程列表</p>
+                <span>v{{ extensionInfo.version }}</span>
+              </div>
+            </div>
+        </el-header>
 
-        <div style="text-align: right; margin-bottom: 10px;">
-            <el-button @click="reloadBSPProjects" style="display: none;">加载列表</el-button>
-            <el-button @click="collapseAll">折叠全部列表</el-button>
-            <el-button type="primary" @click="saveBSPProjects">保存列表配置</el-button>
-        </div>
+        <div class="content_area">
+            <br>
+            可以在感兴趣的BSP/工程项上✔，然后保存配置，将会在侧边栏中显示对应列表。<br>
+            <hr>
 
-        <el-table ref="tableRef" v-loading="loading" :data="tableData" style="width: 100%" row-key="id" 
-            :expand-row-keys="expandedRowKeys">
-            <el-table-column type="selection" width="32"></el-table-column>
-            <el-table-column prop="name" label="名称" width="300"></el-table-column>
-            <el-table-column prop="path" label="路径" width="500"></el-table-column>
-        </el-table>
+            <div style="text-align: right; margin-bottom: 10px;">
+                <el-button @click="reloadBSPProjects" style="display: none;">加载列表</el-button>
+                <el-button @click="collapseAll">折叠全部列表</el-button>
+                <el-button type="primary" @click="saveBSPProjects">保存列表配置</el-button>
+            </div>
+
+            <el-table ref="tableRef" v-loading="loading" :data="tableData" style="width: 100%" row-key="id" 
+                :expand-row-keys="expandedRowKeys">
+                <el-table-column type="selection" width="32"></el-table-column>
+                <el-table-column prop="name" label="名称" width="300"></el-table-column>
+                <el-table-column prop="path" label="路径" width="500"></el-table-column>
+            </el-table>
+        </div>
     </div>
 </template>
 
@@ -31,7 +36,7 @@ import { onMounted, ref, nextTick } from 'vue';
 import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
-import { extensionInfo } from '../home/data';
+import { extensionInfo } from '../setting/data';
 
 const loading = ref(false); // 是否加载中
 
@@ -54,7 +59,7 @@ const saveBSPProjects = () => {
     if (tableRef.value) {
         const selectedRows = (tableRef.value as any).getSelectionRows();
         if (selectedRows.length > 0) {
-            args = selectedRows.map(row => row.path);
+            args = selectedRows.map((row: any) => row.path);
         }
     }
 
@@ -95,7 +100,13 @@ onMounted(() => {
 
 <style scoped>
 .container {
-    padding: 20px;
+    padding: 0;
+}
+
+.header_box {
+    background-color: #fff;
+    border-bottom: 1px solid #e6e6e6;
+    padding: 0 20px;
 }
 
 .header_logo {
@@ -104,7 +115,7 @@ onMounted(() => {
     column-gap: 12px;
     font-size: 18px;
     color: #333;
-    margin-bottom: 20px;
+    height: 100%;
 
     .logo_img {
         width: 228px;
@@ -126,9 +137,14 @@ onMounted(() => {
     }
 }
 
+.content_area {
+    padding: 20px;
+}
+
 .page_title {
     font-size: 16px;
     color: #666;
-    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
 }
 </style>

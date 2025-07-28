@@ -6,7 +6,7 @@
                 <div class="config-card">
                     <div class="card-header">
                         <h3 class="card-title">RT-Thread 根目录配置</h3>
-                        <el-button type="primary" plain @click="editRtThreadConfig">编辑</el-button>
+                        <el-button type="primary" plain @click="editRtConfig">编辑</el-button>
                     </div>
                     <div class="config-content">
                         <div class="config-item">
@@ -15,7 +15,7 @@
                         </div>
                         <div class="config-item">
                             <label>路径：</label>
-                            <span>{{ envInfo.rtThreadConfig.path || '(未设置)' }}</span>
+                            <span>{{ envInfo.rtConfig.path || '(未设置)' }}</span>
                         </div>
                         <div class="config-item">
                             <label>描述：</label>
@@ -235,7 +235,7 @@ onMounted(() => {
             case 'setConfig':
                 // 设置配置数据
                 if (message.data && message.data.length > 0) {
-                    envInfo.value.rtThreadConfig.path = message.data[0].path || '';
+                    envInfo.value.rtConfig.path = message.data[0].path || '';
                 }
                 break;
         }
@@ -243,10 +243,10 @@ onMounted(() => {
 });
 
 // RT-Thread 根目录配置相关函数
-const editRtThreadConfig = () => {
+const editRtConfig = () => {
     envInfo.value.editRtConfig = {
         name: "RT-Thread",
-        path: envInfo.value.rtThreadConfig.path,
+        path: envInfo.value.rtConfig.path,
         description: "RT-Thread 主干版本"
     };
     envInfo.value.rtConfigDialogVisible = true;
@@ -257,7 +257,7 @@ const browseRtThreadFolder = () => {
 };
 
 const confirmRtConfig = () => {
-    envInfo.value.rtThreadConfig.path = envInfo.value.editRtConfig.path;
+    envInfo.value.rtConfig.path = envInfo.value.editRtConfig.path;
     
     let configItem = {
         name: envInfo.value.editRtConfig.name,

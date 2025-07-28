@@ -4,8 +4,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { openHomeWebview } from './webviews/home';
+import { openSettingWebview } from './webviews/setting';
 import { openAboutWebview } from './webviews/about';
+import { openCreateProjectWebview } from './webviews/create-project';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { getMenuItems, getParallelBuildNumber } from './smart';
@@ -106,9 +107,14 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    vscode.commands.registerCommand('extension.showHome', () => {
-        openHomeWebview(context);
+    vscode.commands.registerCommand('extension.showSetting', () => {
+        openSettingWebview(context);
     });
+    
+    vscode.commands.registerCommand('extension.showCreateProject', () => {
+        openCreateProjectWebview(context);
+    });
+    
     if (isRTThreadWorksapce) {
         vscode.commands.registerCommand('extension.showWorkspaceSettings', () => {
             openWorkspaceProjectsWebview(context);

@@ -56,8 +56,12 @@
         },
         "commands": [
             {
-                "command": "extension.showHome",
-                "title": "Show RT-Thread Home"
+                "command": "extension.showSetting",
+                "title": "Show RT-Thread Setting"
+            },
+            {
+                "command": "extension.showCreateProject",
+                "title": "Create RT-Thread Project"
             },
             {
                 "command": "extension.buildProject",

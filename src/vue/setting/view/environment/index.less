@@ -18,7 +18,7 @@
                 .card-header {
                     display: flex;
                     justify-content: space-between;
-                    align-items: center;
+                    align-items: flex-start;
                     margin-bottom: 16px;
 
                     .card-title {
@@ -26,6 +26,11 @@
                         font-size: 16px;
                         font-weight: bold;
                         color: #333;
+                        padding-top: 10px;
+                    }
+                    
+                    .el-button {
+                        min-width: 120px;
                     }
                 }
 
@@ -71,6 +76,10 @@
                     flex-direction: column;
                     gap: 10px;
                     min-width: 120px;
+                    
+                    .el-button {
+                        min-width: 120px;
+                    }
                 }
             }
         }
@@ -196,7 +205,7 @@
     }
 
     .el-button {
-        width: 98px;
+        min-width: 120px;
         height: 40px;
         margin: 0;
     }

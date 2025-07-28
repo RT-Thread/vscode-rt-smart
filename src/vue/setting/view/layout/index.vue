@@ -10,6 +10,7 @@
           </div>
         </div>
       </el-header>
+
       <el-aside>
         <el-menu
           :collapse="isSidebarOpen"
