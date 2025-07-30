@@ -85,6 +85,7 @@ export const envInfo = ref<any>({
     },
     isInstalling: false,
     installProgress: [],
+    showProgressLog: false,
 
     version : "v2.0.1",
     path: "~/.env",

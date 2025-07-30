@@ -29,9 +29,9 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 arguments: [],
             };
 
-            let rtSetting = new vscode.TreeItem("RT-Thread Setting", vscode.TreeItemCollapsibleState.None);
+            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
             rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
-            rtSetting.label = "RT-Thread Setting";
+            rtSetting.label = "rt-thread setting";
             rtSetting.command = {
                 command: "extension.showSetting",
                 title: "show rt-thread setting page",
@@ -55,9 +55,9 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             };
             children.push(createProject);
 
-            let rtSetting = new vscode.TreeItem("RT-Thread Setting", vscode.TreeItemCollapsibleState.None);
+            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
             rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
-            rtSetting.label = "RT-Thread Setting";
+            rtSetting.label = "rt-thread setting";
             rtSetting.command = {
                 command: "extension.showSetting",
                 title: "show rt-thread setting page",

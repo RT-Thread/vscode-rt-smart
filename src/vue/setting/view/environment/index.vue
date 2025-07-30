@@ -19,7 +19,7 @@
                         </div>
                         <div class="config-item">
                             <label>描述：</label>
-                            <span>RT-Thread 主干版本</span>
+                            <span>{{ envInfo.rtConfig.description || 'RT-Thread 主干版本' }}</span>
                         </div>
                     </div>
                 </div>
@@ -44,10 +44,20 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="progress-box" v-if="envInfo.isInstalling">
-                            <p class="progress-status">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
+                        <div class="progress-box" v-if="envInfo.isInstalling || envInfo.showProgressLog">
+                            <p class="progress-status" v-if="envInfo.isInstalling">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
                             <div class="progress-log" v-if="envInfo.installProgress.length > 0">
-                                <div class="log-title">执行日志：</div>
+                                <div class="log-header">
+                                    <div class="log-title">执行日志：</div>
+                                    <el-button 
+                                        v-if="!envInfo.isInstalling" 
+                                        type="primary" 
+                                        size="small" 
+                                        plain 
+                                        @click="closeProgressLog">
+                                        关闭日志
+                                    </el-button>
+                                </div>
                                 <div class="log-content">
                                     <div v-for="(msg, index) in envInfo.installProgress" :key="index" class="log-message">
                                         {{ msg }}
@@ -101,7 +111,7 @@
                         </div>
                     </el-form-item>
                     <el-form-item label="描述">
-                        <el-input disabled v-model="envInfo.editRtConfig.description" placeholder="RT-Thread 主干版本" />
+                        <el-input v-model="envInfo.editRtConfig.description" placeholder="RT-Thread 主干版本" />
                     </el-form-item>
                 </el-form>
             </div>
@@ -130,7 +140,9 @@ const checkEnvStatus = () => {
 
 // 安装 Env
 const installEnvFunction = () => {
-    // 设置安装状态
+    // 清除之前的日志并设置安装状态
+    envInfo.value.installProgress = [];
+    envInfo.value.showProgressLog = true;
     envInfo.value.isInstalling = true;
     
     sendCommand("installEnv");
@@ -138,7 +150,9 @@ const installEnvFunction = () => {
 
 // 更新 Env
 const updateEnvFunction = () => {
-    // 设置更新状态
+    // 清除之前的日志并设置更新状态
+    envInfo.value.installProgress = [];
+    envInfo.value.showProgressLog = true;
     envInfo.value.isInstalling = true;
     
     sendCommand("updateEnv");
@@ -172,7 +186,9 @@ const deleteEnvFunction = async () => {
         
         console.log('用户确认删除，开始执行删除操作...');
         
-        // 设置删除状态
+        // 清除之前的日志并设置删除状态
+        envInfo.value.installProgress = [];
+        envInfo.value.showProgressLog = true;
         envInfo.value.isInstalling = true;
         
         sendCommand("deleteEnv");
@@ -191,6 +207,12 @@ const addProgressMessage = (type: string, message: string) => {
 // 清除日志的辅助函数
 const clearProgressLog = () => {
     envInfo.value.installProgress = [];
+    envInfo.value.showProgressLog = false;
+};
+
+// 关闭日志显示
+const closeProgressLog = () => {
+    envInfo.value.showProgressLog = false;
 };
 
 // 跟踪当前操作状态
@@ -216,6 +238,8 @@ onMounted(() => {
                 addProgressMessage(message.type, message.message);
                 if (message.type === 'success' || message.type === 'error') {
                     envInfo.value.isInstalling = false;
+                    // 操作完成后保持日志显示，让用户可以查看
+                    envInfo.value.showProgressLog = true;
                     // 重新检查状态
                     setTimeout(() => {
                         checkEnvStatus();

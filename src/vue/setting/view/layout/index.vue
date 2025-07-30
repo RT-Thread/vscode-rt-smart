@@ -16,7 +16,7 @@
           :collapse="isSidebarOpen"
           :collapse-transition="false"
           router
-          :default-active="$route.path"
+          :default-active="defaultActive"
           background-color="#fff"
           text-color="#333"
           style="border: none"
@@ -42,6 +42,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { routes } from '../../router';
 import { extensionInfo } from '../../data';
 import { imgUrl } from '../../../assets/img'
@@ -53,10 +54,22 @@ interface MenuRoute {
   meta: any
 }
 
+const route = useRoute()
 const isSidebarOpen = ref(false)
+
 type ListItemType = MenuRoute & { icon?: string }
 const list: any = computed(() => {
   return getMenuList(routes)
+})
+
+// 计算默认激活的菜单项
+const defaultActive = computed(() => {
+  const currentPath = route.path
+  // 如果当前路径是根路径，默认选择 /environment
+  if (currentPath === '/') {
+    return '/environment'
+  }
+  return currentPath
 })
 
 const getMenuList = (list: MenuRoute[], basePath?: string): ListItemType[] => {
