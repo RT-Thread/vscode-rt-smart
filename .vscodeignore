@@ -9,14 +9,3 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
-**/node_modules/**
-**/.git/**
-**/package-lock.json
-**/.DS_Store
-**/Thumbs.db
-**/*.log
-**/coverage/**
-**/dist/**
-**/.cache/**
-**/.temp/**
-**/.tmp/**
