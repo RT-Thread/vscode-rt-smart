@@ -40,7 +40,7 @@
                                 </li>
                                 <li>安装路径: {{ envInfo.envStatus.path }}</li>
                                 <li v-if="envInfo.envStatus.envGitRev">
-                                    修订: {{ envInfo.envStatus.envGitRev.substring(0, 8) }}
+                                    修订: {{ envInfo.envStatus.envGitRev }}
                                 </li>
                             </ul>
                         </div>

@@ -5,6 +5,9 @@ node_modules
 *.vsix
 package-lock.json
 
+# Reference code (not included in build)
+ref/
+
 # Auto-generated type declaration files
 src/vue/auto-imports.d.ts
 src/vue/components.d.ts
