@@ -66,39 +66,16 @@
             padding: 20px;
             margin-bottom: 20px;
 
-            .info-box {
+            .status-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-
-                .env-actions {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    min-width: 120px;
-                    
-                    .el-button {
-                        min-width: 120px;
-                    }
-                }
-            }
-        }
-
-        .info-box {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 28px;
-
-            .info-left {
-                width: 80%;
-                padding-top: 10px;
+                font-size: 14px;
+                color: #333;
 
                 .info-content {
-                    display: flex;
-                    flex-direction: column;
-                    margin-bottom: 6px;
+                    flex: 1;
+                    padding-top: 10px;
 
                     .status-title {
                         width: 100%;
@@ -116,68 +93,79 @@
                     }
                 }
 
-                .progress-box {
-                    width: 100%;
+                .env-actions {
                     display: flex;
                     flex-direction: column;
-                    margin-top: 16px;
+                    gap: 10px;
+                    min-width: 120px;
+                    
+                    .el-button {
+                        min-width: 120px;
+                    }
+                }
+            }
 
-                    .progress-status {
+            .progress-box {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                margin-top: 16px;
+
+                .progress-status {
+                    font-weight: bold;
+                    color: #409eff;
+                    margin-bottom: 8px;
+                }
+
+                .progress-log {
+                    background-color: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    padding: 8px;
+                    font-family: monospace;
+                    font-size: 12px;
+
+                    .log-title {
                         font-weight: bold;
-                        color: #409eff;
+                        color: #333;
                         margin-bottom: 8px;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                     }
 
-                    .progress-log {
-                        background-color: #f8f9fa;
-                        border: 1px solid #e9ecef;
-                        border-radius: 4px;
-                        padding: 8px;
-                        font-family: monospace;
-                        font-size: 12px;
+                    .log-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
 
                         .log-title {
-                            font-weight: bold;
-                            color: #333;
-                            margin-bottom: 8px;
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                        }
-
-                        .log-header {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 8px;
-
-                            .log-title {
-                                margin-bottom: 0;
-                            }
-                        }
-
-                        .log-content {
-                            max-height: 200px;
-                            overflow-y: auto;
-                            border: 1px solid #ddd;
-                            border-radius: 3px;
-                            padding: 8px;
-                            background-color: #fff;
-                        }
-
-                        .log-message {
-                            margin-bottom: 2px;
-                            color: #666;
-                            white-space: pre-wrap;
-                            line-height: 1.4;
-                            
-                            &:last-child {
-                                margin-bottom: 0;
-                            }
+                            margin-bottom: 0;
                         }
                     }
 
-                    :deep(.el-progress__text) {
-                        color: #333;
+                    .log-content {
+                        max-height: 200px;
+                        overflow-y: auto;
+                        border: 1px solid #ddd;
+                        border-radius: 3px;
+                        padding: 8px;
+                        background-color: #fff;
                     }
+
+                    .log-message {
+                        margin-bottom: 2px;
+                        color: #666;
+                        white-space: pre-wrap;
+                        line-height: 1.4;
+                        
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+                    }
+                }
+
+                :deep(.el-progress__text) {
+                    color: #333;
                 }
             }
         }

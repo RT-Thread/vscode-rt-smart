@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Environment from './view/environment/index.vue'
 import Sdk from './view/sdk/index.vue'
+import Toolchains from './view/toolchains/index.vue'
 import LayoutView from './view/layout/index.vue'
 
 export const routes = [
@@ -34,6 +35,23 @@ export const routes = [
                 component: Sdk,
                 meta: {
                     title: 'SDK管理器'
+                },
+            },
+        ]
+    },
+    {
+        path: '/toolchains',
+        component: LayoutView,
+        meta: {
+            title: '工具链设置'
+        },
+        redirect: '/toolchains',
+        children: [
+            {
+                path: '/toolchains',
+                component: Toolchains,
+                meta: {
+                    title: '工具链设置'
                 },
             },
         ]

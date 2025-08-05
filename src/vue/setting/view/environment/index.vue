@@ -27,45 +27,24 @@
 
             <!-- Env 安装状态区域 -->
             <div class="env-status-box">
-                <div class="info-box">
-                    <div class="info-left">
-                        <div class="info-content">
-                            <p class="status-title">RT-Thread Env 状态：</p>
-                            <ul class="info-text">
-                                <li v-if="envInfo.envStatus.installed" style="color: #67c23a;">
-                                    ✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}
-                                </li>
-                                <li v-else style="color: #e6a23c;">
-                                    ❌ 未安装
-                                </li>
-                                <li>安装路径: {{ envInfo.envStatus.path }}</li>
-                                <li v-if="envInfo.envStatus.envGitRev">
-                                    修订: {{ envInfo.envStatus.envGitRev }}
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="progress-box" v-if="envInfo.isInstalling || envInfo.showProgressLog">
-                            <p class="progress-status" v-if="envInfo.isInstalling">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
-                            <div class="progress-log" v-if="envInfo.installProgress.length > 0">
-                                <div class="log-header">
-                                    <div class="log-title">执行日志：</div>
-                                    <el-button 
-                                        v-if="!envInfo.isInstalling" 
-                                        type="primary" 
-                                        size="small" 
-                                        plain 
-                                        @click="closeProgressLog">
-                                        关闭日志
-                                    </el-button>
-                                </div>
-                                <div class="log-content">
-                                    <div v-for="(msg, index) in envInfo.installProgress" :key="index" class="log-message">
-                                        {{ msg }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="status-header">
+                    <div class="info-content">
+                        <p class="status-title">RT-Thread Env 状态：</p>
+                        <ul class="info-text">
+                            <li v-if="envInfo.envStatus.installed" style="color: #67c23a;">
+                                ✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}
+                            </li>
+                            <li v-else style="color: #e6a23c;">
+                                ❌ 未安装
+                            </li>
+                            <li>安装路径: {{ envInfo.envStatus.path }}</li>
+                            <li v-if="envInfo.envStatus.envGitRev">
+                                修订: {{ envInfo.envStatus.envGitRev }}
+                            </li>
+                        </ul>
                     </div>
+
+                    <!-- Env 操作按钮区域 -->
                     <div class="env-actions">
                         <el-button 
                             v-if="!envInfo.envStatus.installed" 
@@ -90,6 +69,29 @@
                                 删除 Env
                             </el-button>
                         </template>
+                    </div>
+                </div>
+
+                <!-- 安装进度日志区域 -->
+                <div class="progress-box" v-if="envInfo.isInstalling || envInfo.showProgressLog">
+                    <p class="progress-status" v-if="envInfo.isInstalling">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
+                    <div class="progress-log" v-if="envInfo.installProgress.length > 0">
+                        <div class="log-header">
+                            <div class="log-title">执行日志：</div>
+                            <el-button 
+                                v-if="!envInfo.isInstalling" 
+                                type="primary" 
+                                size="small" 
+                                plain 
+                                @click="closeProgressLog">
+                                关闭日志
+                            </el-button>
+                        </div>
+                        <div class="log-content">
+                            <div v-for="(msg, index) in envInfo.installProgress" :key="index" class="log-message">
+                                {{ msg }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

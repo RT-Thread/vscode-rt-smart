@@ -41,8 +41,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { routes } from '../../router';
 import { extensionInfo } from '../../data';
 import { imgUrl } from '../../../assets/img'
@@ -55,6 +55,7 @@ interface MenuRoute {
 }
 
 const route = useRoute()
+const router = useRouter()
 const isSidebarOpen = ref(false)
 
 type ListItemType = MenuRoute & { icon?: string }
@@ -62,14 +63,31 @@ const list: any = computed(() => {
   return getMenuList(routes)
 })
 
+// 使用 ref 来存储当前激活的菜单项
+const activeMenu = ref('')
+
 // 计算默认激活的菜单项
 const defaultActive = computed(() => {
-  const currentPath = route.path
-  // 如果当前路径是根路径，默认选择 /environment
-  if (currentPath === '/') {
-    return '/environment'
+  return activeMenu.value || route.path || '/environment'
+})
+
+// 在组件挂载后设置默认激活菜单
+onMounted(() => {
+  // 如果当前路径是根路径或没有路径，设置为环境工具
+  if (!route.path || route.path === '/') {
+    activeMenu.value = '/environment'
+    // 确保路由也跳转到环境工具
+    router.push('/environment')
+  } else {
+    activeMenu.value = route.path
   }
-  return currentPath
+})
+
+// 监听路由变化，同步更新激活菜单
+watch(() => route.path, (newPath) => {
+  if (newPath) {
+    activeMenu.value = newPath
+  }
 })
 
 const getMenuList = (list: MenuRoute[], basePath?: string): ListItemType[] => {
