@@ -1,11 +1,205 @@
 <template>
-    <div class="toolchains-container">
-        <h1>Hello World</h1>
+    <div class="sdk-container">
+        <div class="sdk-header">
+            <h2 class="sdk-title">SDK安装包列表</h2>
+            <div class="sdk-actions">
+                <el-button type="primary" plain @click="expandAll">
+                    {{ isAllExpanded ? '收起所有' : '展开所有' }}
+                </el-button>
+                <el-button type="primary" @click="applyChanges">应用</el-button>
+            </div>
+        </div>
+
+        <el-table
+            :data="sdkList"
+            style="width: 100%"
+            row-key="name"
+            :expand-row-keys="expandedRows"
+            @expand-change="handleExpandChange"
+            :default-expand-all="false"
+            :tree-props="{ children: 'children' }"
+        >
+            <!-- 展开列 -->
+            <el-table-column type="expand" width="40">
+                <template #default="props">
+                    <div class="sdk-expand-content">
+                        <div class="sdk-versions">
+                            <el-radio-group v-model="props.row.selectedVersion">
+                                <el-radio 
+                                    v-for="version in props.row.versions" 
+                                    :key="version"
+                                    :label="version"
+                                    @change="onVersionChange(props.row)"
+                                >
+                                    {{ version }}
+                                </el-radio>
+                            </el-radio-group>
+                        </div>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <!-- 名称列 -->
+            <el-table-column prop="name" label="名称" min-width="200">
+                <template #default="scope">
+                    <div class="sdk-name">
+                        <i 
+                            :class="expandedRows.includes(scope.row.name) ? 'el-icon-arrow-down' : 'el-icon-arrow-right'"
+                            class="expand-icon"
+                        />
+                        <span>{{ scope.row.name }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <!-- 版本选择列 -->
+            <el-table-column label="安装状态" min-width="150">
+                <template #default="scope">
+                    <div class="install-status">
+                        <template v-if="scope.row.installed">
+                            <el-tag type="success" size="small">已安装</el-tag>
+                            <span class="installed-version">{{ scope.row.installedVersion }}</span>
+                        </template>
+                        <template v-else-if="scope.row.selectedVersion">
+                            <el-tag type="warning" size="small">待安装</el-tag>
+                            <span class="selected-version">{{ scope.row.selectedVersion }}</span>
+                        </template>
+                        <template v-else>
+                            <el-tag type="info" size="small">未安装</el-tag>
+                        </template>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <!-- 描述列 -->
+            <el-table-column prop="description" label="描述" min-width="300" />
+        </el-table>
     </div>
 </template>
 
 <script setup lang="ts">
-// SDK管理器视图
+import { ref, onMounted, computed } from 'vue';
+import { sendCommand, showMessage } from '../../../api/vscode';
+
+// SDK包版本信息接口
+interface SDKVersion {
+    version: string;
+    URL: string;
+}
+
+// SDK包信息接口
+interface SDKPackage {
+    name: string;
+    description: string;
+    site: SDKVersion[];
+}
+
+// SDK列表项接口
+interface SDKListItem {
+    name: string;
+    description: string;
+    versions: string[];
+    installedVersion?: string;
+    selectedVersion?: string;
+    installed: boolean;
+    path?: string;
+}
+
+// SDK列表数据
+const sdkList = ref<SDKListItem[]>([]);
+
+// 展开的行
+const expandedRows = ref<string[]>([]);
+const isAllExpanded = ref(false);
+
+// 处理展开/收起
+const handleExpandChange = (row: any, expandedRowsList: any[]) => {
+    // 更新展开状态
+    const rowNames = expandedRowsList.map(r => r.name);
+    expandedRows.value = rowNames;
+};
+
+// 展开/收起所有
+const expandAll = () => {
+    if (isAllExpanded.value) {
+        expandedRows.value = [];
+    } else {
+        expandedRows.value = sdkList.value.map(item => item.name);
+    }
+    isAllExpanded.value = !isAllExpanded.value;
+};
+
+// 版本变更
+const onVersionChange = (row: SDKListItem) => {
+    console.log(`SDK ${row.name} 版本变更为: ${row.selectedVersion}`);
+    // 标记该SDK已被修改
+    const sdk = sdkList.value.find(s => s.name === row.name);
+    if (sdk) {
+        sdk.selectedVersion = row.selectedVersion;
+    }
+};
+
+// 应用更改
+const applyChanges = () => {
+    // 收集有变更的SDK配置信息
+    const changedSDKs = sdkList.value.filter(sdk => {
+        // 已安装但版本变更，或未安装但选择了版本
+        return (sdk.installed && sdk.selectedVersion !== sdk.installedVersion) ||
+               (!sdk.installed && sdk.selectedVersion);
+    });
+    
+    if (changedSDKs.length === 0) {
+        showMessage('没有需要应用的更改');
+        return;
+    }
+    
+    // 发送配置到后端
+    const configs = changedSDKs.map(sdk => ({
+        name: sdk.name,
+        version: sdk.selectedVersion,
+        install: !!sdk.selectedVersion
+    }));
+    
+    sendCommand('applySDKConfig', configs);
+    showMessage(`正在应用 ${changedSDKs.length} 个SDK的更改...`);
+};
+
+// 组件挂载时获取SDK列表
+onMounted(() => {
+    // 获取SDK列表
+    sendCommand('getSDKList');
+    
+    // 监听来自扩展的消息
+    window.addEventListener('message', (event) => {
+        const message = event.data;
+        switch (message.command) {
+            case 'setSDKList':
+                // 设置SDK列表数据
+                if (message.data && Array.isArray(message.data)) {
+                    sdkList.value = message.data.map((sdk: any) => ({
+                        name: sdk.name,
+                        description: sdk.description,
+                        versions: sdk.versions || [],
+                        installedVersion: sdk.installedVersion,
+                        selectedVersion: sdk.installedVersion || '',
+                        installed: sdk.installed || false,
+                        path: sdk.path
+                    }));
+                }
+                break;
+            case 'sdkConfigApplied':
+                // SDK配置应用成功
+                showMessage('SDK 配置已成功应用');
+                // 重新加载SDK列表
+                sendCommand('getSDKList');
+                break;
+            case 'sdkConfigError':
+                // SDK配置应用失败
+                showMessage(message.error || 'SDK 配置应用失败');
+                break;
+        }
+    });
+});
 </script>
 
 <style scoped>

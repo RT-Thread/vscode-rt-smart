@@ -1,81 +1,180 @@
-/* SDK管理器页面样式 */
+/* 工具链管理页面样式 */
 .content {
     padding: 20px;
     height: 100%;
     box-sizing: border-box;
+    background-color: #f5f7fa;
 }
 
 .body-box {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 24px;
     height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.sdk-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #409eff;
-}
-
-.table-box {
-    flex: 1;
+/* 页面头部 */
+.header-section {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e4e7ed;
 }
 
+.page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #303133;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* 表格容器 */
+.table-container {
+    flex: 1;
+    overflow: auto;
+    margin-bottom: 20px;
+}
+
+/* 自定义表格样式 */
 .el-table {
-    flex: 1;
-    margin-bottom: 20px;
+    font-size: 14px;
+    
+    .el-table__header {
+        th {
+            background-color: #f5f7fa;
+            color: #606266;
+            font-weight: 600;
+        }
+    }
+    
+    .el-table__row {
+        &:hover {
+            background-color: #f5f7fa;
+        }
+    }
 }
 
-.btn-box {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 20px 0;
-    border-top: 1px solid #ebeef5;
+/* 操作按钮样式 */
+.el-button--primary.is-link {
+    color: #409eff;
+    
+    &:hover {
+        color: #66b1ff;
+    }
 }
 
-.btn-box .el-button {
-    min-width: 80px;
+.el-button--danger.is-link {
+    color: #f56c6c;
+    
+    &:hover {
+        color: #f78989;
+    }
 }
 
-.form-box {
-    padding: 20px;
+
+/* 对话框表单样式 */
+.toolchain-form {
+    padding: 16px 0;
+    
+    .el-form-item {
+        margin-bottom: 24px;
+        
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    
+    .el-form-item__label {
+        font-weight: 500;
+        color: #606266;
+    }
+    
+    .el-input__inner {
+        height: 36px;
+    }
+    
+    .el-textarea__inner {
+        font-family: inherit;
+        line-height: 1.5;
+    }
 }
 
-.row-box {
+/* 路径输入组 */
+.path-input-group {
     display: flex;
     gap: 10px;
     align-items: center;
+    
+    .el-input {
+        flex: 1;
+    }
+    
+    .el-button {
+        min-width: 80px;
+    }
 }
 
-.row-box .el-input {
-    flex: 1;
-}
-
+/* 对话框底部 */
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
+}
+
+/* 主按钮样式调整 */
+.el-button--primary {
+    background-color: #409eff;
+    border-color: #409eff;
+    
+    &:hover {
+        background-color: #66b1ff;
+        border-color: #66b1ff;
+    }
+}
+
+/* 空数据状态 */
+.el-table__empty-text {
+    color: #909399;
+    font-size: 14px;
+    padding: 40px 0;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
     .content {
-        padding: 10px;
+        padding: 12px;
     }
     
-    .btn-box {
-        flex-direction: column;
+    .body-box {
+        padding: 16px;
     }
     
-    .row-box {
+    .header-section {
         flex-direction: column;
-        align-items: stretch;
-        gap: 5px;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .page-title {
+        font-size: 18px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        
+        .el-button {
+            width: 100%;
+        }
     }
 }

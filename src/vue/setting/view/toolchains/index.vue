@@ -1,47 +1,102 @@
 <template>
     <div class="content">
-        <div class="body-box">
-            <div class="sdk-title"> 本地工具链配置 </div>
-            <div class="table-box">
-                <el-table @current-change="handleCurrentChange" highlight-current-row
-                    :data="sdkInfo.sdkData" style="width: 100%">
-                    <el-table-column v-for="item in sdkInfo.sdkTitleList" :key="item.title"
-                        :prop="item.field" :label="item.title" />
-                </el-table>
-                <div class="btn-box">
-                    <el-button type="primary" plain @click="addFun">添加</el-button>
-                    <el-button type="primary" plain @click="deleteFun">删除</el-button>
-                    <el-button type="primary" plain @click="editFun">编辑</el-button>
-                    <el-button type="primary" plain @click="saveFun">保存</el-button>
-                </div>
+        <div class="header-section">
+            <h2 class="page-title">本地工具链列表</h2>
+            <div class="header-actions">
+                <el-button type="primary" @click="addFun">添加工具链</el-button>
+                <el-button type="primary" @click="saveFun">保存配置</el-button>
             </div>
         </div>
-        <el-dialog v-model="sdkInfo.dialogVisible" width="630" title="工具链配置">
-            <div class="form-box">
-                <el-form :data="sdkInfo.addToolchain" label-width="70">
-                    <el-form-item label="名称">
-                        <div class="row-box">
-                            <el-input v-model="sdkInfo.addToolchain.name" placeholder="请输入内容" />
-                            <p></p>
-                        </div>
-                    </el-form-item>
-                    <el-form-item label="路径">
-                        <div class="row-box">
-                            <el-input v-model="sdkInfo.addToolchain.path" placeholder="请输入内容" />
-                            <el-button type="primary" plain @click="getToolChainFolderFunction">浏览</el-button>
-                        </div>
-                    </el-form-item>
-                    <el-form-item label="描述">
-                        <el-input v-model="sdkInfo.addToolchain.description" placeholder="请输入内容" />
-                    </el-form-item>
-                </el-form>
-            </div>
+        
+        <div class="table-container">
+            <el-table 
+                :data="sdkInfo.sdkData" 
+                style="width: 100%"
+                :empty-text="'暂无数据'"
+            >
+                <el-table-column 
+                    prop="name" 
+                    label="名称" 
+                    min-width="150"
+                />
+                <el-table-column 
+                    prop="path" 
+                    label="路径" 
+                    min-width="300"
+                    show-overflow-tooltip
+                />
+                <el-table-column 
+                    prop="description" 
+                    label="描述" 
+                    min-width="200"
+                />
+                <el-table-column 
+                    label="操作" 
+                    width="150"
+                    align="center"
+                >
+                    <template #default="scope">
+                        <el-button 
+                            type="primary" 
+                            link 
+                            size="small"
+                            @click="editFun(scope.row)"
+                        >
+                            编辑
+                        </el-button>
+                        <el-button 
+                            type="danger" 
+                            link 
+                            size="small"
+                            @click="deleteFun(scope.row)"
+                        >
+                            删除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+
+        <!-- 添加/编辑对话框 -->
+        <el-dialog 
+            v-model="sdkInfo.dialogVisible" 
+            :title="sdkInfo.editMode ? '编辑工具链' : '添加工具链'" 
+            width="600px"
+            :close-on-click-modal="false"
+        >
+            <el-form 
+                :model="sdkInfo.addToolchain" 
+                label-width="80px"
+                class="toolchain-form"
+            >
+                <el-form-item label="名称" required>
+                    <el-input 
+                        v-model="sdkInfo.addToolchain.name" 
+                        placeholder="请输入工具链名称" 
+                    />
+                </el-form-item>
+                <el-form-item label="路径" required>
+                    <div class="path-input-group">
+                        <el-input 
+                            v-model="sdkInfo.addToolchain.path" 
+                            placeholder="请选择或输入工具链路径" 
+                        />
+                        <el-button @click="getToolChainFolderFunction">浏览</el-button>
+                    </div>
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input 
+                        v-model="sdkInfo.addToolchain.description" 
+                        placeholder="请输入工具链描述（可选）" 
+                        type="textarea"
+                        :rows="3"
+                    />
+                </el-form-item>
+            </el-form>
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button type="primary" plain @click="confirmFun">确定</el-button>
-                    <el-button type="primary" plain @click="sdkInfo.dialogVisible = false">
-                        取消
-                    </el-button>
+                    <el-button @click="sdkInfo.dialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="confirmFun">确定</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -52,6 +107,7 @@
 import { ref, onMounted } from "vue";
 import { sdkInfo } from "../../data";
 import { sendCommand, sendCommandData, showMessage } from "../../../api/vscode"
+import { ElMessageBox } from 'element-plus';
 
 const addFun = () => {
     sdkInfo.value.addToolchain = {
@@ -63,20 +119,25 @@ const addFun = () => {
     sdkInfo.value.dialogVisible = true;
 };
 
-const deleteFun = () => {
-    if (sdkInfo.value.selectRow != null) {
-        let sdkData = sdkInfo.value.sdkData;
-        let value = sdkInfo.value.selectRow;
-        if (value.name) {
-            sdkInfo.value.sdkData = sdkData.filter(
-                (key: any) => key != value
-            );
-        }
-
-        sdkInfo.value.selectRow = null;
-    }
-    else {
-        showMessage("请选择需要删除的数据");
+const deleteFun = async (row: any) => {
+    try {
+        await ElMessageBox.confirm(
+            `确定要删除工具链 "${row.name}" 吗？`,
+            '删除确认',
+            {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        );
+        
+        // 执行删除
+        sdkInfo.value.sdkData = sdkInfo.value.sdkData.filter(
+            (item: any) => item !== row
+        );
+        showMessage("删除成功");
+    } catch {
+        // 用户取消删除
     }
 };
 
@@ -88,43 +149,54 @@ const saveFun = () => {
         cfg.push(item);
     });
     sendCommand("setSDKConfig", [cfg]);
+    showMessage("配置已保存");
 };
 
-const editFun = () => {
-    if (sdkInfo.value.selectRow != null) {
-        sdkInfo.value.addToolchain.name = sdkInfo.value.selectRow.name;
-        sdkInfo.value.addToolchain.path = sdkInfo.value.selectRow.path;
-        sdkInfo.value.addToolchain.description = sdkInfo.value.selectRow.description;
-
-        sdkInfo.value.editMode = true;
-        sdkInfo.value.dialogVisible = true;
-    }
+const editFun = (row: any) => {
+    sdkInfo.value.addToolchain = {
+        name: row.name,
+        path: row.path,
+        description: row.description || "",
+    };
+    sdkInfo.value.selectRow = row;
+    sdkInfo.value.editMode = true;
+    sdkInfo.value.dialogVisible = true;
 };
 
 const confirmFun = () => {
-    if (Object.values(sdkInfo.value.addToolchain).some((value) => value != null && value != '')) {
-        sdkInfo.value.dialogVisible = false;
-        if (sdkInfo.value.editMode) {
-            let index = sdkInfo.value.sdkData.indexOf(sdkInfo.value.selectRow);
-            sdkInfo.value.sdkData[index].name = sdkInfo.value.addToolchain.name;
-            sdkInfo.value.sdkData[index].path = sdkInfo.value.addToolchain.path;
-            sdkInfo.value.sdkData[index].description = sdkInfo.value.addToolchain.description;
-        }
-        else {
-            sdkInfo.value.sdkData.unshift(sdkInfo.value.addToolchain);
-        }
-        sdkInfo.value.editMode = false;
-    } else {
-        showMessage("请完善新增信息！");
+    // 验证必填字段
+    if (!sdkInfo.value.addToolchain.name || !sdkInfo.value.addToolchain.path) {
+        showMessage("请填写名称和路径！");
+        return;
     }
+
+    sdkInfo.value.dialogVisible = false;
+    
+    if (sdkInfo.value.editMode) {
+        // 编辑模式：更新现有数据
+        let index = sdkInfo.value.sdkData.indexOf(sdkInfo.value.selectRow);
+        if (index !== -1) {
+            sdkInfo.value.sdkData[index] = {
+                name: sdkInfo.value.addToolchain.name,
+                path: sdkInfo.value.addToolchain.path,
+                description: sdkInfo.value.addToolchain.description
+            };
+        }
+    } else {
+        // 添加模式：新增数据
+        sdkInfo.value.sdkData.push({
+            name: sdkInfo.value.addToolchain.name,
+            path: sdkInfo.value.addToolchain.path,
+            description: sdkInfo.value.addToolchain.description
+        });
+    }
+    
+    sdkInfo.value.editMode = false;
+    showMessage(sdkInfo.value.editMode ? "编辑成功" : "添加成功");
 };
 
 const getToolChainFolderFunction = () => {
     sendCommandData("browseToolchainFolder", sdkInfo.value.addToolchain.path);
-};
-
-const handleCurrentChange = (val: any) => {
-    sdkInfo.value.selectRow = val;
 };
 
 // 监听来自扩展的消息
