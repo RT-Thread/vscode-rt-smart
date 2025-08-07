@@ -240,6 +240,40 @@ function removeConfigLine(content: string, key: string): string {
     return content.replace(regex, '');
 }
 
+// 保存完整的SDK配置到.config文件
+export async function saveSDKDotConfig(configs: Array<{ name: string; version: string; selected: boolean; path: string }>): Promise<void> {
+    const configPath = getConfigPath();
+    let content = 'CONFIG_TARGET_FILE=""\n';
+    
+    // 生成所有SDK的配置
+    for (const config of configs) {
+        const upperName = config.name.replace(/-/g, '_').toUpperCase();
+        const usingKey = `CONFIG_PKG_USING_${upperName}`;
+        
+        if (config.selected && config.version) {
+            // SDK已选择
+            content += `${usingKey}=y\n`;
+            content += `CONFIG_PKG_${upperName}_VER="${config.version}"\n`;
+            
+            // 设置路径
+            const sdkPath = config.path || path.join('sdk', config.name, config.version);
+            content += `CONFIG_PKG_${upperName}_PATH="${sdkPath}"\n`;
+        } else {
+            // SDK未选择
+            content += `# ${usingKey} is not set\n`;
+        }
+    }
+    
+    // 确保目录存在
+    const configDir = path.dirname(configPath);
+    if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
+    }
+    
+    // 写入配置文件
+    fs.writeFileSync(configPath, content, 'utf8');
+}
+
 // 处理SDK相关消息
 export function handleSDKMessage(webview: vscode.Webview, message: any): boolean {
     switch (message.command) {
@@ -256,6 +290,29 @@ export function handleSDKMessage(webview: vscode.Webview, message: any): boolean
                     error: '获取SDK列表失败'
                 });
             });
+            return true;
+            
+        case 'saveSDKDotConfig':
+            if (message.args && message.args[0] && Array.isArray(message.args[0])) {
+                saveSDKDotConfig(message.args[0]).then(() => {
+                    webview.postMessage({
+                        command: 'sdkConfigApplied'
+                    });
+                    vscode.window.showInformationMessage('SDK配置已保存到 .config 文件');
+                }).catch(error => {
+                    console.error('Failed to save SDK config:', error);
+                    webview.postMessage({
+                        command: 'sdkConfigError',
+                        error: '保存SDK配置失败'
+                    });
+                });
+            } else {
+                console.error('Invalid data format for saveSDKDotConfig:', message);
+                webview.postMessage({
+                    command: 'sdkConfigError',
+                    error: 'SDK配置数据格式错误'
+                });
+            }
             return true;
             
         case 'applySDKConfig':

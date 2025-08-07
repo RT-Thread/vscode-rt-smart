@@ -88,6 +88,11 @@ export function openSettingWebview(context: vscode.ExtensionContext) {
             panel.webview.postMessage({ command: 'envStatus', status: envStatus });
         });
 
+        // 初始化时发送SDK配置
+        if (extensionInfo.SDKConfig) {
+            panel.webview.postMessage({ command: 'setSDKConfig', data: extensionInfo.SDKConfig });
+        }
+
         // read out/${name}/index.html
         const indexHtmlPath = vscode.Uri.file(context.asAbsolutePath(`out/${name}/index.html`));
         const htmlFolder = vscode.Uri.file(context.asAbsolutePath(`out`));
@@ -101,6 +106,16 @@ export function openSettingWebview(context: vscode.ExtensionContext) {
 
                 return `"${panel.webview.asWebviewUri(vscode.Uri.file(absPath)).toString()}"`;
             });
+
+            // 在HTML设置完成后延迟发送初始数据
+            setTimeout(() => {
+                // 发送SDK配置
+                if (extensionInfo.SDKConfig) {
+                    panel.webview.postMessage({ command: 'setSDKConfig', data: extensionInfo.SDKConfig });
+                }
+                // 发送扩展信息
+                panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
+            }, 100);
         });
         panel.webview.onDidReceiveMessage(async (message) => {
             // 先尝试使用SDK处理器处理消息
@@ -139,12 +154,14 @@ export function openSettingWebview(context: vscode.ExtensionContext) {
                 case 'getSDkConfig':
                     data = readJsonObject(sdkCfgFn);
                     if (data) {
-                        panel.webview.postMessage({command: 'setConfig', data: data});
+                        panel.webview.postMessage({command: 'setSDKConfig', data: data});
                     }
                     return ;
                 case 'setSDKConfig':
                     data = message.args[0];
                     writeJsonObject(message.args[0], sdkCfgFn);
+                    // 更新内存中的配置
+                    extensionInfo.SDKConfig = data;
     
                     vscode.window.showInformationMessage('保存工具链配置成功');
                     return ;

@@ -24,16 +24,20 @@
                 <template #default="props">
                     <div class="sdk-expand-content">
                         <div class="sdk-versions">
-                            <el-radio-group v-model="props.row.selectedVersion">
-                                <el-radio 
-                                    v-for="version in props.row.versions" 
-                                    :key="version"
-                                    :label="version"
-                                    @change="onVersionChange(props.row)"
-                                >
-                                    {{ version }}
-                                </el-radio>
-                            </el-radio-group>
+                            <div
+                                v-for="version in props.row.versions" 
+                                :key="version"
+                                class="version-radio-item"
+                                @click="handleRadioClick(props.row, version)"
+                            >
+                                <input 
+                                    type="radio"
+                                    :name="`sdk-${props.row.name}`"
+                                    :checked="props.row.selectedVersion === version"
+                                    @click.stop
+                                />
+                                <label>{{ version }}</label>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -129,39 +133,34 @@ const expandAll = () => {
     isAllExpanded.value = !isAllExpanded.value;
 };
 
-// 版本变更
-const onVersionChange = (row: SDKListItem) => {
-    console.log(`SDK ${row.name} 版本变更为: ${row.selectedVersion}`);
-    // 标记该SDK已被修改
+// 处理单选按钮点击
+const handleRadioClick = (row: SDKListItem, version: string) => {
     const sdk = sdkList.value.find(s => s.name === row.name);
     if (sdk) {
-        sdk.selectedVersion = row.selectedVersion;
+        // 如果点击的是已选中的版本，则取消选择
+        if (sdk.selectedVersion === version) {
+            sdk.selectedVersion = '';
+        } else {
+            // 否则选择新版本
+            sdk.selectedVersion = version;
+        }
+        console.log(`SDK ${row.name} 版本变更为: ${sdk.selectedVersion || '未选择'}`);
     }
 };
 
 // 应用更改
 const applyChanges = () => {
-    // 收集有变更的SDK配置信息
-    const changedSDKs = sdkList.value.filter(sdk => {
-        // 已安装但版本变更，或未安装但选择了版本
-        return (sdk.installed && sdk.selectedVersion !== sdk.installedVersion) ||
-               (!sdk.installed && sdk.selectedVersion);
-    });
-    
-    if (changedSDKs.length === 0) {
-        showMessage('没有需要应用的更改');
-        return;
-    }
-    
-    // 发送配置到后端
-    const configs = changedSDKs.map(sdk => ({
+    // 收集所有SDK的配置信息
+    const sdkConfigs = sdkList.value.map(sdk => ({
         name: sdk.name,
-        version: sdk.selectedVersion,
-        install: !!sdk.selectedVersion
+        version: sdk.selectedVersion || '',
+        selected: !!sdk.selectedVersion,
+        path: sdk.path || ''
     }));
     
-    sendCommand('applySDKConfig', configs);
-    showMessage(`正在应用 ${changedSDKs.length} 个SDK的更改...`);
+    // 发送配置到后端保存到.config文件
+    sendCommand('saveSDKDotConfig', [sdkConfigs]);
+    showMessage('正在保存SDK配置...');
 };
 
 // 组件挂载时获取SDK列表
@@ -189,9 +188,7 @@ onMounted(() => {
                 break;
             case 'sdkConfigApplied':
                 // SDK配置应用成功
-                showMessage('SDK 配置已成功应用');
-                // 重新加载SDK列表
-                sendCommand('getSDKList');
+                showMessage('SDK 配置已保存到 .config 文件');
                 break;
             case 'sdkConfigError':
                 // SDK配置应用失败

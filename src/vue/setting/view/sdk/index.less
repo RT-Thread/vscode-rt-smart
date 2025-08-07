@@ -114,28 +114,41 @@
 }
 
 .sdk-versions {
-    .el-radio-group {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     
-    .el-radio {
-        margin-right: 0;
-        margin-left: 0;
+    .version-radio-item {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
         
-        .el-radio__label {
-            font-size: 14px;
-            color: #606266;
-            padding-left: 10px;
+        &:hover {
+            background-color: #f5f7fa;
         }
         
-        &.is-checked {
-            .el-radio__label {
-                color: #409eff;
-                font-weight: 500;
-            }
+        input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: #409eff;
+        }
+        
+        label {
+            margin-left: 8px;
+            font-size: 14px;
+            color: #606266;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        input[type="radio"]:checked + label {
+            color: #409eff;
+            font-weight: 500;
         }
     }
 }
