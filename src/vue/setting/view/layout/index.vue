@@ -5,7 +5,7 @@
         <div class="header_logo">
           <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
           <div class="logo_text">
-            <p>扩展工具</p>
+            <p>扩展工具 - 配置</p>
             <span>v{{ extensionInfo.version }}</span>
           </div>
         </div>
