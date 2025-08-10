@@ -216,3 +216,96 @@
         padding: 16px 20px;
     }
 }
+
+/* 日志模态窗口样式 */
+.sdk-log-dialog {
+    max-width: 1200px;
+    
+    .el-dialog__header {
+        padding: 0;
+    }
+    
+    .el-dialog__body {
+        padding: 0;
+    }
+}
+
+.log-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    
+    .dialog-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #303133;
+    }
+}
+
+.log-container {
+    background-color: #1e1e1e;
+    border-radius: 4px;
+    padding: 0;
+    height: 60vh;
+    max-height: 600px;
+    min-height: 400px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+}
+
+.terminal-content {
+    height: 100%;
+    width: 100%;
+    
+    // xterm.js 终端样式
+    .xterm {
+        height: 100%;
+        padding: 10px;
+    }
+    
+    .xterm-viewport {
+        overflow-y: auto !important;
+        
+        &::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: #2d2d30;
+            border-radius: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 4px;
+            
+            &:hover {
+                background: #4e4e52;
+            }
+        }
+    }
+}
+
+.log-dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    
+    .update-status {
+        padding: 10px 20px;
+        font-size: 14px;
+        
+        i {
+            margin-right: 8px;
+            animation: rotate 1s linear infinite;
+        }
+    }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

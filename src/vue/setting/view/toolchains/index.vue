@@ -135,7 +135,6 @@ const deleteFun = async (row: any) => {
         sdkInfo.value.sdkData = sdkInfo.value.sdkData.filter(
             (item: any) => item !== row
         );
-        // showMessage("删除成功");
     } catch {
         // 用户取消删除
     }
@@ -191,7 +190,6 @@ const confirmFun = () => {
     }
     
     sdkInfo.value.editMode = false;
-    // showMessage(sdkInfo.value.editMode ? "编辑成功" : "添加成功");
 };
 
 const getToolChainFolderFunction = () => {

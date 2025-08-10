@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { spawn } from 'child_process';
 
 // SDK版本信息接口
 interface SDKVersion {
@@ -140,7 +141,8 @@ export async function getSDKList(): Promise<SDKListItem[]> {
     
     if (!fs.existsSync(sdkDir)) {
         console.warn(`SDK directory not found: ${sdkDir}`);
-        return sdkList;
+        // 返回空列表
+        return [];
     }
     
     // 读取已安装的SDK配置
@@ -241,7 +243,7 @@ function removeConfigLine(content: string, key: string): string {
 }
 
 // 保存完整的SDK配置到.config文件
-export async function saveSDKDotConfig(configs: Array<{ name: string; version: string; selected: boolean; path: string }>): Promise<void> {
+export async function saveSDKDotConfig(configs: Array<{ name: string; version: string; selected: boolean; path: string; versions?: string[] }>): Promise<void> {
     const configPath = getConfigPath();
     let content = 'CONFIG_TARGET_FILE=""\n';
     
@@ -253,11 +255,27 @@ export async function saveSDKDotConfig(configs: Array<{ name: string; version: s
         if (config.selected && config.version) {
             // SDK已选择
             content += `${usingKey}=y\n`;
-            content += `CONFIG_PKG_${upperName}_VER="${config.version}"\n`;
             
-            // 设置路径
-            const sdkPath = config.path || path.join('sdk', config.name, config.version);
+            // 设置路径 - 使用相对路径格式
+            const platform = os.platform() === 'win32' ? 'Windows' : 'Linux';
+            const sdkPath = config.path || `sdk/${platform}/${config.name}`;
             content += `CONFIG_PKG_${upperName}_PATH="${sdkPath}"\n`;
+            
+            // 添加版本选择标记
+            if (config.versions && config.versions.length > 0) {
+                for (const ver of config.versions) {
+                    // 将版本号转换为大写，移除点和横线
+                    const versionKey = `CONFIG_PKG_USING_${upperName}_${ver.replace(/[\.-]/g, '').toUpperCase()}`;
+                    if (ver === config.version) {
+                        content += `${versionKey}=y\n`;
+                    } else {
+                        content += `# ${versionKey} is not set\n`;
+                    }
+                }
+            }
+            
+            // 设置版本
+            content += `CONFIG_PKG_${upperName}_VER="${config.version}"\n`;
         } else {
             // SDK未选择
             content += `# ${usingKey} is not set\n`;
@@ -272,6 +290,101 @@ export async function saveSDKDotConfig(configs: Array<{ name: string; version: s
     
     // 写入配置文件
     fs.writeFileSync(configPath, content, 'utf8');
+}
+
+// 当前运行的env进程
+let currentEnvProcess: any = null;
+
+// 执行 env.py pkgs --update-force 命令
+export async function runEnvPkgsUpdate(webview: vscode.Webview): Promise<void> {
+    const envScriptPath = path.join(os.homedir(), '.env', 'tools', 'scripts', 'env.py');
+    
+    console.log('Running env.py from:', envScriptPath);
+    
+    // 检查脚本是否存在
+    if (!fs.existsSync(envScriptPath)) {
+        const errorMsg = `Error: env.py script not found at ${envScriptPath}`;
+        console.error(errorMsg);
+        webview.postMessage({
+            command: 'sdkUpdateLog',
+            log: errorMsg + '\n'
+        });
+        webview.postMessage({
+            command: 'sdkUpdateFinished',
+            success: false
+        });
+        return;
+    }
+    
+    // 发送开始消息
+    webview.postMessage({
+        command: 'sdkUpdateStarted'
+    });
+    
+    // 执行脚本
+    const pythonCmd = os.platform() === 'win32' ? 'python' : 'python3';
+    currentEnvProcess = spawn(pythonCmd, [envScriptPath, 'pkgs', '--update-force'], {
+        cwd: path.dirname(envScriptPath),
+        env: { ...process.env }
+    });
+    
+    // 实时输出日志
+    currentEnvProcess.stdout.on('data', (data: Buffer) => {
+        webview.postMessage({
+            command: 'sdkUpdateLog',
+            log: data.toString()
+        });
+    });
+    
+    currentEnvProcess.stderr.on('data', (data: Buffer) => {
+        webview.postMessage({
+            command: 'sdkUpdateLog',
+            log: data.toString()
+        });
+    });
+    
+    // 进程结束
+    currentEnvProcess.on('close', (code: number | null) => {
+        currentEnvProcess = null;
+        webview.postMessage({
+            command: 'sdkUpdateFinished',
+            success: code === 0
+        });
+    });
+    
+    currentEnvProcess.on('error', (error: Error) => {
+        currentEnvProcess = null;
+        webview.postMessage({
+            command: 'sdkUpdateLog',
+            log: `Error: ${error.message}`
+        });
+        webview.postMessage({
+            command: 'sdkUpdateFinished',
+            success: false
+        });
+    });
+}
+
+// 取消SDK更新
+export function cancelSDKUpdate(): void {
+    if (currentEnvProcess) {
+        console.log('Cancelling SDK update process...');
+        // 尝试正常终止进程
+        currentEnvProcess.kill('SIGTERM');
+        
+        // 如果在Windows上，使用taskkill
+        if (os.platform() === 'win32') {
+            spawn('taskkill', ['/F', '/T', '/PID', currentEnvProcess.pid.toString()]);
+        }
+        
+        // 5秒后强制终止
+        setTimeout(() => {
+            if (currentEnvProcess) {
+                currentEnvProcess.kill('SIGKILL');
+                currentEnvProcess = null;
+            }
+        }, 5000);
+    }
 }
 
 // 处理SDK相关消息
@@ -295,19 +408,20 @@ export function handleSDKMessage(webview: vscode.Webview, message: any): boolean
         case 'saveSDKDotConfig':
             if (message.args && message.args[0] && Array.isArray(message.args[0])) {
                 saveSDKDotConfig(message.args[0]).then(() => {
-                    webview.postMessage({
-                        command: 'sdkConfigApplied'
-                    });
-                    vscode.window.showInformationMessage('SDK配置已保存到 .config 文件');
+                    // vscode.window.showInformationMessage('SDK配置已保存到 .config 文件');
+                    // 执行 env.py pkgs --update-force
+                    runEnvPkgsUpdate(webview);
                 }).catch(error => {
                     console.error('Failed to save SDK config:', error);
+                    vscode.window.showErrorMessage(`保存SDK配置失败: ${error.message}`);
                     webview.postMessage({
                         command: 'sdkConfigError',
-                        error: '保存SDK配置失败'
+                        error: `保存SDK配置失败: ${error.message}`
                     });
                 });
             } else {
                 console.error('Invalid data format for saveSDKDotConfig:', message);
+                vscode.window.showErrorMessage('SDK配置数据格式错误');
                 webview.postMessage({
                     command: 'sdkConfigError',
                     error: 'SDK配置数据格式错误'
@@ -333,6 +447,10 @@ export function handleSDKMessage(webview: vscode.Webview, message: any): boolean
                     });
                 });
             }
+            return true;
+            
+        case 'cancelSDKUpdate':
+            cancelSDKUpdate();
             return true;
     }
     
