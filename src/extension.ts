@@ -85,9 +85,6 @@ export async function activate(context: vscode.ExtensionContext) {
             initOnDidChangeListener(context);
 
             // register commands
-            vscode.commands.registerCommand('extension.showAbout', () => {
-                openAboutWebview(context);
-            });
             vscode.commands.registerCommand('extension.executeCommand', (arg1, arg2) => {
                 if (arg1)
                 {
@@ -110,11 +107,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.showSetting', () => {
         openSettingWebview(context);
     });
-    
     vscode.commands.registerCommand('extension.showCreateProject', () => {
         openCreateProjectWebview(context);
     });
-    
+    vscode.commands.registerCommand('extension.showAbout', () => {
+        openAboutWebview(context);
+    });
+
     if (isRTThreadWorksapce) {
         vscode.commands.registerCommand('extension.showWorkspaceSettings', () => {
             openWorkspaceProjectsWebview(context);

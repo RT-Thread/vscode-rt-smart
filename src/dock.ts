@@ -38,7 +38,16 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 arguments: [],
             };
 
-            return [createProject, rtSetting];
+            let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
+            about.iconPath = new vscode.ThemeIcon("info");
+            about.label = "About";
+            about.command = {
+                command: "extension.showAbout",
+                title: "show about page",
+                arguments: [],
+            }
+
+            return [createProject, rtSetting, about];
         }
 
         if (!element) {
