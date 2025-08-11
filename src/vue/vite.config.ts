@@ -16,6 +16,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    sourcemap: true, // 启用源映射以支持调试
     rollupOptions: {
       input: {
         about: resolve(__dirname, 'about/index.html'),
@@ -25,16 +26,17 @@ export default defineConfig({
       },
       output: {
         manualChunks: undefined, // 避免生成太多chunk
+        sourcemapExcludeSources: false, // 在源映射中包含源代码
       }
     },
     outDir: '../../out',
     assetsDir: 'assets',
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
-    minify: 'terser', // 使用terser进行更好的压缩
+    minify: false, // 开发时不压缩
     terserOptions: {
       compress: {
-        drop_console: true, // 移除console.log
+        drop_console: false, // 不移除console.log
         drop_debugger: true, // 移除debugger
       },
     },
