@@ -52,7 +52,7 @@ async function installLinuxEnv(webview: vscode.Webview) {
         webview.postMessage({ 
             command: 'installProgress', 
             type: 'error', 
-            message: 'Env already installed at ' + envPath 
+            message: 'Env 已安装在 ' + envPath 
         });
         return;
     }
@@ -107,7 +107,7 @@ async function installLinuxEnv(webview: vscode.Webview) {
         webview.postMessage({ 
             command: 'installProgress', 
             type: 'error', 
-            message: `Installation failed: ${error}` 
+            message: `安装失败: ${error}` 
         });
     }
 }
@@ -120,7 +120,7 @@ async function installWindowsEnv(webview: vscode.Webview) {
         webview.postMessage({ 
             command: 'installProgress', 
             type: 'error', 
-            message: 'Env already installed at ' + envPath 
+            message: 'Env 已安装在 ' + envPath 
         });
         return;
     }
@@ -134,48 +134,90 @@ async function installWindowsEnv(webview: vscode.Webview) {
     const scriptPath = path.join(os.tmpdir(), 'install_windows.ps1');
 
     try {
+        // Show info message
         webview.postMessage({ 
+        command: 'installProgress', 
+        type: 'info', 
+        message: '开始安装 RT-Thread Env...' 
+        });
+
+        try {
+            // Step 1: Download installation script
+            webview.postMessage({ 
             command: 'installProgress', 
             type: 'info', 
-            message: '正在下载安装脚本...' 
-        });
-        await executeCommand(`wget "${installScriptUrl}" -O "${scriptPath}"`, webview);
+            message: '步骤 1: 正在下载安装脚本...' 
+            });
+            await executeCommand(
+                `powershell -Command wget "${installScriptUrl}" -O install_windows.ps1`,
+                webview
+            );
 
-        webview.postMessage({ 
+            // Step 2: Set execution policy
+            webview.postMessage({ 
             command: 'installProgress', 
             type: 'info', 
-            message: '设置 PowerShell 执行策略...' 
-        });
-        await executeCommand(`powershell -Command "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"`, webview);
+            message: '步骤 2: 正在设置执行策略...' 
+            });
+            await executeCommand(
+                'powershell -Command Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force',
+                webview
+            );
 
-        webview.postMessage({ 
+            // Step 3: Run installation script
+            webview.postMessage({ 
             command: 'installProgress', 
             type: 'info', 
-            message: `正在执行安装脚本${giteeArg ? '（--gitee）' : ''}...` 
-        });
-        await executeCommand(`powershell -ExecutionPolicy RemoteSigned -File "${scriptPath}"${giteeArg}`, webview);
+            message: '步骤 3: 正在运行安装脚本（自动模式）...' 
+            });
+            await executeCommand(
+                `powershell -Command .\\install_windows.ps1 ${giteeArg} -y`,
+                webview
+            );
 
-        webview.postMessage({ 
+            // Step 4: Activate virtual environment
+            webview.postMessage({ 
             command: 'installProgress', 
             type: 'info', 
-            message: '清理安装脚本...' 
-        });
-        await executeCommand(`del "${scriptPath}"`, webview);
+            message: '步骤 4: 正在激活虚拟环境...' 
+            });
+            await executeCommand(
+                `powershell -Command ~\\.env\\env.ps1`,
+                webview
+            );
 
-        webview.postMessage({ 
-            command: 'installProgress', 
-            type: 'success', 
-            message: 'RT-Thread Env 安装成功！' 
-        });
+            // Step 5: Clean up installation script
+            webview.postMessage({ 
+                command: 'installProgress', 
+                type: 'info', 
+                message: '步骤 5: 正在清理安装脚本...' 
+            });
+            await executeCommand(`powershell -Command del .\\install_windows.ps1`, webview);
+
+            webview.postMessage({ 
+                command: 'installProgress', 
+                type: 'success', 
+                message: 'RT-Thread Env 安装成功完成！' 
+            });
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            // vscode.window.showErrorMessage(`RT-Thread Env installation failed: ${errorMessage}`);
+
+            webview.postMessage({ 
+                command: 'installProgress', 
+                type: 'error', 
+                message: `RT-Thread Env 安装失败: ${errorMessage}` 
+            });
+        }
 
         const envStatus = await checkEnvStatus();
         webview.postMessage({ command: 'envStatus', status: envStatus });
-
     } catch (error) {
         webview.postMessage({ 
             command: 'installProgress', 
             type: 'error', 
-            message: `Installation failed: ${error}` 
+            message: `安装失败: ${error}` 
         });
     }
 }
@@ -244,22 +286,25 @@ function executeCommand(command: string, webview: vscode.Webview, cwd?: string):
         const cmd = parts[0];
         const args = parts.slice(1);
         const proc = spawn(cmd, args, { shell: true, cwd });
-        proc.stdout.on('data', (data) => {
+
+        webview.postMessage({ command: 'installProgress', type: 'info', message: command });
+        proc.stdout.on('data', (data: Buffer) => {
             webview.postMessage({ command: 'installProgress', type: 'info', message: data.toString() });
         });
-        proc.stderr.on('data', (data) => {
-            webview.postMessage({ command: 'installProgress', type: 'warning', message: data.toString() });
+        proc.stderr.on('data', (data: Buffer) => {
+            const msg = data.toString();
+            webview.postMessage({ command: 'installProgress', type: 'warning', message: msg });
         });
         proc.on('close', (code) => {
             if (code === 0) {
                 resolve();
             } else {
-                webview.postMessage({ command: 'installProgress', type: 'error', message: `Command exited with code ${code}` });
+                webview.postMessage({ command: 'installProgress', type: 'error', message: `命令执行失败，退出代码 ${code}` });
                 reject(new Error(`Command exited with code ${code}`));
             }
         });
         proc.on('error', (err) => {
-            webview.postMessage({ command: 'installProgress', type: 'error', message: `Command failed: ${err.message}` });
+            webview.postMessage({ command: 'installProgress', type: 'error', message: `命令执行失败: ${err.message}` });
             reject(err);
         });
     });
