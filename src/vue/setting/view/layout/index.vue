@@ -1,7 +1,6 @@
 <template>
   <div class="common-layout">
-    <el-container>
-      <Banner />
+    <Banner />
 
       <el-aside>
         <el-menu
@@ -29,7 +28,6 @@
           <router-view></router-view>
         </el-main>
       </el-container>
-    </el-container>
   </div>
 </template>
 <script setup lang="ts">

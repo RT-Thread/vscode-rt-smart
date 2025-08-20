@@ -1,6 +1,6 @@
 <template>
   <div class="banner">
-    <img :src="logo" class="logo" />
+    <img src="https://oss-club.rt-thread.org/uploads/20250820/d1558ec1b465f2a3c44646550211a6d5.png" class="logo" />
     <div class="info">
       <h1>{{ title }}</h1>
       <p>{{ version }}</p>
@@ -11,13 +11,11 @@
 
 <script setup lang="ts">
 export interface BannerProps {
-  logo?: string
   title?: string
   version?: string
 }
 
 withDefaults(defineProps<BannerProps>(), {
-  logo: '/rt-thread_vscode.png',
   title: '扩展工具 - 关于',
   version: '版本 v1.0.1'
 })

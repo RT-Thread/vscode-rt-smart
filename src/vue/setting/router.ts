@@ -1,8 +1,8 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Environment from './view/environment/index.vue'
-import Sdk from './view/sdk/index.vue'
-import Toolchains from './view/toolchains/index.vue'
-import LayoutView from './view/layout/index.vue'
+import Environment from './view/environment/index.vue';
+import Sdk from './view/sdk/index.vue';
+import Toolchains from './view/toolchains/index.vue';
+import LayoutView from './view/layout/index.vue';
 
 export const routes = [
     {
@@ -56,11 +56,11 @@ export const routes = [
             },
         ]
     }
-]
+];
 
 const router = createRouter({
     history: createWebHashHistory(),
     routes
-})
+});
 
-export default router
+export default router;
