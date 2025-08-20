@@ -1,14 +1,6 @@
 <template>
     <div class="container">
-        <el-header class="header_box">
-            <div class="header_logo">
-              <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-              <div class="logo_text">
-                <p>扩展工具 - workspace工程列表</p>
-                <span>v{{ extensionInfo.version }}</span>
-              </div>
-            </div>
-        </el-header>
+        <Banner />
 
         <div class="content_area">
             <br>
@@ -37,6 +29,7 @@ import type { ElTable } from 'element-plus';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
 import { extensionInfo } from '../setting/data';
+import Banner from '../components/Banner.vue';
 
 const loading = ref(false); // 是否加载中
 

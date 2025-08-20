@@ -1,15 +1,7 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-header class="header_box">
-        <div class="header_logo">
-          <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-          <div class="logo_text">
-            <p>扩展工具 - 配置</p>
-            <span>v{{ extensionInfo.version }}</span>
-          </div>
-        </div>
-      </el-header>
+      <Banner />
 
       <el-aside>
         <el-menu
@@ -46,6 +38,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { routes } from '../../router';
 import { extensionInfo } from '../../data';
 import { imgUrl } from '../../../assets/img'
+import Banner from '../../../components/Banner.vue';
 
 interface MenuRoute {
   path: string

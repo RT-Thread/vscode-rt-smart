@@ -1,14 +1,6 @@
 <template>
     <div class="container">
-        <el-header class="header_box">
-            <div class="header_logo">
-                <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-                <div class="logo_text">
-                    <p>扩展工具 - 创建工程</p>
-                    <span>v{{ extensionInfo.version }}</span>
-                </div>
-            </div>
-        </el-header>
+        <Banner />
 
         <div class="content_area">
             <div class="body-box">
@@ -64,6 +56,7 @@ import { computed, onMounted, onUpdated } from "vue";
 import { projectInfo, extensionInfo, envInfo } from "./data";
 import { sendCommand, sendCommandData } from "../api/vscode";
 import { imgUrl } from '../assets/img';
+import Banner from "../components/Banner.vue";
 
 onUpdated(() => {
     console.log('CreateProject App updated');
