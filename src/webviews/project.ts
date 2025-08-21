@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getWorkspaceFolder } from '../api';
+import { postMessageExtensionData } from '../extension';
 
 let workspaceViewPanel: vscode.WebviewPanel | null = null;
 const name = "projects";
@@ -164,6 +165,8 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
 
         workspaceViewPanel = panel;
     }
+
+    postMessageExtensionData(context, workspaceViewPanel);
 
     return workspaceViewPanel;
 }

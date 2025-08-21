@@ -6,6 +6,7 @@ import { spawn } from 'child_process';
 import { getEnvROOT, getExtensionVersion, installEnv, readJsonObject, openFolder, writeJsonObject } from '../api';
 import { handleSDKMessage } from './settings_sdk';
 import { checkEnvStatus, handleEnvMessage } from './settings_env';
+import { postMessageExtensionData } from '../extension';
 
 let settingViewPanel: vscode.WebviewPanel | null = null;
 const name = "setting";
@@ -209,6 +210,8 @@ export function openSettingWebview(context: vscode.ExtensionContext) {
     
         settingViewPanel = panel;
     }
+
+    postMessageExtensionData(context, settingViewPanel);
 
     return settingViewPanel;
 }

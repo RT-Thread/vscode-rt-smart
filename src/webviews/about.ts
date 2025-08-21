@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as marked from 'marked';
 import * as path from 'path';
+import { postMessageExtensionData } from '../extension';
 
 let aboutViewPanel: vscode.WebviewPanel | null = null;
 const name = "about";
@@ -82,6 +83,8 @@ export function openAboutWebview(context: vscode.ExtensionContext) {
 
         aboutViewPanel = panel;
     }
+
+    postMessageExtensionData(context, aboutViewPanel);
 
     return aboutViewPanel;
 }
