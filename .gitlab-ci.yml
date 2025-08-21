@@ -1,0 +1,19 @@
+image: node:22
+stages: 
+  - deploy
+
+deploy-job:      # This job runs in the deploy stage.
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  script:
+    - npm config set registry https://registry.npmmirror.com
+    - npm install -g pnpm@10.10.0
+    - npm install -g @vscode/vsce
+    - pnpm install
+    - pnpm run build
+    - ls ./
+  artifacts:
+    paths:
+      - "*.vsix"  # 所有 .vsix 文件（如 dist/extension.vsix）
+    expire_in: 1 week  # 产物保留 1 周（可选，默认 30 天）
+  environment: production
+  when: manual  # 标记为手动作业
