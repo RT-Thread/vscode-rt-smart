@@ -6,10 +6,9 @@ deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
   script:
     - npm config set registry https://registry.npmmirror.com
-    - npm install -g pnpm@10.10.0
     - npm install -g @vscode/vsce
-    - pnpm install
-    - pnpm run build
+    - npm install
+    - npm run build
     - ls ./
   artifacts:
     paths:
