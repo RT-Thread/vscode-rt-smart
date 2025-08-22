@@ -176,6 +176,7 @@
         ]
     },
     "scripts": {
+        "package:vs": "vsce package --no-dependencies",
         "vscode:prepublish": "npm run compile",
         "build:vue": "npm run build --workspace=smart-vue",
         "compile": "npm run build:vue && tsc -p ./",
