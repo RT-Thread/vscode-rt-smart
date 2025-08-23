@@ -13,21 +13,20 @@
 import { ref } from 'vue';
 
 export interface BannerProps {
-  title?: string
+  subTitle?: string
   version?: string
 }
 
 const extentionName = ref('')
 const extentionVersion = ref('')
 
-withDefaults(defineProps<BannerProps>(), {
-  title: '扩展工具 - 关于',
+const props = withDefaults(defineProps<BannerProps>(), {
+  subTitle: '扩展工具 - 关于',
   version: '版本 v1.0.1'
 })
 
 window.addEventListener('message', (e) => {
-  console.log('bannr data=========================', e.data)
-  e.data.name && (extentionName.value = e.data.name)
+  e.data.name && (extentionName.value = `${e.data.name} - ${props.subTitle}`)
   e.data.version && (extentionVersion.value = e.data.version)
 })
 </script>
