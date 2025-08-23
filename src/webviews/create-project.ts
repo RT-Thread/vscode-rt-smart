@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { getEnvROOT, getExtensionVersion, createProject, readJsonObject, getBoardInfo } from '../api';
+import { postMessageExtensionData } from '../extension';
 
 let createProjectViewPanel: vscode.WebviewPanel | null = null;
 const name = "create-project";
@@ -34,8 +35,8 @@ let extensionInfo = {
 			]
 		}
 	],
-	SDKConfig : {},
-	configInfo : [{name: "RT-Thread", path: "d:/workspace/rt-thread", description: "RT-Thread主干路径"}]
+	SDKConfig: {},
+	configInfo: [{ name: "RT-Thread", path: "d:/workspace/rt-thread", description: "RT-Thread主干路径" }]
 };
 
 function readReadmeFile(fn: string): string {
@@ -146,7 +147,7 @@ export function openCreateProjectWebview(context: vscode.ExtensionContext) {
 					case 'createProject':
 						if (message.args && message.args.length > 0) {
 							const project = message.args[0];
-							
+
 							// 调用创建工程的API - 参数顺序: folder, projectInfo
 							createProject(project.folder, project);
 						}
@@ -178,6 +179,8 @@ export function openCreateProjectWebview(context: vscode.ExtensionContext) {
 			createProjectViewPanel = null;
 		}, null, context.subscriptions);
 	}
+
+	postMessageExtensionData(context, createProjectViewPanel);
 }
 
 export function isCreateProjectWebviewActive(): boolean {

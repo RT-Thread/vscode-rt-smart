@@ -21,6 +21,15 @@ import { initCurrentProject } from './project/cmd';
 
 let _context: vscode.ExtensionContext;
 
+export function postMessageExtensionData(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
+    // 获取插件版本号（从 package.json 中读取）
+    const extensionVersion = context.extension.packageJSON.version;
+    const extensionNaeme = context.extension.packageJSON.name;
+    // 例如：version 为 "1.0.0"
+    console.log('插件版本号：', extensionVersion);
+    panel.webview.postMessage({ version: extensionVersion, name: extensionNaeme });
+}
+
 // 有两种模式
 // isRTThreadWorksapce - workspace模式，会定位.vscode/workspace.json文件是否存在，是否启用
 // isRTThread - 项目模式，rtconfig.h文件是否存在
@@ -30,6 +39,11 @@ export async function activate(context: vscode.ExtensionContext) {
     let isRTThreadWorksapce: boolean = false;
 
     _context = context;
+
+    // 获取插件版本号（从 package.json 中读取）
+    const extensionVersion = context.extension.packageJSON.version;
+    // 例如：version 为 "1.0.0"
+    console.log('插件版本号：', extensionVersion);
 
     // init context for isRTThread, isRTThreadWorksapce
     vscode.commands.executeCommand('setContext', 'isRTThread', isRTThread);
@@ -86,12 +100,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
             // register commands
             vscode.commands.registerCommand('extension.executeCommand', (arg1, arg2) => {
-                if (arg1)
-                {
+                if (arg1) {
                     executeCommand(arg1);
                 }
-                if (arg2)
-                {
+                if (arg2) {
                     executeCommand(arg2);
                 }
             });
@@ -100,7 +112,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     // open file
                     vscode.commands.executeCommand('vscode.open', vscode.Uri.file(arg.fn));
                 }
-            })
+            });
         }
     }
 
@@ -123,11 +135,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* initialize dock view always */
     initDockView(context);
-    initExperimentStatusBarItem(context)
+    initExperimentStatusBarItem(context);
 }
 
 function initExperimentStatusBarItem(context: vscode.ExtensionContext) {
-    if (false){
+    if (false) {
         const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 5);
         statusItem.text = '$(beaker) 实验性功能';
         statusItem.tooltip = 'Experimental features';

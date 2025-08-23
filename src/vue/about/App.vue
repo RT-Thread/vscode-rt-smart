@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <Banner />
+        <Banner sub-title="关于" />
 
         <div class="content_area">
             <div v-html="readmeMarkdown"></div>

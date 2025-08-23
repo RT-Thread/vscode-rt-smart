@@ -1,6 +1,6 @@
 <template>
   <div class="common-layout">
-    <Banner />
+    <Banner sub-title="设置" />
 
       <el-aside>
         <el-menu

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <Banner />
+        <Banner sub-title="创建项目" />
 
         <div class="content_area">
             <div class="body-box">
