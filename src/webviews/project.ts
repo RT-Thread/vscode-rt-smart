@@ -98,6 +98,7 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
         const rootDir = path.join(context.extensionPath, 'out');
         const panel = vscode.window.createWebviewPanel('webview', title, vscode.ViewColumn.One, {
             enableScripts: true, // Enable javascript in the webview
+            retainContextWhenHidden: true, // Keep the webview's context when it is hidden
             localResourceRoots: [vscode.Uri.file(rootDir)] // Only allow resources from vue view
         });
         const iconPath = path.join(context.extensionPath, 'resources', 'images', 'rt-thread.png');
