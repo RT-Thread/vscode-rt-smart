@@ -3,7 +3,7 @@
     height: 100%;
 
     .body-box {
-        width: 80%;
+        width: 100%;
         min-width: 800px;
 
         .rt-config-box {
@@ -141,6 +141,12 @@
                         .log-title {
                             margin-bottom: 0;
                         }
+
+                        .log-actions {
+                            display: flex;
+                            gap: 8px;
+                            align-items: center;
+                        }
                     }
 
                     .log-content {
@@ -160,6 +166,27 @@
                         
                         &:last-child {
                             margin-bottom: 0;
+                        }
+                    }
+
+                    .terminal-container {
+                        height: 400px;
+                        border: 1px solid #ddd;
+                        border-radius: 3px;
+                        overflow: hidden;
+                        background-color: #1e1e1e;
+                        
+                        :deep(.xterm) {
+                            padding: 8px;
+                            height: 100%;
+                        }
+
+                        :deep(.xterm-viewport) {
+                            overflow-y: auto;
+                        }
+                        
+                        :deep(.xterm-screen) {
+                            height: 100%;
                         }
                     }
                 }

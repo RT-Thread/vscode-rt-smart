@@ -75,23 +75,29 @@
                 <!-- 安装进度日志区域 -->
                 <div class="progress-box" v-if="envInfo.isInstalling || envInfo.showProgressLog">
                     <p class="progress-status" v-if="envInfo.isInstalling">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
-                    <div class="progress-log" v-if="envInfo.installProgress.length > 0">
+                    <div class="progress-log" v-if="showTerminal">
                         <div class="log-header">
                             <div class="log-title">执行日志：</div>
-                            <el-button 
-                                v-if="!envInfo.isInstalling" 
-                                type="primary" 
-                                size="small" 
-                                plain 
-                                @click="closeProgressLog">
-                                关闭日志
-                            </el-button>
-                        </div>
-                        <div class="log-content">
-                            <div v-for="(msg, index) in envInfo.installProgress" :key="index" class="log-message">
-                                {{ msg }}
+                            <div class="log-actions">
+                                <el-button 
+                                    v-if="envInfo.showForceCloseButton" 
+                                    type="danger" 
+                                    size="small" 
+                                    plain 
+                                    @click="forceCloseOperation">
+                                    强制关闭
+                                </el-button>
+                                <el-button 
+                                    v-if="!envInfo.isInstalling" 
+                                    type="primary" 
+                                    size="small" 
+                                    plain 
+                                    @click="closeProgressLog">
+                                    关闭日志
+                                </el-button>
                             </div>
                         </div>
+                        <div class="terminal-container" ref="terminalRef"></div>
                     </div>
                 </div>
             </div>
@@ -128,12 +134,120 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { envInfo } from "../../data";
 import { sendCommand, sendCommandData } from "../../../api/vscode"
 import { ElMessageBox } from 'element-plus';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
 
 const installButtonDisabled = ref(true);
+
+// Terminal相关
+const terminalRef = ref<HTMLElement>();
+const showTerminal = ref(false);
+let terminal: Terminal | null = null;
+let fitAddon: FitAddon | null = null;
+
+// 初始化终端
+const initTerminal = () => {
+    console.log('[DEBUG] initTerminal called, terminalRef.value:', terminalRef.value, 'terminal:', terminal);
+    if (!terminalRef.value || terminal) {
+        console.log('[DEBUG] initTerminal early return - terminalRef.value:', !!terminalRef.value, 'terminal exists:', !!terminal);
+        return;
+    }
+    
+    console.log('[DEBUG] Creating new Terminal instance...');
+    terminal = new Terminal({
+        rows: 20,
+        cols: 80,
+        fontSize: 14,
+        fontFamily: 'Consolas, "Courier New", monospace',
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#d4d4d4',
+            cursor: '#aeafad',
+            black: '#000000',
+            red: '#cd3131',
+            green: '#0dbc79',
+            yellow: '#e5e510',
+            blue: '#2472c8',
+            magenta: '#bc3fbc',
+            cyan: '#11a8cd',
+            white: '#e5e5e5',
+            brightBlack: '#666666',
+            brightRed: '#f14c4c',
+            brightGreen: '#23d18b',
+            brightYellow: '#f5f543',
+            brightBlue: '#3b8eea',
+            brightMagenta: '#d670d6',
+            brightCyan: '#29b8db',
+            brightWhite: '#e5e5e5'
+        },
+        cursorBlink: true,
+        scrollback: 1000
+    });
+    
+    fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    
+    terminal.open(terminalRef.value);
+    console.log('[DEBUG] Terminal opened successfully');
+    
+    // 初始化显示欢迎信息
+    terminal.writeln('\x1b[1;32m===== RT-Thread Env 安装终端 =====\x1b[0m');
+    terminal.writeln('');
+    console.log('[DEBUG] Welcome message written to terminal');
+    
+    // 自适应大小
+    nextTick(() => {
+        console.log('[DEBUG] Fitting terminal addon...');
+        fitAddon?.fit();
+    });
+};
+
+// 销毁终端
+const destroyTerminal = () => {
+    if (terminal) {
+        terminal.dispose();
+        terminal = null;
+        fitAddon = null;
+    }
+};
+
+// 写入终端
+const writeToTerminal = (text: string, type: string = 'info') => {
+    console.log('[DEBUG] writeToTerminal called - text:', text, 'type:', type, 'terminal exists:', !!terminal);
+    if (!terminal) {
+        console.log('[DEBUG] writeToTerminal: terminal is null, message discarded');
+        return;
+    }
+    
+    const timestamp = new Date().toLocaleTimeString();
+    let colorCode = '\x1b[0m'; // 默认颜色
+    
+    switch (type) {
+        case 'success':
+            colorCode = '\x1b[1;32m'; // 亮绿色
+            break;
+        case 'error':
+            colorCode = '\x1b[1;31m'; // 亮红色
+            break;
+        case 'warning':
+            colorCode = '\x1b[1;33m'; // 亮黄色
+            break;
+        case 'info':
+        default:
+            colorCode = '\x1b[0;37m'; // 白色
+            break;
+    }
+    
+    const output = `\x1b[0;36m[${timestamp}]\x1b[0m ${colorCode}${text}\x1b[0m`;
+    console.log('[DEBUG] Writing to terminal:', output);
+    terminal.writeln(output);
+    console.log('[DEBUG] Message written successfully');
+};
 
 // Env 安装状态检查
 const checkEnvStatus = () => {
@@ -141,21 +255,66 @@ const checkEnvStatus = () => {
 };
 
 // 安装 Env
-const installEnvFunction = () => {
+const installEnvFunction = async () => {
+    console.log('[DEBUG] installEnvFunction started');
     // 清除之前的日志并设置安装状态
     envInfo.value.installProgress = [];
     envInfo.value.showProgressLog = true;
     envInfo.value.isInstalling = true;
+    envInfo.value.showForceCloseButton = false; // 初始时不显示强制关闭按钮
+    lastMessage = ''; // 重置上一条消息
+    
+    // 显示终端
+    console.log('[DEBUG] Setting showTerminal to true');
+    showTerminal.value = true;
+    await nextTick();
+    console.log('[DEBUG] After nextTick, terminalRef.value:', terminalRef.value);
+    
+    // 销毁旧终端并创建新的
+    destroyTerminal();
+    initTerminal();
+    
+    // 设置1分钟后显示强制关闭按钮
+    if (forceCloseTimer) {
+        clearTimeout(forceCloseTimer);
+    }
+    
+    forceCloseTimer = setTimeout(() => {
+        if (envInfo.value.isInstalling) {
+            envInfo.value.showForceCloseButton = true;
+        }
+    }, 60000); // 60秒 = 1分钟
     
     sendCommand("installEnv");
 };
 
 // 更新 Env
-const updateEnvFunction = () => {
+const updateEnvFunction = async () => {
     // 清除之前的日志并设置更新状态
     envInfo.value.installProgress = [];
     envInfo.value.showProgressLog = true;
     envInfo.value.isInstalling = true;
+    envInfo.value.showForceCloseButton = false; // 初始时不显示强制关闭按钮
+    lastMessage = ''; // 重置上一条消息
+    
+    // 显示终端
+    showTerminal.value = true;
+    await nextTick();
+    
+    // 销毁旧终端并创建新的
+    destroyTerminal();
+    initTerminal();
+    
+    // 设置1分钟后显示强制关闭按钮
+    if (forceCloseTimer) {
+        clearTimeout(forceCloseTimer);
+    }
+    
+    forceCloseTimer = setTimeout(() => {
+        if (envInfo.value.isInstalling) {
+            envInfo.value.showForceCloseButton = true;
+        }
+    }, 60000); // 60秒 = 1分钟
     
     sendCommand("updateEnv");
 };
@@ -200,8 +359,28 @@ const deleteEnvFunction = async () => {
     }
 };
 
-// 添加进度消息
+// 保存上一条消息用于去重
+let lastMessage = '';
+
+// 定时器引用 (使用 ReturnType 来兼容不同环境)
+let forceCloseTimer: ReturnType<typeof setTimeout> | null = null;
+
+// 添加进度消息（带去重功能）
 const addProgressMessage = (type: string, message: string) => {
+    console.log('[DEBUG] addProgressMessage called - type:', type, 'message:', message);
+    // 检查是否为重复消息
+    if (message === lastMessage) {
+        console.log('[DEBUG] Duplicate message, skipping');
+        return; // 如果与上一条消息相同，跳过
+    }
+    
+    lastMessage = message; // 更新上一条消息
+    console.log('[DEBUG] New message, calling writeToTerminal');
+    
+    // 写入到xterm终端
+    writeToTerminal(message, type);
+    
+    // 仍然保存到数组中以便兼容
     const timestamp = new Date().toLocaleTimeString();
     envInfo.value.installProgress.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
 };
@@ -210,11 +389,46 @@ const addProgressMessage = (type: string, message: string) => {
 const clearProgressLog = () => {
     envInfo.value.installProgress = [];
     envInfo.value.showProgressLog = false;
+    envInfo.value.showForceCloseButton = false;
+    showTerminal.value = false;
+    lastMessage = ''; // 重置上一条消息
+    destroyTerminal();
+    // 清除定时器
+    if (forceCloseTimer) {
+        clearTimeout(forceCloseTimer);
+        forceCloseTimer = null;
+    }
 };
 
 // 关闭日志显示
 const closeProgressLog = () => {
     envInfo.value.showProgressLog = false;
+    showTerminal.value = false;
+    destroyTerminal();
+};
+
+// 强制关闭操作
+const forceCloseOperation = () => {
+    // 发送强制关闭命令到后端
+    sendCommand("forceCloseEnvOperation");
+    
+    // 更新状态
+    envInfo.value.isInstalling = false;
+    envInfo.value.showForceCloseButton = false;
+    
+    // 添加强制关闭的日志消息
+    addProgressMessage('warning', '操作已被用户强制关闭');
+    
+    // 清除定时器
+    if (forceCloseTimer) {
+        clearTimeout(forceCloseTimer);
+        forceCloseTimer = null;
+    }
+    
+    // 1秒后重新检查状态
+    setTimeout(() => {
+        checkEnvStatus();
+    }, 1000);
 };
 
 // 跟踪当前操作状态
@@ -236,10 +450,17 @@ onMounted(() => {
                 envInfo.value.envStatus = message.status;
                 break;
             case 'installProgress':
+                console.log('[DEBUG] Received installProgress message from backend:', message);
                 // 如果这是操作完成的消息，直接添加
                 addProgressMessage(message.type, message.message);
                 if (message.type === 'success' || message.type === 'error') {
                     envInfo.value.isInstalling = false;
+                    envInfo.value.showForceCloseButton = false;
+                    // 清除定时器
+                    if (forceCloseTimer) {
+                        clearTimeout(forceCloseTimer);
+                        forceCloseTimer = null;
+                    }
                     // 操作完成后保持日志显示，让用户可以查看
                     envInfo.value.showProgressLog = true;
                     // 重新检查状态
@@ -294,6 +515,14 @@ const confirmRtConfig = () => {
     sendCommand("setConfig", [[configItem]]);
     envInfo.value.rtConfigDialogVisible = false;
 };
+
+// 组件卸载时清理
+onUnmounted(() => {
+    destroyTerminal();
+    if (forceCloseTimer) {
+        clearTimeout(forceCloseTimer);
+    }
+});
 
 </script>
 <style scoped>
