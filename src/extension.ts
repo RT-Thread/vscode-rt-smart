@@ -4,8 +4,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { openHomeWebview } from './webviews/home';
+import { openSettingWebview } from './webviews/setting';
 import { openAboutWebview } from './webviews/about';
+import { openCreateProjectWebview } from './webviews/create-project';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { getMenuItems, getParallelBuildNumber } from './smart';
@@ -16,8 +17,18 @@ import { openWorkspaceProjectsWebview } from './webviews/project';
 import { initProjectTree } from './project/tree';
 import { DecorationProvider } from './project/fileDecorationProvider';
 import { getCurrentProjectInWorkspace } from './webviews/project';
+import { initCurrentProject } from './project/cmd';
 
 let _context: vscode.ExtensionContext;
+
+export function postMessageExtensionData(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
+    // 获取插件版本号（从 package.json 中读取）
+    const extensionVersion = context.extension.packageJSON.version;
+    const extensionNaeme = context.extension.packageJSON.name;
+    // 例如：version 为 "1.0.0"
+    console.log('插件版本号：', extensionVersion);
+    panel.webview.postMessage({ version: extensionVersion, name: extensionNaeme });
+}
 
 // 有两种模式
 // isRTThreadWorksapce - workspace模式，会定位.vscode/workspace.json文件是否存在，是否启用
@@ -28,6 +39,11 @@ export async function activate(context: vscode.ExtensionContext) {
     let isRTThreadWorksapce: boolean = false;
 
     _context = context;
+
+    // 获取插件版本号（从 package.json 中读取）
+    const extensionVersion = context.extension.packageJSON.version;
+    // 例如：version 为 "1.0.0"
+    console.log('插件版本号：', extensionVersion);
 
     // init context for isRTThread, isRTThreadWorksapce
     vscode.commands.executeCommand('setContext', 'isRTThread', isRTThread);
@@ -56,6 +72,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 let currentProject = getCurrentProjectInWorkspace();
                 if (currentProject) {
                     DecorationProvider.getInstance().markFile(vscode.Uri.file(currentProject));
+                    // 初始化当前项目到 cmd.ts 的 _currentProject 变量
+                    initCurrentProject(currentProject);
                 }
             }
         }
@@ -81,16 +99,11 @@ export async function activate(context: vscode.ExtensionContext) {
             initOnDidChangeListener(context);
 
             // register commands
-            vscode.commands.registerCommand('extension.showAbout', () => {
-                openAboutWebview(context);
-            });
             vscode.commands.registerCommand('extension.executeCommand', (arg1, arg2) => {
-                if (arg1)
-                {
+                if (arg1) {
                     executeCommand(arg1);
                 }
-                if (arg2)
-                {
+                if (arg2) {
                     executeCommand(arg2);
                 }
             });
@@ -99,13 +112,20 @@ export async function activate(context: vscode.ExtensionContext) {
                     // open file
                     vscode.commands.executeCommand('vscode.open', vscode.Uri.file(arg.fn));
                 }
-            })
+            });
         }
     }
 
-    vscode.commands.registerCommand('extension.showHome', () => {
-        openHomeWebview(context);
+    vscode.commands.registerCommand('extension.showSetting', () => {
+        openSettingWebview(context);
     });
+    vscode.commands.registerCommand('extension.showCreateProject', () => {
+        openCreateProjectWebview(context);
+    });
+    vscode.commands.registerCommand('extension.showAbout', () => {
+        openAboutWebview(context);
+    });
+
     if (isRTThreadWorksapce) {
         vscode.commands.registerCommand('extension.showWorkspaceSettings', () => {
             openWorkspaceProjectsWebview(context);
@@ -115,11 +135,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     /* initialize dock view always */
     initDockView(context);
-    initExperimentStatusBarItem(context)
+    initExperimentStatusBarItem(context);
 }
 
 function initExperimentStatusBarItem(context: vscode.ExtensionContext) {
-    if (false){
+    if (false) {
         const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 5);
         statusItem.text = '$(beaker) 实验性功能';
         statusItem.tooltip = 'Experimental features';

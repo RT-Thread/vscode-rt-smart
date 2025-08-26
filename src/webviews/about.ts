@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as marked from 'marked';
 import * as path from 'path';
+import { postMessageExtensionData } from '../extension';
 
 let aboutViewPanel: vscode.WebviewPanel | null = null;
 const name = "about";
@@ -37,6 +38,7 @@ export function openAboutWebview(context: vscode.ExtensionContext) {
         const rootDir = path.join(context.extensionPath, 'out');
         const panel = vscode.window.createWebviewPanel('webview', title, vscode.ViewColumn.One, {
             enableScripts: true, // Enable javascript in the webview
+            retainContextWhenHidden: true, // Keep the webview's context when it is hidden
             localResourceRoots: [vscode.Uri.file(rootDir)] // Only allow resources from vue view
         });
         const iconPath = path.join(context.extensionPath, 'resources', 'images', 'rt-thread.png');
@@ -82,6 +84,8 @@ export function openAboutWebview(context: vscode.ExtensionContext) {
 
         aboutViewPanel = panel;
     }
+
+    postMessageExtensionData(context, aboutViewPanel);
 
     return aboutViewPanel;
 }

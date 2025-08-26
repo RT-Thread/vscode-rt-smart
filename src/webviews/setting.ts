@@ -2,11 +2,15 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { getEnvROOT, getExtensionVersion, installEnv, createProject, readJsonObject, openFolder, writeJsonObject, getBoardInfo } from '../api';
+import { spawn } from 'child_process';
+import { getEnvROOT, getExtensionVersion, installEnv, readJsonObject, openFolder, writeJsonObject } from '../api';
+import { handleSDKMessage } from './settings_sdk';
+import { checkEnvStatus, handleEnvMessage } from './settings_env';
+import { postMessageExtensionData } from '../extension';
 
-let homeViewPanel: vscode.WebviewPanel | null = null;
-const name = "home";
-const title = "RT-Thread Home";
+let settingViewPanel: vscode.WebviewPanel | null = null;
+const name = "setting";
+const title = "RT-Thread Setting";
 
 const cfgFn = path.join(os.homedir(), '.env/cfg.json');
 const sdkCfgFn = path.join(os.homedir(), '.env/tools/scripts/sdk_cfg.json');
@@ -17,23 +21,6 @@ let extensionInfo = {
 		path: "~/.env",
 		version: "0.0.1"
 	},
-	projectList: [
-		{
-			manufacturer: "ST",
-			boards: [
-				"stm32f412-st-nucleo",
-				"stm32f407-rt-spark"
-			]
-		},
-		{
-			manufacturer: "QEMU",
-			boards: [
-				"qemu-vexpress-a9",
-				"qemu-virt64-aarch64",
-				"qemu-virt64-riscv64"
-			]
-		}
-	],
 	SDKConfig : {},
 	configInfo : [{name: "RT-Thread", path: "d:/workspace/rt-thread", description: "RT-Thread主干路径"}]
 };
@@ -53,15 +40,18 @@ function readBoardInfoFile() {
     return ;
 }
 
-export function openHomeWebview(context: vscode.ExtensionContext) {
-    if (homeViewPanel) {
-        homeViewPanel.reveal(vscode.ViewColumn.One);
+// Env 相关函数已移动到 settings_env.ts
+
+export function openSettingWebview(context: vscode.ExtensionContext) {
+    if (settingViewPanel) {
+        settingViewPanel.reveal(vscode.ViewColumn.One);
     }
     else {
         const rootDir = path.join(context.extensionPath, 'out');
         const panel = vscode.window.createWebviewPanel('webview', title, vscode.ViewColumn.One, {
             enableScripts: true, // Enable javascript in the webview
-            localResourceRoots: [vscode.Uri.file(rootDir)] // Only allow resources from vue view
+            localResourceRoots: [vscode.Uri.file(rootDir)], // Only allow resources from vue view,
+            retainContextWhenHidden: true, // Keep the webview's context when it is hidden
         });
         let localResourceRoots = vscode.Uri.joinPath(context.extensionUri, 'out').toString();
         // console.log(localResourceRoots);
@@ -71,7 +61,7 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
 
         // handle close webview event
         panel.onDidDispose(() => {
-            homeViewPanel = null;
+            settingViewPanel = null;
         });
 
         // update extensionInfo
@@ -83,15 +73,25 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
             extensionInfo.env.version = envInfo.version;
         }
 		extensionInfo.SDKConfig = readJsonObject(sdkCfgFn);
-        extensionInfo.projectList = getBoardInfo();
-        // console.log(extensionInfo.projectList);
+        
         // read RT-Thread folder
         let cfg:any [] = readJsonObject(cfgFn);
-        if (cfg.length > 0) {
+        if (cfg.length > 0 && cfg[0].path) {
             extensionInfo.configInfo[0].path = cfg[0].path;
         }
         else {
-            extensionInfo.configInfo[0].path = 'undefined';
+            // 设置为空字符串而不是字符串'undefined'
+            extensionInfo.configInfo[0].path = '';
+        }
+
+        // 初始化时检查 Env 状态
+        checkEnvStatus().then(envStatus => {
+            panel.webview.postMessage({ command: 'envStatus', status: envStatus });
+        });
+
+        // 初始化时发送SDK配置
+        if (extensionInfo.SDKConfig) {
+            panel.webview.postMessage({ command: 'setSDKConfig', data: extensionInfo.SDKConfig });
         }
 
         // read out/${name}/index.html
@@ -107,25 +107,34 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
 
                 return `"${panel.webview.asWebviewUri(vscode.Uri.file(absPath)).toString()}"`;
             });
+
+            // 在HTML设置完成后延迟发送初始数据
+            setTimeout(() => {
+                // 发送SDK配置
+                if (extensionInfo.SDKConfig) {
+                    panel.webview.postMessage({ command: 'setSDKConfig', data: extensionInfo.SDKConfig });
+                }
+                // 发送扩展信息
+                panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
+            }, 100);
         });
         panel.webview.onDidReceiveMessage(async (message) => {
+            // 先尝试使用SDK处理器处理消息
+            if (handleSDKMessage(panel.webview, message)) {
+                return;
+            }
+            
+            // 尝试使用Env处理器处理消息
+            if (handleEnvMessage(panel.webview, message)) {
+                return;
+            }
+            
             let data : any = {};
             let defaultPath:any;
 
             switch (message.command) {
                 case 'getExtensionInfo':
                     panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
-                    return ;
-                case 'createProject':
-                    let projectInfo = message.args[0];
-                    createProject(projectInfo.folder, projectInfo);
-                    return;
-                case 'browseProjectFolder':
-                    defaultPath = message.args[0];
-                    let projectFolder = await openFolder(defaultPath);
-                    if (projectFolder) {
-                        panel.webview.postMessage({command: 'setProjectFolder', data: projectFolder});
-                    }
                     return ;
                 case 'browseToolchainFolder':
                     defaultPath = message.args[0];
@@ -146,12 +155,14 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
                 case 'getSDkConfig':
                     data = readJsonObject(sdkCfgFn);
                     if (data) {
-                        panel.webview.postMessage({command: 'setConfig', data: data});
+                        panel.webview.postMessage({command: 'setSDKConfig', data: data});
                     }
                     return ;
                 case 'setSDKConfig':
                     data = message.args[0];
                     writeJsonObject(message.args[0], sdkCfgFn);
+                    // 更新内存中的配置
+                    extensionInfo.SDKConfig = data;
     
                     vscode.window.showInformationMessage('保存工具链配置成功');
                     return ;
@@ -169,7 +180,11 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
     
                     vscode.window.showInformationMessage('保存路径配置成功');
                     // update configData
-                    extensionInfo.configInfo[0].path = data[0].path;
+                    if (data && data.length > 0 && data[0].path) {
+                        extensionInfo.configInfo[0].path = data[0].path;
+                    } else {
+                        extensionInfo.configInfo[0].path = '';
+                    }
                     return ;
 
                 case 'getBoardReadme':
@@ -191,10 +206,12 @@ export function openHomeWebview(context: vscode.ExtensionContext) {
             if (e.webviewPanel.visible) {
                 panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
             }
-        })
+        });
     
-        homeViewPanel = panel;
+        settingViewPanel = panel;
     }
 
-    return homeViewPanel;
+    postMessageExtensionData(context, settingViewPanel);
+
+    return settingViewPanel;
 }

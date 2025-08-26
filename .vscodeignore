@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 src/**
+ref/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
@@ -9,7 +10,9 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+# Exclude all node_modules except marked
 **/node_modules/**
+!node_modules/marked/**
 **/.git/**
 **/package-lock.json
 **/.DS_Store

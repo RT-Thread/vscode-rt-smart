@@ -3,7 +3,7 @@
     "publisher": "rt-thread",
     "displayName": "RT-Thread Smart Extension",
     "description": "Smart Helper Extension for RT-Thread Development",
-    "version": "0.4.11",
+    "version": "0.4.12",
     "repository": {
         "url": "https://github.com/RT-Thread/vscode-rt-smart"
     },
@@ -56,8 +56,12 @@
         },
         "commands": [
             {
-                "command": "extension.showHome",
-                "title": "Show RT-Thread Home"
+                "command": "extension.showSetting",
+                "title": "Show RT-Thread Setting"
+            },
+            {
+                "command": "extension.showCreateProject",
+                "title": "Create RT-Thread Project"
             },
             {
                 "command": "extension.buildProject",
@@ -172,6 +176,7 @@
         ]
     },
     "scripts": {
+        "package:vs": "vsce package --no-dependencies",
         "vscode:prepublish": "npm run compile",
         "build:vue": "npm run build --workspace=smart-vue",
         "compile": "npm run build:vue && tsc -p ./",

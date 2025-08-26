@@ -19,30 +19,60 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
         }
 
         if (isRTThreadProject() != true && isRTThreadWorksapce() != true) {
-            // only show Home command
-            let home = new vscode.TreeItem("Home", vscode.TreeItemCollapsibleState.None);
-            home.iconPath = new vscode.ThemeIcon("home");
-            home.label = "Home";
-            home.command = {
-                command: "extension.showHome",
-                title: "show home page",
+            // only show Create Project and RT-Thread Setting command when not in RT-Thread project
+            let createProject = new vscode.TreeItem("create project", vscode.TreeItemCollapsibleState.None);
+            createProject.iconPath = new vscode.ThemeIcon("new-folder");
+            createProject.label = "create project";
+            createProject.command = {
+                command: "extension.showCreateProject",
+                title: "show create project page",
                 arguments: [],
             };
 
-            return [home];
+            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
+            rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
+            rtSetting.label = "rt-thread setting";
+            rtSetting.command = {
+                command: "extension.showSetting",
+                title: "show rt-thread setting page",
+                arguments: [],
+            };
+
+            let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
+            about.iconPath = new vscode.ThemeIcon("info");
+            about.label = "About";
+            about.command = {
+                command: "extension.showAbout",
+                title: "show about page",
+                arguments: [],
+            }
+
+            return [createProject, rtSetting, about];
         }
 
         if (!element) {
             let children = [];
-            let home = new vscode.TreeItem("Home", vscode.TreeItemCollapsibleState.None);
-            home.iconPath = new vscode.ThemeIcon("home");
-            home.label = "Home";
-            home.command = {
-                command: "extension.showHome",
-                title: "show home page",
+            
+            // 添加创建工程项
+            let createProject = new vscode.TreeItem("create project", vscode.TreeItemCollapsibleState.None);
+            createProject.iconPath = new vscode.ThemeIcon("new-folder");
+            createProject.label = "create project";
+            createProject.command = {
+                command: "extension.showCreateProject",
+                title: "show create project page",
                 arguments: [],
             };
-            children.push(home);
+            children.push(createProject);
+
+            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
+            rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
+            rtSetting.label = "rt-thread setting";
+            rtSetting.command = {
+                command: "extension.showSetting",
+                title: "show rt-thread setting page",
+                arguments: [],
+            };
+            children.push(rtSetting);
 
             for (const [key, value] of Object.entries(cmds)) {
                 let item = new vscode.TreeItem(value.name, value.isExpanded? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed);

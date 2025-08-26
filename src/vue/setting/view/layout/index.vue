@@ -1,21 +1,13 @@
 <template>
   <div class="common-layout">
-    <el-container>
-      <el-header class="header_box">
-        <div class="header_logo">
-          <img class="logo_img" :src="imgUrl['head-logo']" alt="" />
-          <div class="logo_text">
-            <p>扩展工具</p>
-            <span>v{{ extensionInfo.version }}</span>
-          </div>
-        </div>
-      </el-header>
+    <Banner sub-title="设置" />
+
       <el-aside>
         <el-menu
           :collapse="isSidebarOpen"
           :collapse-transition="false"
           router
-          :default-active="$route.path"
+          :default-active="defaultActive"
           background-color="#fff"
           text-color="#333"
           style="border: none"
@@ -36,14 +28,15 @@
           <router-view></router-view>
         </el-main>
       </el-container>
-    </el-container>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { routes } from '../../router';
 import { extensionInfo } from '../../data';
 import { imgUrl } from '../../../assets/img'
+import Banner from '../../../components/Banner.vue';
 
 interface MenuRoute {
   path: string
@@ -52,10 +45,40 @@ interface MenuRoute {
   meta: any
 }
 
+const route = useRoute()
+const router = useRouter()
 const isSidebarOpen = ref(false)
+
 type ListItemType = MenuRoute & { icon?: string }
 const list: any = computed(() => {
   return getMenuList(routes)
+})
+
+// 使用 ref 来存储当前激活的菜单项
+const activeMenu = ref('')
+
+// 计算默认激活的菜单项
+const defaultActive = computed(() => {
+  return activeMenu.value || route.path || '/environment'
+})
+
+// 在组件挂载后设置默认激活菜单
+onMounted(() => {
+  // 如果当前路径是根路径或没有路径，设置为环境工具
+  if (!route.path || route.path === '/') {
+    activeMenu.value = '/environment'
+    // 确保路由也跳转到环境工具
+    router.push('/environment')
+  } else {
+    activeMenu.value = route.path
+  }
+})
+
+// 监听路由变化，同步更新激活菜单
+watch(() => route.path, (newPath) => {
+  if (newPath) {
+    activeMenu.value = newPath
+  }
 })
 
 const getMenuList = (list: MenuRoute[], basePath?: string): ListItemType[] => {

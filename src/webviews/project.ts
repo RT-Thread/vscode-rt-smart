@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getWorkspaceFolder } from '../api';
+import { postMessageExtensionData } from '../extension';
 
 let workspaceViewPanel: vscode.WebviewPanel | null = null;
 const name = "projects";
@@ -97,6 +98,7 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
         const rootDir = path.join(context.extensionPath, 'out');
         const panel = vscode.window.createWebviewPanel('webview', title, vscode.ViewColumn.One, {
             enableScripts: true, // Enable javascript in the webview
+            retainContextWhenHidden: true, // Keep the webview's context when it is hidden
             localResourceRoots: [vscode.Uri.file(rootDir)] // Only allow resources from vue view
         });
         const iconPath = path.join(context.extensionPath, 'resources', 'images', 'rt-thread.png');
@@ -164,6 +166,8 @@ export function openWorkspaceProjectsWebview(context: vscode.ExtensionContext) {
 
         workspaceViewPanel = panel;
     }
+
+    postMessageExtensionData(context, workspaceViewPanel);
 
     return workspaceViewPanel;
 }
