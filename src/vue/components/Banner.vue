@@ -17,8 +17,8 @@ export interface BannerProps {
   version?: string
 }
 
-const extentionName = ref(localStorage.getItem('extentionName') || 'RT-Thread 扩展工具')
-const extentionVersion = ref(localStorage.getItem('extentionVersion') || '版本 v1.0.1')
+const extentionName = ref('')
+const extentionVersion = ref('')
 
 const props = withDefaults(defineProps<BannerProps>(), {
   subTitle: '',
@@ -28,8 +28,6 @@ const props = withDefaults(defineProps<BannerProps>(), {
 window.addEventListener('message', (e) => {
   e.data.name && (extentionName.value = `扩展工具 - ${props.subTitle}`)
   e.data.version && (extentionVersion.value = e.data.version)
-  localStorage.setItem('extentionName', extentionName.value)
-  localStorage.setItem('extentionVersion', extentionVersion.value)
 })
 </script>
 

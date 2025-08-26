@@ -206,7 +206,7 @@ export function openSettingWebview(context: vscode.ExtensionContext) {
             if (e.webviewPanel.visible) {
                 panel.webview.postMessage({command: 'extensionInfo', data: extensionInfo});
             }
-        })
+        });
     
         settingViewPanel = panel;
     }
