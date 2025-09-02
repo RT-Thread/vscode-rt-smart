@@ -1,12 +1,11 @@
 {
     "compilerOptions": {
-        "target": "ES6",
+        "target": "esnext",
         "module": "commonjs",
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "./out",
-        "moduleResolution": "node",
         "resolveJsonModule": true,
         "sourceMap": true,
         "rootDir": "src", 
