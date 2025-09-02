@@ -115,4 +115,4 @@ export let cmds: Object = {
         label: 'packages',
         isExpanded: false
     }
-}
+};

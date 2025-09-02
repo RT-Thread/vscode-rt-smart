@@ -7,6 +7,7 @@ import * as os from 'os';
 import { openSettingWebview } from './webviews/setting';
 import { openAboutWebview } from './webviews/about';
 import { openCreateProjectWebview } from './webviews/create-project';
+import { openAnalyzeWebview } from './webviews/analyze';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { getMenuItems, getParallelBuildNumber } from './smart';
@@ -25,8 +26,6 @@ export function postMessageExtensionData(context: vscode.ExtensionContext, panel
     // 获取插件版本号（从 package.json 中读取）
     const extensionVersion = context.extension.packageJSON.version;
     const extensionNaeme = context.extension.packageJSON.name;
-    // 例如：version 为 "1.0.0"
-    console.log('插件版本号：', extensionVersion);
     panel.webview.postMessage({ version: extensionVersion, name: extensionNaeme });
 }
 
@@ -124,6 +123,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     vscode.commands.registerCommand('extension.showAbout', () => {
         openAboutWebview(context);
+    });
+    vscode.commands.registerCommand('extension.showAnalyze', () => {
+        openAnalyzeWebview(context);
     });
 
     if (isRTThreadWorksapce) {
