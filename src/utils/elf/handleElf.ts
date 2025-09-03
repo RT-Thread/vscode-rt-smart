@@ -9,8 +9,16 @@ const SYMBOLS_BY_SECTION_FROM_ELF = "symbolsBySectionFromElf";
 
 // Test the analyzer with local files
 export async function handleElf(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
-  const elfPath = path.join(context.extensionPath, 'rtthread.elf');
-  const mapPath = path.join(context.extensionPath, 'rtthread.map');
+
+  // 1. 先判断是否存在工作区
+  if (!vscode.workspace.workspaceFolders) {
+    // 提示用户打开工作区
+    vscode.window.showErrorMessage('请先打开一个项目文件夹或工作区！');
+    return;
+  }
+  const projectPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const elfPath = path.join(projectPath, 'rtthread.elf');
+  const mapPath = path.join(projectPath, 'rtthread.map');
 
   console.log('\n==========================================');
 
