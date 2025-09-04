@@ -9,10 +9,16 @@ const SYMBOLS_BY_SECTION_FROM_ELF = "symbolsBySectionFromElf";
 
 // Test the analyzer with local files
 export async function handleElf(context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
-  const elfPath = path.join(context.extensionPath, 'rtthread.elf');
-  const mapPath = path.join(context.extensionPath, 'rtthread.map');
 
-  console.log('\n==========================================');
+  // 1. 先判断是否存在工作区
+  if (!vscode.workspace.workspaceFolders) {
+    // 提示用户打开工作区
+    vscode.window.showErrorMessage('请先打开一个项目文件夹或工作区！');
+    return;
+  }
+  const projectPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const elfPath = path.join(projectPath, 'rtthread.elf');
+  const mapPath = path.join(projectPath, 'rtthread.map');
 
   // Check if files exist
   const elfExists = fs.existsSync(elfPath);
@@ -32,12 +38,20 @@ export async function handleElf(context: vscode.ExtensionContext, panel: vscode.
 
     // Test getSections
     const sections = analyzer.getSections();
-    panel.webview.postMessage({ eventName: SECTIONS, data: sections, from: 'extension' });
+    const postSections = [];
+    for(let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const symbols = analyzer.getSymbolsBySection(section.name);
+      if(symbols.length > 0) {
+        postSections.push(section);
+      }
+    }
+    console.log('\n=== Sections (Top 5) ===', postSections);
+    panel.webview.postMessage({ eventName: SECTIONS, data: postSections, from: 'extension' });
 
     // 监听 Webview 发送的消息
     panel.webview.onDidReceiveMessage(
       (message) => {
-        console.log('Received message:', message);
         // 根据消息中的 command 处理不同逻辑
         switch (message.eventName) {
           case SYMBOLS_BY_SECTION:
