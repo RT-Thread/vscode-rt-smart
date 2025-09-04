@@ -9,6 +9,7 @@ export class ElfParser {
   private symbolTable!: Buffer;
   private symbolStringTable!: Buffer;
   private is64Bit: boolean = false;
+  private symbols: Symbol[] = [];
 
   constructor(filePath: string) {
     this.buffer = fs.readFileSync(filePath);
@@ -146,7 +147,7 @@ export class ElfParser {
   }
 
   private getSectionName(index: number): string {
-    if (!this.stringTable) return '';
+    if (!this.stringTable) {return '';}
     return this.getString(this.stringTable, index);
   }
 
@@ -169,6 +170,9 @@ export class ElfParser {
   }
 
   public getAllSymbols(): Symbol[] {
+    if(this.symbols.length > 0) {
+      return this.symbols;
+    }
     if (!this.symbolTable || !this.symbolStringTable) {
       return [];
     }
@@ -202,10 +206,10 @@ export class ElfParser {
       }
 
       const size = Number(entry.size);
-      if (size === 0) continue; // Skip symbols with zero size
+      if (size === 0) {continue;} // Skip symbols with zero size
 
       const name = this.getString(this.symbolStringTable, entry.name);
-      if (!name) continue;
+      if (!name) {continue;}
 
       const type = this.getSymbolType(entry.info);
       const sectionName = this.getSectionNameByIndex(entry.shndx);
@@ -219,7 +223,9 @@ export class ElfParser {
       });
     }
 
-    return symbols.sort((a, b) => b.size - a.size);
+
+    this.symbols =  symbols.sort((a, b) => b.size - a.size);
+    return this.symbols;
   }
 
   public getSymbolsBySection(sectionName: string): Symbol[] {
