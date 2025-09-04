@@ -2,7 +2,7 @@
   <div class="container">
     <Banner sub-title="分析" />
 
-    <div>
+    <div class="content_area">
       <el-tabs
         v-model="activeName"
         class="demo-tabs"
@@ -13,7 +13,8 @@
           :label="item.name"
           :name="item.name"
         >
-          <el-table :data="tableData" style="width: 100%">
+          <el-table :data="tableData" style="width: 100%"  v-loading="tableLoading" >
+">
             <el-table-column
               v-for="item in tableColumns"
               :prop="item.prop"
@@ -45,7 +46,7 @@ const SYMBOLS_BY_SECTION_FROM_ELF = "symbolsBySectionFromElf";
 
 const activeName = ref();
 
-
+const tableLoading = ref(true);
 
 const tableColumns = [
   {
@@ -58,7 +59,7 @@ const tableColumns = [
   },
   {
     label: "地址",
-    prop: "addr",
+    prop: "address",
   },
   {
     label: "大小",
@@ -79,6 +80,7 @@ const handleSentMessage = (sectionName: string) => {
 };
 
 const handleVChanged = (name: TabPaneName) => {
+  tableLoading.value = true;
   handleSentMessage(`${name}`)
 };
 
@@ -99,6 +101,7 @@ onMounted(() => {
         break;
 
       case SYMBOLS_BY_SECTION_FROM_ELF:
+        tableLoading.value = false;
         tableData.value = message.data;
         break;
       default:
@@ -112,6 +115,7 @@ onMounted(() => {
 .container {
   padding: 0;
   background-color: #fff;
+  min-height: 100vh;
 }
 
 .demo-tabs > .el-tabs__content {
