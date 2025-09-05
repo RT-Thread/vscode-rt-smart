@@ -36,7 +36,8 @@ window.addEventListener('message', (e) => {
   display: flex;
   padding: 20px;
   gap: 8px;
-  background: #fff;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
 }
 .logo {
   height: 60px;
@@ -48,12 +49,12 @@ window.addEventListener('message', (e) => {
 h1 {
   font-size: 16px;
   font-weight: 500;
-  color: #000;
+  color: var(--vscode-editor-foreground);
   margin: 0;
 }
 p {
   font-size: 12px;
-  color: #000;
+  color: var(--vscode-editor-foreground);
   margin: 4px 0 8px;
 }
 .bar {

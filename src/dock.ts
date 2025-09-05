@@ -48,7 +48,7 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             };
 
             let analyze = new vscode.TreeItem("Analyze", vscode.TreeItemCollapsibleState.None);
-            analyze.iconPath = new vscode.ThemeIcon("file");
+            analyze.iconPath = new vscode.ThemeIcon("search-fuzzy");
             analyze.label = "Analyze";
             analyze.command = {
                 command: "extension.showAnalyze",
@@ -56,7 +56,7 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 arguments: [],
             };
 
-            return [createProject, rtSetting, about, analyze];
+            return [analyze, createProject, rtSetting, about, ];
         }
 
         if (!element) {

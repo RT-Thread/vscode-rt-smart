@@ -13,8 +13,12 @@
           :label="item.name"
           :name="item.name"
         >
-          <el-table :data="tableData" style="width: 100%"  v-loading="tableLoading" >
-">
+          <el-table
+            :data="tableData"
+            style="width: 100%"
+            v-loading="tableLoading"
+            max-height="70vh"
+          >
             <el-table-column
               v-for="item in tableColumns"
               :prop="item.prop"
@@ -81,7 +85,7 @@ const handleSentMessage = (sectionName: string) => {
 
 const handleVChanged = (name: TabPaneName) => {
   tableLoading.value = true;
-  handleSentMessage(`${name}`)
+  handleSentMessage(`${name}`);
 };
 
 const sections = ref<Section[]>([]);
@@ -89,8 +93,8 @@ const sections = ref<Section[]>([]);
 onMounted(() => {
   window.addEventListener("message", (event) => {
     const message = event.data;
-    if(message.from !== 'extension') {
-        return;
+    if (message.from !== "extension") {
+      return;
     }
     console.log(message);
     switch (message.eventName) {
