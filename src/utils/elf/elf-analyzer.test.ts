@@ -73,11 +73,13 @@ describe('ElfAnalyzer', () => {
         expect(symbol).toHaveProperty('name');
         expect(symbol).toHaveProperty('type');
         expect(symbol).toHaveProperty('address');
+        expect(symbol).toHaveProperty('hexaddr');
         expect(symbol).toHaveProperty('size');
         
         expect(typeof symbol.name).toBe('string');
         expect(typeof symbol.type).toBe('string');
         expect(typeof symbol.address).toBe('number');
+        expect(typeof symbol.hexaddr).toBe('string');
         expect(typeof symbol.size).toBe('number');
       });
     });
@@ -140,6 +142,7 @@ describe('ElfAnalyzer', () => {
       symbols.forEach(symbol => {
         expect(symbol.address).toBeGreaterThanOrEqual(0);
         expect(Number.isInteger(symbol.address)).toBe(true);
+        expect(symbol.hexaddr).toMatch(/^0x[0-9a-f]+$/i);
       });
     });
   });

@@ -214,10 +214,12 @@ export class ElfParser {
       const type = this.getSymbolType(entry.info);
       const sectionName = this.getSectionNameByIndex(entry.shndx);
 
+      const address = Number(entry.value);
       symbols.push({
         name,
         type,
-        address: Number(entry.value),
+        address,
+        hexaddr: '0x' + address.toString(16),
         size,
         section: sectionName
       });
