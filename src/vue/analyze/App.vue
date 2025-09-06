@@ -18,7 +18,7 @@
             :data="tableData"
             style="width: 100%"
             v-loading="tableLoading"
-            max-height="70vh"
+            max-height="65vh"
             show-summary
             :summary-method="getSummaries"
             highlight-current-row
