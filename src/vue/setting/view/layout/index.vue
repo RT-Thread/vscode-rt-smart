@@ -8,8 +8,6 @@
           :collapse-transition="false"
           router
           :default-active="defaultActive"
-          background-color="#fff"
-          text-color="#333"
           style="border: none"
           mode="horizontal"
         >

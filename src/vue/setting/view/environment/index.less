@@ -1,6 +1,8 @@
 .content {
     width: 100%;
     height: 100%;
+    background-color: var(--app-bg);
+    color: var(--app-fg);
 
     .body-box {
         width: 80%;
@@ -10,8 +12,8 @@
             margin-bottom: 20px;
 
             .config-card {
-                background-color: #f5f7fa;
-                border: 1px solid #e4e7ed;
+                background-color: var(--app-panel-bg);
+                border: 1px solid var(--app-border);
                 border-radius: 6px;
                 padding: 20px;
 
@@ -25,7 +27,7 @@
                         margin: 0;
                         font-size: 16px;
                         font-weight: bold;
-                        color: #333;
+                        color: var(--app-fg);
                         padding-top: 10px;
                     }
                     
@@ -47,11 +49,11 @@
                         label {
                             width: 80px;
                             font-weight: 500;
-                            color: #606266;
+                            color: var(--app-fg-secondary);
                         }
 
                         span {
-                            color: #333;
+                            color: var(--app-fg);
                             flex: 1;
                         }
                     }
@@ -60,8 +62,8 @@
         }
 
         .env-status-box {
-            background-color: #f5f7fa;
-            border: 1px solid #e4e7ed;
+            background-color: var(--app-panel-bg);
+            border: 1px solid var(--app-border);
             border-radius: 6px;
             padding: 20px;
             margin-bottom: 20px;
@@ -71,7 +73,7 @@
                 justify-content: space-between;
                 align-items: flex-start;
                 font-size: 14px;
-                color: #333;
+                color: var(--app-fg);
 
                 .info-content {
                     flex: 1;
@@ -81,7 +83,7 @@
                         width: 100%;
                         margin-bottom: 8px;
                         font-weight: bold;
-                        color: #333;
+                        color: var(--app-fg);
                     }
 
                     .info-text {
@@ -90,6 +92,7 @@
                         row-gap: 4px;
                         list-style: none;
                         margin-left: 16px;
+                        color: var(--app-fg);
                     }
                 }
 
@@ -113,13 +116,13 @@
 
                 .progress-status {
                     font-weight: bold;
-                    color: #409eff;
+                    color: var(--app-info);
                     margin-bottom: 8px;
                 }
 
                 .progress-log {
-                    background-color: #f8f9fa;
-                    border: 1px solid #e9ecef;
+                    background-color: var(--app-input-bg);
+                    border: 1px solid var(--app-border);
                     border-radius: 4px;
                     padding: 8px;
                     font-family: monospace;
@@ -127,7 +130,7 @@
 
                     .log-title {
                         font-weight: bold;
-                        color: #333;
+                        color: var(--app-fg);
                         margin-bottom: 8px;
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                     }
@@ -146,15 +149,15 @@
                     .log-content {
                         max-height: 200px;
                         overflow-y: auto;
-                        border: 1px solid #ddd;
+                        border: 1px solid var(--app-border);
                         border-radius: 3px;
                         padding: 8px;
-                        background-color: #fff;
+                        background-color: var(--app-bg);
                     }
 
                     .log-message {
                         margin-bottom: 2px;
-                        color: #666;
+                        color: var(--app-fg-secondary);
                         white-space: pre-wrap;
                         line-height: 1.4;
                         
@@ -165,7 +168,7 @@
                 }
 
                 :deep(.el-progress__text) {
-                    color: #333;
+                    color: var(--app-fg);
                 }
             }
         }
@@ -176,6 +179,7 @@
         margin-bottom: 30px;
         padding: 24px 24px 0 0;
         box-sizing: border-box;
+        background-color: var(--app-panel-bg);
 
         .row-box {
             width: 100%;
@@ -192,8 +196,35 @@
             height: 40px;
         }
 
+        .el-input__wrapper {
+            background-color: var(--app-input-bg) !important;
+            border-color: var(--app-input-border) !important;
+            box-shadow: none !important;
+            
+            &:hover {
+                border-color: var(--app-link) !important;
+            }
+        }
+        
+        .el-input__inner {
+            background-color: transparent !important;
+            color: var(--app-fg) !important;
+        }
+
+        .el-input.is-disabled .el-input__wrapper {
+            background-color: var(--app-hover-bg) !important;
+            cursor: not-allowed;
+        }
+
+        .el-input.is-disabled .el-input__inner {
+            color: var(--app-fg-disabled) !important;
+            cursor: not-allowed;
+        }
+
         :deep(.el-form-item__label) {
             justify-content: flex-start;
+            color: var(--app-fg) !important;
+            font-weight: 500;
         }
     }
 

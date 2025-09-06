@@ -149,6 +149,8 @@ const createProject = () => {
     display: flex;
     flex-direction: column;
     padding: 0;
+    background: var(--app-bg);
+    color: var(--app-fg);
 }
 
 .header_box {
@@ -156,8 +158,8 @@ const createProject = () => {
     align-items: center;
     justify-content: space-between;
     height: 60px;
-    background-color: #fff;
-    border-bottom: 1px solid #e6e6e6;
+    background-color: var(--app-bg);
+    border-bottom: 1px solid var(--app-border);
     padding: 0 20px;
 }
 
@@ -166,7 +168,7 @@ const createProject = () => {
     align-items: center;
     column-gap: 12px;
     font-size: 18px;
-    color: #333;
+    color: var(--app-fg);
     height: 100%;
 }
 
@@ -176,7 +178,7 @@ const createProject = () => {
 }
 
 .logo_text {
-    color: #333;
+    color: var(--app-fg);
     padding-top: 15px;
 }
 
@@ -193,6 +195,8 @@ const createProject = () => {
 .content_area {
     width: 100%;
     height: 100%;
+    background: var(--app-bg);
+    color: var(--app-fg);
 
     .body-box {
         width: 80%;

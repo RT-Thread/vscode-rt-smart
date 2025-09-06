@@ -94,11 +94,13 @@ onMounted(() => {
 <style scoped>
 .container {
     padding: 0;
+    background: var(--app-bg);
+    color: var(--app-fg);
 }
 
 .header_box {
-    background-color: #fff;
-    border-bottom: 1px solid #e6e6e6;
+    background-color: var(--app-bg);
+    border-bottom: 1px solid var(--app-border);
     padding: 0 20px;
 }
 
@@ -107,7 +109,7 @@ onMounted(() => {
     align-items: center;
     column-gap: 12px;
     font-size: 18px;
-    color: #333;
+    color: var(--app-fg);
     height: 100%;
 
     .logo_img {
@@ -116,7 +118,7 @@ onMounted(() => {
     }
 
     .logo_text {
-        color: #333;
+        color: var(--app-fg);
         padding-top: 15px;
 
         p {
@@ -132,11 +134,13 @@ onMounted(() => {
 
 .content_area {
     padding: 20px;
+    background: var(--app-bg);
+    color: var(--app-fg);
 }
 
 .page_title {
     font-size: 16px;
-    color: #666;
+    color: var(--app-fg-secondary);
     margin-bottom: 10px;
     font-weight: 500;
 }
