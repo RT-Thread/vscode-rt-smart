@@ -112,6 +112,12 @@ const handleRowClick = (row: any, column: any, event: Event) => {
 
 const handleRowDblclick = (row: any, column: any, event: Event) => {
   console.log('Row double-clicked:', row);
+  
+  // 如果是 OBJECT 类型的符号，直接返回不处理
+  if (row.type === 'OBJECT') {
+    return;
+  }
+  
   const symbolName = row.name;
   vscode.postMessage({
     eventName: OPEN_SYMBOL_SOURCE,

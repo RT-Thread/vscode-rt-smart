@@ -96,36 +96,46 @@ export async function handleElf(context: vscode.ExtensionContext, panel: vscode.
                     case OPEN_SYMBOL_SOURCE:
                         // 打开符号对应的源代码文件
                         const symbol = analyzer.getSymbolWithDebugInfo(message.symbolName);
-                        if (symbol && symbol.sourceFile) {
-                            try {
-                                // 处理相对路径和绝对路径
-                                let filePath = symbol.sourceFile;
-                                if (!path.isAbsolute(filePath)) {
-                                    filePath = path.join(projectPath, filePath);
-                                }
-                                
-                                // 检查文件是否存在
-                                if (fs.existsSync(filePath)) {
-                                    const document = await vscode.workspace.openTextDocument(filePath);
-                                    const editor = await vscode.window.showTextDocument(document);
-                                    
-                                    // 跳转到指定行号
-                                    if (symbol.sourceLine && symbol.sourceLine > 0) {
-                                        const position = new vscode.Position(symbol.sourceLine - 1, 0);
-                                        const range = new vscode.Range(position, position);
-                                        editor.selection = new vscode.Selection(range.start, range.end);
-                                        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                        if (symbol) {
+                            // Check if symbol is a FUNCTION type
+                            if (symbol.type !== 'FUNC') {
+                                vscode.window.showWarningMessage(`符号 ${message.symbolName} 是 ${symbol.type} 类型，暂不支持定位源代码位置`);
+                                break;
+                            }
+                            
+                            if (symbol.sourceFile) {
+                                try {
+                                    // 处理相对路径和绝对路径
+                                    let filePath = symbol.sourceFile;
+                                    if (!path.isAbsolute(filePath)) {
+                                        filePath = path.join(projectPath, filePath);
                                     }
                                     
-                                    // vscode.window.showInformationMessage(`已打开 ${symbol.name} 的源代码位置`);
-                                } else {
-                                    vscode.window.showWarningMessage(`源文件不存在: ${filePath}`);
+                                    // 检查文件是否存在
+                                    if (fs.existsSync(filePath)) {
+                                        const document = await vscode.workspace.openTextDocument(filePath);
+                                        const editor = await vscode.window.showTextDocument(document);
+                                        
+                                        // 跳转到指定行号
+                                        if (symbol.sourceLine && symbol.sourceLine > 0) {
+                                            const position = new vscode.Position(symbol.sourceLine - 1, 0);
+                                            const range = new vscode.Range(position, position);
+                                            editor.selection = new vscode.Selection(range.start, range.end);
+                                            editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                                        }
+                                        
+                                        // vscode.window.showInformationMessage(`已打开 ${symbol.name} 的源代码位置`);
+                                    } else {
+                                        vscode.window.showWarningMessage(`源文件不存在: ${filePath}`);
+                                    }
+                                } catch (error) {
+                                    vscode.window.showErrorMessage(`无法打开源文件: ${error}`);
                                 }
-                            } catch (error) {
-                                vscode.window.showErrorMessage(`无法打开源文件: ${error}`);
+                            } else {
+                                vscode.window.showWarningMessage(`无法找到函数 ${message.symbolName} 的源代码位置`);
                             }
                         } else {
-                            vscode.window.showWarningMessage(`无法找到符号 ${message.symbolName} 的源代码位置`);
+                            vscode.window.showWarningMessage(`未找到符号: ${message.symbolName}`);
                         }
                         break;
                     

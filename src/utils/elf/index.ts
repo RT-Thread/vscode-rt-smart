@@ -113,15 +113,20 @@ export class ElfAnalyzer {
       return null;
     }
 
-    const debugInfo = this.getSymbolDebugInfo(symbolName);
-    if (debugInfo) {
-      return {
-        ...symbol,
-        sourceFile: debugInfo.sourceFile,
-        sourceLine: debugInfo.sourceLine
-      };
+    // Only provide debug info for FUNCTION symbols
+    // OBJECT symbols (variables) don't have accurate debug info
+    if (symbol.type === 'FUNC') {
+      const debugInfo = this.getSymbolDebugInfo(symbolName);
+      if (debugInfo) {
+        return {
+          ...symbol,
+          sourceFile: debugInfo.sourceFile,
+          sourceLine: debugInfo.sourceLine
+        };
+      }
     }
 
+    // For OBJECT and other types, return without source info
     return symbol;
   }
 }
