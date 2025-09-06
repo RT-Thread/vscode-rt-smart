@@ -13,6 +13,8 @@ export interface Symbol {
   size: number;
   section?: string;
   object?: string;
+  sourceFile?: string;
+  sourceLine?: number;
 }
 
 export interface ElfHeader {

@@ -9,6 +9,7 @@
         @tab-change="handleVChanged"
       >
         <el-tab-pane
+          highlight-current-row
           v-for="item in sections"
           :label="item.name"
           :name="item.name"
@@ -18,14 +19,32 @@
             style="width: 100%"
             v-loading="tableLoading"
             max-height="70vh"
+            show-summary
+            :summary-method="getSummaries"
+            highlight-current-row
+            @row-click="handleRowClick"
+            @row-dblclick="handleRowDblclick"
           >
             <el-table-column
               v-for="item in tableColumns"
+              sortable
               :prop="item.prop"
               :label="item.label"
-              width="180"
+              :width="item.width"
+              :resizable="true"
             />
           </el-table>
+          <div v-if="symbolInfo" class="symbol-info-panel">
+            <div class="symbol-info-header">
+              <span>符号详细信息</span>
+              <el-button size="small" text @click="symbolInfo = null">
+                <el-icon><Close /></el-icon>
+              </el-button>
+            </div>
+            <div class="symbol-info-content">
+              <pre>{{ symbolInfo }}</pre>
+            </div>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -35,6 +54,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import Banner from "../components/Banner.vue";
+import { Close } from '@element-plus/icons-vue';
 import type { TabPaneName, TabsPaneContext } from "element-plus";
 declare var acquireVsCodeApi: any;
 
@@ -47,6 +67,9 @@ interface Section {
 const SECTIONS = "sections";
 const SYMBOLS_BY_SECTION = "symbolsBySection";
 const SYMBOLS_BY_SECTION_FROM_ELF = "symbolsBySectionFromElf";
+const GET_SYMBOL_INFO = "getSymbolInfo";
+const OPEN_SYMBOL_SOURCE = "openSymbolSource";
+const SYMBOL_INFO_RESPONSE = "symbolInfoResponse";
 
 const activeName = ref();
 
@@ -56,31 +79,84 @@ const tableColumns = [
   {
     label: "符号名称",
     prop: "name",
+    width: 300,
   },
   {
     label: "类型",
     prop: "type",
+    width: 150,
   },
   {
     label: "地址",
     prop: "hexaddr",
+    width: 150,
   },
   {
     label: "大小",
     prop: "size",
+    width: 150,
   },
 ];
 
 const tableData = ref([]);
+const symbolInfo = ref<string | null>(null);
+
+const handleRowClick = (row: any, column: any, event: Event) => {
+  console.log('Row clicked:', row);
+  const symbolName = row.name;
+  vscode.postMessage({
+    eventName: GET_SYMBOL_INFO,
+    symbolName,
+  });
+};
+
+const handleRowDblclick = (row: any, column: any, event: Event) => {
+  console.log('Row double-clicked:', row);
+  const symbolName = row.name;
+  vscode.postMessage({
+    eventName: OPEN_SYMBOL_SOURCE,
+    symbolName,
+  });
+};
+
+const getSummaries = (param: any) => {
+  const { columns, data } = param;
+  const sums: string[] = [];
+  
+  columns.forEach((column: any, index: number) => {
+    if (index === 0) {
+      sums[index] = '总计';
+      return;
+    }
+    
+    if (column.property === 'size') {
+      const values = data.map((item: any) => Number(item[column.property]));
+      if (!values.every((value: number) => isNaN(value))) {
+        const total = values.reduce((prev: number, curr: number) => {
+          const value = Number(curr);
+          if (!isNaN(value)) {
+            return prev + curr;
+          } else {
+            return prev;
+          }
+        }, 0);
+        sums[index] = total.toLocaleString();
+      } else {
+        sums[index] = '';
+      }
+    } else {
+      sums[index] = '';
+    }
+  });
+  
+  return sums;
+};
 
 const handleSentMessage = (sectionName: string) => {
-  vscode.postMessage(
-    {
-      eventName: SYMBOLS_BY_SECTION,
-      sectionName,
-    },
-    "*"
-  );
+  vscode.postMessage({
+    eventName: SYMBOLS_BY_SECTION,
+    sectionName,
+  });
 };
 
 const handleVChanged = (name: TabPaneName) => {
@@ -108,6 +184,11 @@ onMounted(() => {
         tableLoading.value = false;
         tableData.value = message.data;
         break;
+      
+      case SYMBOL_INFO_RESPONSE:
+        symbolInfo.value = message.data;
+        break;
+        
       default:
         break;
     }
@@ -199,5 +280,69 @@ onMounted(() => {
 
 :deep(.el-loading-spinner .circular circle) {
   stroke: var(--vscode-focusBorder, #007acc);
+}
+
+:deep(.el-table__footer-wrapper) {
+  background-color: var(--vscode-editorWidget-background, #f5f5f5);
+  border-top: 2px solid var(--vscode-panel-border, #e1e4e8);
+}
+
+:deep(.el-table__footer-wrapper .el-table__cell) {
+  background-color: var(--vscode-editorWidget-background, #f5f5f5);
+  color: var(--vscode-editor-foreground, #333333);
+  font-weight: 600;
+}
+
+:deep(.el-table__body tr.current-row > td.el-table__cell) {
+  background-color: var(--vscode-list-activeSelectionBackground, #e4f3ff) !important;
+}
+
+.symbol-info-panel {
+  margin-top: 16px;
+  border: 1px solid var(--vscode-panel-border, #e1e4e8);
+  border-radius: 4px;
+  background-color: var(--vscode-editorWidget-background, #f5f5f5);
+  overflow: hidden;
+}
+
+.symbol-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--vscode-editorWidget-background, #f0f0f0);
+  border-bottom: 1px solid var(--vscode-panel-border, #e1e4e8);
+  font-weight: 600;
+  color: var(--vscode-editor-foreground, #333333);
+}
+
+.symbol-info-content {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--vscode-editor-background, #ffffff);
+}
+
+.symbol-info-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--vscode-editor-font-family, 'Courier New', monospace);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vscode-editor-foreground, #333333);
+}
+
+:deep(.el-button.is-text) {
+  color: var(--vscode-editor-foreground, #333333);
+}
+
+:deep(.el-button.is-text:hover) {
+  color: var(--vscode-focusBorder, #007acc);
+  background-color: var(--vscode-list-hoverBackground, #e8f4fd);
+}
+
+:deep(.el-icon) {
+  font-size: 16px;
 }
 </style>

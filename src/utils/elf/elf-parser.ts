@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { ElfHeader, SectionHeader, SymbolEntry, Section, Symbol } from './types';
+import { DwarfParser } from './dwarf-parser';
 
 export class ElfParser {
   private buffer: Buffer;
@@ -10,12 +11,15 @@ export class ElfParser {
   private symbolStringTable!: Buffer;
   private is64Bit: boolean = false;
   private symbols: Symbol[] = [];
+  private dwarfParser: DwarfParser;
 
   constructor(filePath: string) {
     this.buffer = fs.readFileSync(filePath);
+    this.dwarfParser = new DwarfParser(this.buffer);
     this.parseElfHeader();
     this.parseSectionHeaders();
     this.loadStringTables();
+    this.loadDebugSections();
   }
 
   private parseElfHeader(): void {
@@ -251,5 +255,50 @@ export class ElfParser {
       return '';
     }
     return this.getSectionName(this.sectionHeaders[index].name);
+  }
+
+  private loadDebugSections(): void {
+    const debugSections: {
+      debugLine?: Buffer;
+      debugInfo?: Buffer;
+      debugStr?: Buffer;
+      debugAbbrev?: Buffer;
+    } = {};
+
+    for (let i = 0; i < this.sectionHeaders.length; i++) {
+      const header = this.sectionHeaders[i];
+      const sectionName = this.getSectionName(header.name);
+      
+      if (sectionName === '.debug_line') {
+        const offset = Number(header.offset);
+        const size = Number(header.size);
+        debugSections.debugLine = this.buffer.subarray(offset, offset + size);
+      } else if (sectionName === '.debug_info') {
+        const offset = Number(header.offset);
+        const size = Number(header.size);
+        debugSections.debugInfo = this.buffer.subarray(offset, offset + size);
+      } else if (sectionName === '.debug_str') {
+        const offset = Number(header.offset);
+        const size = Number(header.size);
+        debugSections.debugStr = this.buffer.subarray(offset, offset + size);
+      } else if (sectionName === '.debug_abbrev') {
+        const offset = Number(header.offset);
+        const size = Number(header.size);
+        debugSections.debugAbbrev = this.buffer.subarray(offset, offset + size);
+      }
+    }
+
+    this.dwarfParser.setDebugSections(debugSections);
+  }
+
+  public getSymbolDebugInfo(address: number): { file?: string; line?: number } | null {
+    const lineInfo = this.dwarfParser.getLineInfo(address);
+    if (lineInfo) {
+      return {
+        file: lineInfo.file,
+        line: lineInfo.line
+      };
+    }
+    return null;
   }
 }

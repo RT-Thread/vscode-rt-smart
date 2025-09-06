@@ -68,6 +68,62 @@ export class ElfAnalyzer {
     }
     return this.mapParser.getSymbolsByObject(object);
   }
+
+  /**
+   * Get debug information for a symbol (source file and line number)
+   */
+  public getSymbolDebugInfo(symbolName: string): { sourceFile?: string; sourceLine?: number } | null {
+    if (!this.elfParser) {
+      return null;
+    }
+
+    try {
+      // First find the symbol to get its address
+      const allSymbols = this.getAllSymbols();
+      const symbol = allSymbols.find(s => s.name === symbolName);
+      
+      if (!symbol) {
+        return null;
+      }
+
+      // Use internal DWARF parser to get source file and line number
+      const debugInfo = this.elfParser.getSymbolDebugInfo(symbol.address);
+      
+      if (debugInfo && debugInfo.file) {
+        return {
+          sourceFile: debugInfo.file,
+          sourceLine: debugInfo.line
+        };
+      }
+    } catch (error) {
+      console.error('Error getting debug info:', error);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get symbol with debug information
+   */
+  public getSymbolWithDebugInfo(symbolName: string): Symbol | null {
+    const allSymbols = this.getAllSymbols();
+    const symbol = allSymbols.find(s => s.name === symbolName);
+    
+    if (!symbol) {
+      return null;
+    }
+
+    const debugInfo = this.getSymbolDebugInfo(symbolName);
+    if (debugInfo) {
+      return {
+        ...symbol,
+        sourceFile: debugInfo.sourceFile,
+        sourceLine: debugInfo.sourceLine
+      };
+    }
+
+    return symbol;
+  }
 }
 
 // Export types and classes
