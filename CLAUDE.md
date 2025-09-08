@@ -64,13 +64,13 @@ npm run build   # Production build
 
 4. **虚拟环境** (`src/venv.ts`):
    - Windows 特定的 Python 虚拟环境设置
-   - 管理 env 脚本安装
 
 ### 配置文件
 - **`.vscode/workspace.json`**: 多 BSP 工作区配置
 - **`.vscode/project.json`**: 单个项目文件结构（由 scons 生成）
 - **`~/.env/cfg.json`**: RT-Thread 源码路径配置
 - **`~/.env/tools/scripts/sdk_cfg.json`**: 工具链配置
+- **`~/.env/tools/scripts/.config`**: SDK的配置情况，指示出来哪些SDK包安装了
 
 ### 构建系统
 - TypeScript 编译为 CommonJS 用于 VS Code 扩展
@@ -84,8 +84,10 @@ npm run build   # Production build
 
 ## 重要说明
 
-1. 扩展仅在 RT-Thread 项目中激活（包含 `rtconfig.h` 或工作区配置）
-2. Windows 系统在首次运行时需要设置 Python 虚拟环境
-3. 必须先构建 Vue 前端再编译扩展
-4. 扩展集成了 Python 扩展（`ms-python.python`）
-5. 文件装饰器在工作区模式下标记当前活动的 BSP
+1. Windows 系统在首次运行时需要设置 Python 虚拟环境
+2. 必须先构建 Vue 前端再编译扩展
+3. 扩展集成了 Python 扩展（`ms-python.python`）
+4. 文件装饰器在工作区模式下标记当前活动的 BSP
+5. 代码尽可能精简，尽可能做到复用。
+6. @src/vue 放置的是vscode扩展的前端页面，都是使用vue + element plus的方式实现，同时样式风格也完全使用常规意义的element plus样式风格。并且 @src/vue 的代码也完全重用根目录下的 node_modules 而不新开 node_modules。
+7. @src/webviews 放置的是和vscode扩展前端页面对应的vscode扩展后端。
