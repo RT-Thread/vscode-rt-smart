@@ -207,22 +207,6 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
-.xterm-container {
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-}
-
-:deep(.xterm) {
-    padding: 10px;
-}
-
-:deep(.xterm-viewport) {
-    background-color: transparent !important;
-}
-
-:deep(.xterm-screen) {
-    height: 100% !important;
-}
+<style scoped lang="less">
+@import './XTerminal.less';
 </style>

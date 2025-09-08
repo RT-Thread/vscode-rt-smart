@@ -1,0 +1,122 @@
+// Global Less Variables for VSCode RT-Smart Extension
+// Using Element Plus color system and design tokens
+
+// Element Plus Color Palette
+// Primary colors
+@el-color-primary: var(--el-color-primary, #409eff);
+@el-color-primary-light-3: var(--el-color-primary-light-3, #79bbff);
+@el-color-primary-light-5: var(--el-color-primary-light-5, #a0cfff);
+@el-color-primary-light-7: var(--el-color-primary-light-7, #c6e2ff);
+@el-color-primary-light-8: var(--el-color-primary-light-8, #d9ecff);
+@el-color-primary-light-9: var(--el-color-primary-light-9, #ecf5ff);
+@el-color-primary-dark-2: var(--el-color-primary-dark-2, #337ecc);
+
+// Status colors
+@el-color-success: var(--el-color-success, #67c23a);
+@el-color-warning: var(--el-color-warning, #e6a23c);
+@el-color-danger: var(--el-color-danger, #f56c6c);
+@el-color-info: var(--el-color-info, #909399);
+
+// Text colors
+@el-text-color-primary: var(--el-text-color-primary, #303133);
+@el-text-color-regular: var(--el-text-color-regular, #606266);
+@el-text-color-secondary: var(--el-text-color-secondary, #909399);
+@el-text-color-placeholder: var(--el-text-color-placeholder, #a8abb2);
+@el-text-color-disabled: var(--el-text-color-disabled, #c0c4cc);
+
+// Border colors
+@el-border-color: var(--el-border-color, #dcdfe6);
+@el-border-color-light: var(--el-border-color-light, #e4e7ed);
+@el-border-color-lighter: var(--el-border-color-lighter, #ebeef5);
+@el-border-color-extra-light: var(--el-border-color-extra-light, #f2f6fc);
+@el-border-color-dark: var(--el-border-color-dark, #d4d7de);
+@el-border-color-darker: var(--el-border-color-darker, #cdd0d6);
+
+// Background colors
+@el-bg-color: var(--el-bg-color, #ffffff);
+@el-bg-color-page: var(--el-bg-color-page, #f2f3f5);
+@el-bg-color-overlay: var(--el-bg-color-overlay, #ffffff);
+@el-fill-color: var(--el-fill-color, #f0f2f5);
+@el-fill-color-light: var(--el-fill-color-light, #f5f7fa);
+@el-fill-color-lighter: var(--el-fill-color-lighter, #fafafa);
+@el-fill-color-extra-light: var(--el-fill-color-extra-light, #fafcff);
+@el-fill-color-dark: var(--el-fill-color-dark, #ebedf0);
+@el-fill-color-darker: var(--el-fill-color-darker, #e6e8eb);
+@el-fill-color-blank: var(--el-fill-color-blank, #ffffff);
+
+// Spacing system (Element Plus standard)
+@spacing-xs: 4px;
+@spacing-sm: 8px;
+@spacing-md: 12px;
+@spacing-base: 16px;
+@spacing-lg: 20px;
+@spacing-xl: 24px;
+@spacing-xxl: 32px;
+
+// Border radius
+@border-radius-base: var(--el-border-radius-base, 4px);
+@border-radius-small: var(--el-border-radius-small, 2px);
+@border-radius-round: var(--el-border-radius-round, 20px);
+@border-radius-circle: var(--el-border-radius-circle, 100%);
+
+// Font sizes (Element Plus standard)
+@font-size-extra-large: 20px;
+@font-size-large: 18px;
+@font-size-medium: 16px;
+@font-size-base: 14px;
+@font-size-small: 13px;
+@font-size-extra-small: 12px;
+
+// Line heights
+@line-height-base: 24px;
+@line-height-none: 1;
+@line-height-tight: 1.25;
+@line-height-snug: 1.375;
+@line-height-normal: 1.5;
+@line-height-relaxed: 1.625;
+@line-height-loose: 2;
+
+// Box shadows (Element Plus standard)
+@box-shadow-base: var(--el-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04));
+@box-shadow-light: var(--el-box-shadow-light, 0 2px 12px 0 rgba(0, 0, 0, 0.1));
+@box-shadow-lighter: var(--el-box-shadow-lighter, 0 2px 8px 0 rgba(0, 0, 0, 0.06));
+@box-shadow-dark: var(--el-box-shadow-dark, 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.12));
+
+// Transition
+@transition-duration: var(--el-transition-duration, 0.3s);
+@transition-duration-fast: var(--el-transition-duration-fast, 0.2s);
+@transition-function-ease-in-out-bezier: var(--el-transition-function-ease-in-out-bezier, cubic-bezier(0.645, 0.045, 0.355, 1));
+@transition-function-fast-bezier: var(--el-transition-function-fast-bezier, cubic-bezier(0.23, 1, 0.32, 1));
+@transition-all: all @transition-duration @transition-function-ease-in-out-bezier;
+@transition-fade: opacity @transition-duration @transition-function-fast-bezier;
+@transition-md-fade: transform @transition-duration @transition-function-fast-bezier, opacity @transition-duration @transition-function-fast-bezier;
+@transition-border: border-color @transition-duration-fast @transition-function-ease-in-out-bezier;
+@transition-box-shadow: box-shadow @transition-duration-fast @transition-function-ease-in-out-bezier;
+@transition-color: color @transition-duration-fast @transition-function-ease-in-out-bezier;
+
+// Z-index layers
+@z-index-normal: 1;
+@z-index-top: 1000;
+@z-index-popper: 2000;
+
+// Component specific variables
+@header-height: 60px;
+@sidebar-width: 240px;
+@sidebar-width-collapsed: 64px;
+
+// VSCode specific (maintain compatibility)
+@vscode-editor-background: var(--vscode-editor-background);
+@vscode-editor-foreground: var(--vscode-editor-foreground);
+@vscode-panel-background: var(--vscode-panel-background);
+@vscode-panel-border: var(--vscode-panel-border);
+@vscode-sideBar-background: var(--vscode-sideBar-background);
+@vscode-sideBar-foreground: var(--vscode-sideBar-foreground);
+@vscode-list-hoverBackground: var(--vscode-list-hoverBackground);
+@vscode-list-activeSelectionBackground: var(--vscode-list-activeSelectionBackground);
+@vscode-list-inactiveSelectionBackground: var(--vscode-list-inactiveSelectionBackground);
+@vscode-input-background: var(--vscode-input-background);
+@vscode-input-foreground: var(--vscode-input-foreground);
+@vscode-input-border: var(--vscode-input-border);
+@vscode-button-background: var(--vscode-button-background);
+@vscode-button-foreground: var(--vscode-button-foreground);
+@vscode-button-hoverBackground: var(--vscode-button-hoverBackground);

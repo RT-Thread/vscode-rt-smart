@@ -1,0 +1,337 @@
+// Global Less Mixins for VSCode RT-Smart Extension
+// Reusable style patterns and utilities
+
+@import './variables.less';
+
+// Flexbox mixins
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between() {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start() {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flex-column() {
+  display: flex;
+  flex-direction: column;
+}
+
+// Container mixins
+.container-base() {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: @el-bg-color;
+  color: @el-text-color-regular;
+}
+
+.panel-container() {
+  padding: @spacing-lg;
+  background-color: @el-bg-color;
+  border: 1px solid @el-border-color-lighter;
+  border-radius: @border-radius-base;
+  box-shadow: @box-shadow-lighter;
+}
+
+.card-container() {
+  padding: @spacing-lg;
+  background-color: @el-bg-color;
+  border: 1px solid @el-border-color-lighter;
+  border-radius: @border-radius-base;
+  transition: @transition-all;
+  
+  &:hover {
+    box-shadow: @box-shadow-light;
+  }
+}
+
+// Text mixins
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-primary() {
+  color: @el-text-color-primary;
+  font-size: @font-size-base;
+  line-height: @line-height-normal;
+}
+
+.text-secondary() {
+  color: @el-text-color-secondary;
+  font-size: @font-size-small;
+  line-height: @line-height-normal;
+}
+
+.text-title() {
+  color: @el-text-color-primary;
+  font-size: @font-size-large;
+  font-weight: 500;
+  line-height: @line-height-tight;
+}
+
+.text-subtitle() {
+  color: @el-text-color-regular;
+  font-size: @font-size-medium;
+  font-weight: 400;
+  line-height: @line-height-normal;
+}
+
+// Button mixins
+.button-base() {
+  padding: @spacing-sm @spacing-base;
+  font-size: @font-size-base;
+  border-radius: @border-radius-base;
+  cursor: pointer;
+  transition: @transition-all;
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.button-primary() {
+  .button-base();
+  background-color: @el-color-primary;
+  color: white;
+  border: 1px solid @el-color-primary;
+  
+  &:hover:not(:disabled) {
+    background-color: @el-color-primary-light-3;
+    border-color: @el-color-primary-light-3;
+  }
+  
+  &:active:not(:disabled) {
+    background-color: @el-color-primary-dark-2;
+    border-color: @el-color-primary-dark-2;
+  }
+}
+
+.button-default() {
+  .button-base();
+  background-color: @el-bg-color;
+  color: @el-text-color-regular;
+  border: 1px solid @el-border-color;
+  
+  &:hover:not(:disabled) {
+    color: @el-color-primary;
+    border-color: @el-color-primary-light-7;
+    background-color: @el-color-primary-light-9;
+  }
+}
+
+// Form mixins
+.form-item() {
+  margin-bottom: @spacing-lg;
+  
+  .el-form-item__label {
+    color: @el-text-color-regular;
+    font-size: @font-size-base;
+  }
+}
+
+.input-base() {
+  width: 100%;
+  padding: @spacing-sm @spacing-md;
+  font-size: @font-size-base;
+  color: @el-text-color-regular;
+  background-color: @el-bg-color;
+  border: 1px solid @el-border-color;
+  border-radius: @border-radius-base;
+  transition: @transition-border;
+  
+  &:focus {
+    outline: none;
+    border-color: @el-color-primary;
+  }
+  
+  &:disabled {
+    background-color: @el-fill-color-lighter;
+    color: @el-text-color-placeholder;
+    cursor: not-allowed;
+  }
+  
+  &::placeholder {
+    color: @el-text-color-placeholder;
+  }
+}
+
+// Table mixins
+.table-container() {
+  width: 100%;
+  background-color: @el-bg-color;
+  border: 1px solid @el-border-color-lighter;
+  border-radius: @border-radius-base;
+  overflow: hidden;
+  
+  .el-table {
+    font-size: @font-size-base;
+    
+    th {
+      background-color: @el-fill-color-light;
+      color: @el-text-color-primary;
+      font-weight: 500;
+    }
+    
+    td {
+      color: @el-text-color-regular;
+    }
+    
+    .el-table__row:hover {
+      background-color: @el-fill-color-lighter;
+    }
+  }
+}
+
+// Dialog mixins
+.dialog-container() {
+  .el-dialog__header {
+    padding: @spacing-lg;
+    border-bottom: 1px solid @el-border-color-lighter;
+    
+    .el-dialog__title {
+      color: @el-text-color-primary;
+      font-size: @font-size-large;
+      font-weight: 500;
+    }
+  }
+  
+  .el-dialog__body {
+    padding: @spacing-lg;
+    color: @el-text-color-regular;
+  }
+  
+  .el-dialog__footer {
+    padding: @spacing-md @spacing-lg;
+    border-top: 1px solid @el-border-color-lighter;
+  }
+}
+
+// List mixins
+.list-container() {
+  width: 100%;
+  background-color: @el-bg-color;
+  border-radius: @border-radius-base;
+}
+
+.list-item() {
+  padding: @spacing-md @spacing-base;
+  border-bottom: 1px solid @el-border-color-lighter;
+  transition: @transition-all;
+  cursor: pointer;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background-color: @el-fill-color-lighter;
+  }
+  
+  &.active {
+    background-color: @el-color-primary-light-9;
+    color: @el-color-primary;
+  }
+}
+
+// Scrollbar mixins
+.scrollbar-style() {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background-color: @el-fill-color-lighter;
+    border-radius: @border-radius-base;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: @el-border-color;
+    border-radius: @border-radius-base;
+    
+    &:hover {
+      background-color: @el-border-color-dark;
+    }
+  }
+}
+
+// Animation mixins
+.fade-transition() {
+  transition: opacity @transition-duration @transition-function-ease-in-out-bezier;
+}
+
+.slide-transition() {
+  transition: transform @transition-duration @transition-function-fast-bezier;
+}
+
+// Responsive mixins
+.responsive-hide-mobile() {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.responsive-hide-desktop() {
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+// VSCode specific mixins (for compatibility)
+.vscode-panel() {
+  background-color: @vscode-panel-background;
+  border: 1px solid @vscode-panel-border;
+  color: @vscode-editor-foreground;
+}
+
+.vscode-sidebar() {
+  background-color: @vscode-sideBar-background;
+  color: @vscode-sideBar-foreground;
+}
+
+// Utility mixins
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+.no-select() {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.hardware-accelerate() {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}

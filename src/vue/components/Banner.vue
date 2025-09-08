@@ -31,35 +31,6 @@ window.addEventListener('message', (e) => {
 })
 </script>
 
-<style scoped>
-.banner {
-  display: flex;
-  padding: 20px;
-  gap: 8px;
-  background: var(--app-bg);
-  color: var(--app-fg);
-  border-bottom: 1px solid var(--app-border);
-}
-.logo {
-  height: 60px;
-}
-.info {
-  flex: 1;
-  padding-top: 5px;
-}
-h1 {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--app-fg);
-  margin: 0;
-}
-p {
-  font-size: 12px;
-  color: var(--app-fg-secondary);
-  margin: 4px 0 8px;
-}
-.bar {
-  height: 3px;
-  background: linear-gradient(90deg, #32B7BC, var(--app-bg));
-}
+<style scoped lang="less">
+@import './Banner.less';
 </style>
