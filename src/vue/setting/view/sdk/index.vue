@@ -103,7 +103,12 @@
                 </div>
             </template>
             <div class="log-container">
-                <div ref="terminalRef" class="terminal-content"></div>
+                <XTerminal 
+                    ref="terminalRef"
+                    :fontSize="13"
+                    :scrollback="5000"
+                    @ready="onTerminalReady"
+                />
             </div>
             <template #footer>
                 <div class="log-dialog-footer">
@@ -128,9 +133,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, onBeforeUnmount } from 'vue';
 import { sendCommand, showMessage } from '../../../api/vscode';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import '@xterm/xterm/css/xterm.css';
+import XTerminal from '../../../components/XTerminal.vue';
 
 // SDK包版本信息接口
 interface SDKVersion {
@@ -167,13 +170,11 @@ const isAllExpanded = ref(false);
 const logDialogVisible = ref(false);
 const logContent = ref('');
 const isUpdating = ref(false);
-const terminalRef = ref<HTMLElement>();
+const terminalRef = ref<InstanceType<typeof XTerminal>>();
 const showForceClose = ref(false);
 let timeoutTimer: NodeJS.Timeout | null = null;
 let lastLogTime = 0;
 let updateStartTime = 0;
-let terminal: Terminal | null = null;
-let fitAddon: FitAddon | null = null;
 
 // 处理展开/收起
 const handleExpandChange = (row: any, expandedRowsList: any[]) => {
@@ -244,8 +245,8 @@ const closeLogDialog = () => {
     showForceClose.value = false;
     
     // 清理终端
-    if (terminal) {
-        terminal.clear();
+    if (terminalRef.value) {
+        terminalRef.value.clear();
     }
     
     // 清理定时器
@@ -258,52 +259,9 @@ const closeLogDialog = () => {
     sendCommand('getSDKList');
 };
 
-// 初始化终端
-const initTerminal = () => {
-    if (!terminalRef.value || terminal) return;
-    
-    // 创建终端实例
-    terminal = new Terminal({
-        theme: {
-            background: '#1e1e1e',
-            foreground: '#d4d4d4',
-            cursor: '#d4d4d4',
-            black: '#000000',
-            red: '#ff6b6b',
-            green: '#51cf66',
-            yellow: '#ffd93d',
-            blue: '#339af0',
-            magenta: '#ae3ec9',
-            cyan: '#22b8cf',
-            white: '#d4d4d4',
-            brightBlack: '#868e96',
-            brightRed: '#ff8787',
-            brightGreen: '#8ce99a',
-            brightYellow: '#ffe066',
-            brightBlue: '#74c0fc',
-            brightMagenta: '#d0bfff',
-            brightCyan: '#66d9e8',
-            brightWhite: '#ffffff'
-        },
-        fontSize: 13,
-        fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
-        cursorBlink: false,
-        convertEol: true,
-        disableStdin: true,
-        scrollback: 5000
-    });
-    
-    // 创建适应插件
-    fitAddon = new FitAddon();
-    terminal.loadAddon(fitAddon);
-    
-    // 挂载到DOM
-    terminal.open(terminalRef.value);
-    
-    // 适应容器大小
-    nextTick(() => {
-        fitAddon?.fit();
-    });
+// Terminal ready callback
+const onTerminalReady = () => {
+    console.log('SDK Terminal is ready');
 };
 
 // 检查超时
@@ -340,8 +298,8 @@ const forceCloseUpdate = () => {
     updateStartTime = 0;
     
     // 在终端显示关闭信息
-    if (terminal) {
-        terminal.writeln('\r\n\x1b[31m[已强制关闭]\x1b[0m');
+    if (terminalRef.value) {
+        terminalRef.value.writeln('\r\n\x1b[31m[已强制关闭]\x1b[0m');
     }
     
     if (timeoutTimer) {
@@ -350,17 +308,6 @@ const forceCloseUpdate = () => {
     }
 };
 
-// 清理终端
-const cleanupTerminal = () => {
-    if (terminal) {
-        terminal.dispose();
-        terminal = null;
-    }
-    if (fitAddon) {
-        fitAddon.dispose();
-        fitAddon = null;
-    }
-};
 
 // 组件挂载时获取SDK列表
 onMounted(() => {
@@ -403,18 +350,18 @@ onMounted(() => {
                 logContent.value = '';
                 updateStartTime = Date.now(); // 记录开始时间
                 nextTick(() => {
-                    initTerminal();
-                    if (terminal) {
-                        terminal.writeln('\x1b[32m开始更新 ...\x1b[0m');
+                    if (terminalRef.value) {
+                        terminalRef.value.clear();
+                        terminalRef.value.writeln('\x1b[32m开始更新 ...\x1b[0m');
                     }
                 });
                 startTimeoutTimer(); // 启动超时检测
                 break;
             case 'sdkUpdateLog':
                 // 接收更新日志
-                if (message.log && terminal) {
+                if (message.log && terminalRef.value) {
                     // 直接写入终端，xterm会自动处理ANSI转义序列
-                    terminal.write(message.log);
+                    terminalRef.value.write(message.log);
                     // 不需要重置计时器
                 }
                 break;
@@ -422,11 +369,11 @@ onMounted(() => {
                 // 更新完成
                 isUpdating.value = false;
                 updateStartTime = 0;
-                if (terminal) {
+                if (terminalRef.value) {
                     if (message.success) {
-                        terminal.writeln('\r\n\x1b[32m更新完成！\x1b[0m');
+                        terminalRef.value.writeln('\r\n\x1b[32m更新完成！\x1b[0m');
                     } else {
-                        terminal.writeln('\r\n\x1b[31m更新失败！\x1b[0m');
+                        terminalRef.value.writeln('\r\n\x1b[31m更新失败！\x1b[0m');
                     }
                 }
                 
@@ -442,7 +389,6 @@ onMounted(() => {
 
 // 组件卸载时清理
 onBeforeUnmount(() => {
-    cleanupTerminal();
     if (timeoutTimer) {
         clearInterval(timeoutTimer);
     }

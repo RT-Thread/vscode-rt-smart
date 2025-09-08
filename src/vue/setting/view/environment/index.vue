@@ -75,7 +75,7 @@
                 <!-- 安装进度日志区域 -->
                 <div class="progress-box" v-if="envInfo.isInstalling || envInfo.showProgressLog">
                     <p class="progress-status" v-if="envInfo.isInstalling">{{ envInfo.envStatus.installed ? '更新中...' : '安装中...' }}</p>
-                    <div class="progress-log" v-if="showTerminal">
+                    <div class="progress-log">
                         <div class="log-header">
                             <div class="log-title">执行日志：</div>
                             <div class="log-actions">
@@ -97,7 +97,14 @@
                                 </el-button>
                             </div>
                         </div>
-                        <div class="terminal-container" ref="terminalRef"></div>
+                        <div class="terminal-container" v-show="showTerminal">
+                            <XTerminal 
+                                ref="terminalRef"
+                                :rows="20"
+                                :fontSize="14"
+                                @ready="onTerminalReady"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -138,89 +145,24 @@ import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { envInfo } from "../../data";
 import { sendCommand, sendCommandData } from "../../../api/vscode"
 import { ElMessageBox } from 'element-plus';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import '@xterm/xterm/css/xterm.css';
+import XTerminal from '../../../components/XTerminal.vue';
 
 const installButtonDisabled = ref(true);
 
 // Terminal相关
-const terminalRef = ref<HTMLElement>();
-const showTerminal = ref(false);
-let terminal: Terminal | null = null;
-let fitAddon: FitAddon | null = null;
+const terminalRef = ref<InstanceType<typeof XTerminal>>();
+const showTerminal = ref(true);
 
-// 初始化终端
-const initTerminal = () => {
-    console.log('[DEBUG] initTerminal called, terminalRef.value:', terminalRef.value, 'terminal:', terminal);
-    if (!terminalRef.value || terminal) {
-        console.log('[DEBUG] initTerminal early return - terminalRef.value:', !!terminalRef.value, 'terminal exists:', !!terminal);
-        return;
-    }
-    
-    console.log('[DEBUG] Creating new Terminal instance...');
-    terminal = new Terminal({
-        rows: 20,
-        cols: 80,
-        fontSize: 14,
-        fontFamily: 'Consolas, "Courier New", monospace',
-        theme: {
-            background: '#1e1e1e',
-            foreground: '#d4d4d4',
-            cursor: '#aeafad',
-            black: '#000000',
-            red: '#cd3131',
-            green: '#0dbc79',
-            yellow: '#e5e510',
-            blue: '#2472c8',
-            magenta: '#bc3fbc',
-            cyan: '#11a8cd',
-            white: '#e5e5e5',
-            brightBlack: '#666666',
-            brightRed: '#f14c4c',
-            brightGreen: '#23d18b',
-            brightYellow: '#f5f543',
-            brightBlue: '#3b8eea',
-            brightMagenta: '#d670d6',
-            brightCyan: '#29b8db',
-            brightWhite: '#e5e5e5'
-        },
-        cursorBlink: true,
-        scrollback: 1000
-    });
-    
-    fitAddon = new FitAddon();
-    terminal.loadAddon(fitAddon);
-    
-    terminal.open(terminalRef.value);
-    console.log('[DEBUG] Terminal opened successfully');
-    
-    // 初始化显示欢迎信息
-    terminal.writeln('\x1b[1;32m===== RT-Thread Env 安装终端 =====\x1b[0m');
-    terminal.writeln('');
-    console.log('[DEBUG] Welcome message written to terminal');
-    
-    // 自适应大小
-    nextTick(() => {
-        console.log('[DEBUG] Fitting terminal addon...');
-        fitAddon?.fit();
-    });
-};
-
-// 销毁终端
-const destroyTerminal = () => {
-    if (terminal) {
-        terminal.dispose();
-        terminal = null;
-        fitAddon = null;
-    }
+// Terminal ready callback
+const onTerminalReady = () => {
+    console.log('[DEBUG] Terminal is ready');
 };
 
 // 写入终端
 const writeToTerminal = (text: string, type: string = 'info') => {
-    console.log('[DEBUG] writeToTerminal called - text:', text, 'type:', type, 'terminal exists:', !!terminal);
-    if (!terminal) {
-        console.log('[DEBUG] writeToTerminal: terminal is null, message discarded');
+    console.log('[DEBUG] writeToTerminal called - text:', text, 'type:', type);
+    if (!terminalRef.value) {
+        console.log('[DEBUG] writeToTerminal: terminalRef is null, message discarded');
         return;
     }
     
@@ -245,7 +187,7 @@ const writeToTerminal = (text: string, type: string = 'info') => {
     
     const output = `\x1b[0;36m[${timestamp}]\x1b[0m ${colorCode}${text}\x1b[0m`;
     console.log('[DEBUG] Writing to terminal:', output);
-    terminal.writeln(output);
+    terminalRef.value.writeln(output);
     console.log('[DEBUG] Message written successfully');
 };
 
@@ -264,15 +206,16 @@ const installEnvFunction = async () => {
     envInfo.value.showForceCloseButton = false; // 初始时不显示强制关闭按钮
     lastMessage = ''; // 重置上一条消息
     
-    // 显示终端
-    console.log('[DEBUG] Setting showTerminal to true');
-    showTerminal.value = true;
+    // 等待一帧让组件渲染
     await nextTick();
-    console.log('[DEBUG] After nextTick, terminalRef.value:', terminalRef.value);
     
-    // 销毁旧终端并创建新的
-    destroyTerminal();
-    initTerminal();
+    // 清空终端内容
+    if (terminalRef.value) {
+        terminalRef.value.clear();
+        terminalRef.value.writeln('\x1b[1;32m===== RT-Thread Env 安装终端 =====\x1b[0m');
+        terminalRef.value.writeln('');
+        terminalRef.value.writeln('\x1b[0;36m开始安装 RT-Thread Env...\x1b[0m');
+    }
     
     // 设置1分钟后显示强制关闭按钮
     if (forceCloseTimer) {
@@ -297,13 +240,16 @@ const updateEnvFunction = async () => {
     envInfo.value.showForceCloseButton = false; // 初始时不显示强制关闭按钮
     lastMessage = ''; // 重置上一条消息
     
-    // 显示终端
-    showTerminal.value = true;
+    // 等待一帧让组件渲染
     await nextTick();
     
-    // 销毁旧终端并创建新的
-    destroyTerminal();
-    initTerminal();
+    // 清空终端内容
+    if (terminalRef.value) {
+        terminalRef.value.clear();
+        terminalRef.value.writeln('\x1b[1;32m===== RT-Thread Env 更新终端 =====\x1b[0m');
+        terminalRef.value.writeln('');
+        terminalRef.value.writeln('\x1b[0;36m开始更新 RT-Thread Env...\x1b[0m');
+    }
     
     // 设置1分钟后显示强制关闭按钮
     if (forceCloseTimer) {
@@ -390,9 +336,11 @@ const clearProgressLog = () => {
     envInfo.value.installProgress = [];
     envInfo.value.showProgressLog = false;
     envInfo.value.showForceCloseButton = false;
-    showTerminal.value = false;
     lastMessage = ''; // 重置上一条消息
-    destroyTerminal();
+    // 清空终端
+    if (terminalRef.value) {
+        terminalRef.value.clear();
+    }
     // 清除定时器
     if (forceCloseTimer) {
         clearTimeout(forceCloseTimer);
@@ -403,8 +351,10 @@ const clearProgressLog = () => {
 // 关闭日志显示
 const closeProgressLog = () => {
     envInfo.value.showProgressLog = false;
-    showTerminal.value = false;
-    destroyTerminal();
+    // 清空终端
+    if (terminalRef.value) {
+        terminalRef.value.clear();
+    }
 };
 
 // 强制关闭操作
@@ -518,7 +468,6 @@ const confirmRtConfig = () => {
 
 // 组件卸载时清理
 onUnmounted(() => {
-    destroyTerminal();
     if (forceCloseTimer) {
         clearTimeout(forceCloseTimer);
     }
