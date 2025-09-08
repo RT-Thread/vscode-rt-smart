@@ -9,9 +9,12 @@ export interface Symbol {
   name: string;
   type: string;
   address: number;
+  hexaddr: string;
   size: number;
   section?: string;
   object?: string;
+  sourceFile?: string;
+  sourceLine?: number;
 }
 
 export interface ElfHeader {

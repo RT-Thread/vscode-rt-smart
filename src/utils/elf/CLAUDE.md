@@ -1,0 +1,1 @@
+- 这是一个elf符号处理的库，使用typescript方式编写，分析rtthread.elf，rtthread.map文件，并返回相关符号信息。

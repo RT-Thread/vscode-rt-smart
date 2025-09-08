@@ -45,6 +45,7 @@ export class MapParser {
               name,
               type: 'UNKNOWN',
               address,
+              hexaddr: '0x' + address.toString(16),
               size,
               object: currentObject || undefined
             });
@@ -66,6 +67,7 @@ export class MapParser {
               name,
               type: 'UNKNOWN',
               address,
+              hexaddr: '0x' + address.toString(16),
               size,
               object: currentObject || undefined
             });

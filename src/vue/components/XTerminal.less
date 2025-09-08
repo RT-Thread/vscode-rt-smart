@@ -1,0 +1,40 @@
+// XTerminal component styles
+@import '../styles/mixins.less';
+@import '../styles/variables.less';
+
+.xterm-container {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  border-radius: @border-radius-base;
+}
+
+// XTerm.js overrides
+:deep(.xterm) {
+  padding: @spacing-md;
+  height: 100%;
+}
+
+:deep(.xterm-viewport) {
+  background-color: transparent !important;
+  .scrollbar-style();
+}
+
+:deep(.xterm-screen) {
+  height: 100% !important;
+}
+
+// Terminal cursor using Element Plus primary color
+:deep(.xterm-cursor-layer) {
+  .xterm-cursor {
+    background-color: @el-color-primary !important;
+  }
+}
+
+// Selection highlight
+:deep(.xterm-selection-layer) {
+  .xterm-selection {
+    background-color: @el-color-primary;
+    opacity: 0.3;
+  }
+}
