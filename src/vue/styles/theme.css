@@ -46,6 +46,15 @@
   --app-shadow: var(--vscode-widget-shadow);
 }
 
+:root {
+  --el-bg-color: var(--app-bg);
+  --el-text-color-primary: var(--app-fg);
+  --el-text-color-regular: var(--app-fg-secondary);
+
+  --el-fill-color-light: var(--app-bg)
+  --el-color-primary: var(--app-fg);
+}
+
 /* Common styles for all components */
 body {
   background-color: var(--app-bg);
@@ -60,40 +69,6 @@ body {
 }
 
 /* Element Plus theme overrides */
-.el-button {
-  --el-button-text-color: var(--app-fg);
-  --el-button-bg-color: var(--app-button-secondary-bg);
-  --el-button-border-color: var(--app-border);
-  --el-button-hover-text-color: var(--app-fg);
-  --el-button-hover-bg-color: var(--app-button-secondary-hover-bg);
-  --el-button-hover-border-color: var(--app-border);
-}
-.el-button--primary {
-  --el-button-bg-color: var(--app-button-bg);
-  --el-button-text-color: var(--app-button-fg);
-  --el-button-hover-bg-color: var(--app-button-hover-bg);
-  --el-button-hover-text-color: var(--app-button-fg);
-  --el-button-active-bg-color: var(--app-button-hover-bg);
-  --el-button-active-text-color: var(--app-button-fg);
-  --el-button-border-color: var(--app-button-bg);
-  --el-button-hover-border-color: var(--app-button-hover-bg);
-  --el-button-active-border-color: var(--app-button-hover-bg);
-}
-
-.el-button--primary.is-plain {
-  --el-button-bg-color: var(--app-button-secondary-bg);
-  --el-button-text-color: var(--app-button-secondary-fg);
-  --el-button-hover-bg-color: var(--app-button-secondary-hover-bg);
-  --el-button-hover-text-color: var(--app-button-secondary-fg);
-  --el-button-border-color: var(--app-border);
-}
-
-.el-button--default {
-  --el-button-bg-color: var(--app-button-secondary-bg);
-  --el-button-text-color: var(--app-button-secondary-fg);
-  --el-button-hover-bg-color: var(--app-button-secondary-hover-bg);
-  --el-button-border-color: var(--app-border);
-}
 
 .el-input__wrapper {
   background-color: var(--app-input-bg);
