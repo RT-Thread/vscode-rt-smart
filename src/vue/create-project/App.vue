@@ -55,7 +55,6 @@
 import { computed, onMounted, onUpdated } from "vue";
 import { projectInfo, extensionInfo, envInfo } from "./data";
 import { sendCommand, sendCommandData } from "../api/vscode";
-import { imgUrl } from '../assets/img';
 import Banner from "../components/Banner.vue";
 
 onUpdated(() => {
