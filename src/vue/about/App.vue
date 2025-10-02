@@ -1,8 +1,8 @@
 <template>
-    <div class="container">
+    <div class="rt-page about-page container">
         <Banner sub-title="关于" />
 
-        <div class="content_area">
+        <div class="rt-page__content content_area">
             <div v-html="readmeMarkdown"></div>
 
             <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
@@ -12,12 +12,15 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useTheme } from '../composables/useTheme';
 import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
 import { extensionInfo } from '../setting/data';
 import Banner from '../components/Banner.vue';
 
 let readmeMarkdown = ref('');
+
+useTheme();
 
 const openRTThreadGitHub = () => {
     sendCommand('openURL', ['https://github.com/RT-Thread/rt-thread']);

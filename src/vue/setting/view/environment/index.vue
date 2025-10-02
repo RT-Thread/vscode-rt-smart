@@ -31,11 +31,11 @@
                     <div class="info-content">
                         <p class="status-title">RT-Thread Env 状态：</p>
                         <ul class="info-text">
-                            <li v-if="envInfo.envStatus.installed" style="color: #67c23a;">
-                                ✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}
+                            <li v-if="envInfo.envStatus.installed">
+                                <el-tag type="success" effect="plain">✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}</el-tag>
                             </li>
-                            <li v-else style="color: #e6a23c;">
-                                ❌ 未安装
+                            <li v-else>
+                                <el-tag type="warning" effect="plain">❌ 未安装</el-tag>
                             </li>
                             <li>安装路径: {{ envInfo.envStatus.path }}</li>
                             <li v-if="envInfo.envStatus.envGitRev">
@@ -46,29 +46,29 @@
 
                     <!-- Env 操作按钮区域 -->
                     <div class="env-actions">
-                        <el-button 
-                            v-if="!envInfo.envStatus.installed" 
-                            type="primary" 
+                        <el-button
+                            v-if="!envInfo.envStatus.installed"
+                            type="primary"
                             :loading="envInfo.isInstalling"
                             @click="installEnvFunction">
                             {{ envInfo.isInstalling ? '安装中...' : '安装 Env' }}
                         </el-button>
-                        <template v-else>
-                            <el-button 
-                                type="primary" 
-                                plain 
+                        <div v-else class="env-actions-group">
+                            <el-button
+                                type="primary"
+                                plain
                                 :disabled="envInfo.isInstalling"
                                 @click="updateEnvFunction">
                                 更新 Env
                             </el-button>
-                            <el-button 
-                                type="danger" 
-                                plain 
+                            <el-button
+                                type="danger"
+                                plain
                                 :disabled="envInfo.isInstalling"
                                 @click="deleteEnvFunction">
                                 删除 Env
                             </el-button>
-                        </template>
+                        </div>
                     </div>
                 </div>
 
