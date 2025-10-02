@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+﻿import * as fs from 'fs';
 import { Symbol } from './types';
 
 export class MapParser {
@@ -22,7 +22,9 @@ export class MapParser {
         continue;
       }
 
-      if (!inSymbolSection) continue;
+      if (!inSymbolSection) {
+        continue;
+      }
 
       // Parse object file name
       const objectMatch = line.match(/^\..*?\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+(.+\.o)/i);

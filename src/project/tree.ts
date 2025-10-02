@@ -1,4 +1,4 @@
-import path from 'path';
+﻿import path from 'path';
 import * as vscode from 'vscode';
 import fs from 'fs';
 import { getWorkspaceFolder, getExtensionPath } from '../api';
@@ -52,7 +52,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
                 }
             }
 
-            if (contextType == 'project_file') {
+            if (contextType === 'project_file') {
                 this.command = {
                     title: this.name,
                     command: 'extension.clickProject',
@@ -62,7 +62,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
                     ]
                 };
             }
-            else if (contextType == 'project_bsp') {
+            else if (contextType === 'project_bsp') {
                 this.command = {
                     title: this.name,
                     command: 'extension.handleTreeItemClick',
@@ -99,7 +99,7 @@ export function getTreeIcon(isDir: boolean, value: string): string {
     if (isDir) {
         icon = "default_folder.svg";
     } else {
-        if (value == "project") {
+        if (value === "project") {
             icon = "chip";
         }
         else if (value.endsWith(".c")) {
@@ -109,7 +109,7 @@ export function getTreeIcon(isDir: boolean, value: string): string {
         } else if (value.endsWith(".h")) {
             icon = "file_type_cheader.svg";
         } else if (value.endsWith(".s") || value.endsWith(".S")) {
-            icon = "file_type_assembly.png"
+            icon = "file_type_assembly.png";
         } else if (value.endsWith(".py") || value.endsWith("SConscript") || value.endsWith("SConstruct")) {
             icon = "file_type_python.svg";
         } else if (value.endsWith(".txt")) {
@@ -304,7 +304,7 @@ export function listStarsTreeItem(bspFolder:string, node: any) {
             let items = item.split(/[\/\\]/);
             if (items.length >= 2) {
                 for (let i = 0; i < children.length; i++) {
-                    if (children[i].label == items[0]) {
+                    if (children[i].label === items[0]) {
                         parent = children[i].children;
                         break;
                     }
@@ -360,7 +360,7 @@ export function initProjectTree(context:vscode.ExtensionContext) {
                 }
 
                 // double clicked
-                if (currentSelectedBspItem && currentSelectedBspItem.fn != item.fn) {
+                if (currentSelectedBspItem && currentSelectedBspItem.fn !== item.fn) {
                     DecorationProvider.getInstance().unmarkFile(vscode.Uri.file(currentSelectedBspItem.fn));
                 }
 
@@ -388,3 +388,4 @@ export function initProjectTree(context:vscode.ExtensionContext) {
 export function setTreeDataChangeEmitter(emitter: vscode.EventEmitter<ProjectTreeItem | undefined>) {
     _onDidChangeTreeData = emitter;
 }
+

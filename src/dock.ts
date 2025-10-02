@@ -1,4 +1,4 @@
-import path from 'path';
+﻿import path from 'path';
 import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
@@ -195,11 +195,11 @@ class GroupsDataProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
             if (treeElement) {
                 if (treeElement.length > 0) {
                 }
-                else if (element.contextType == "project_folder") {
+                else if (element.contextType === "project_folder") {
                     listFolderTreeItem(element);
                 }
             }
-            else if (element.contextType == "project_folder") {
+            else if (element.contextType === "project_folder") {
                 listFolderTreeItem(element);
             }
             children = element.children;
@@ -246,11 +246,11 @@ class ProjectFilesDataProvider implements vscode.TreeDataProvider<ProjectTreeIte
             if (treeElement) {
                 if (treeElement.length > 0) {
                 }
-                else if (element.contextType == "project_folder") {
+                else if (element.contextType === "project_folder") {
                     listFolderTreeItem(element);
                 }
             }
-            else if (element.contextType == "project_folder") {
+            else if (element.contextType === "project_folder") {
                 listFolderTreeItem(element);
             }
             children = element.children;
@@ -360,3 +360,4 @@ export function initDockView(context: vscode.ExtensionContext) {
     const treeDataprovider = new CmdTreeDataProvider();
     context.subscriptions.push(vscode.window.registerTreeDataProvider("treeId", treeDataprovider));
 }
+

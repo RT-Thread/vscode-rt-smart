@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+﻿import * as fs from 'fs';
 
 interface DwarfLineInfo {
   address: number;
@@ -45,7 +45,9 @@ export class DwarfParser {
   }
 
   private parseDebugLine(): void {
-    if (!this.debugLineSection) return;
+    if (!this.debugLineSection) {
+      return;
+    }
     
     let offset = 0;
     const section = this.debugLineSection;

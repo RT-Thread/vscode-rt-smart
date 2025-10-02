@@ -147,7 +147,7 @@ export function writeJsonObject(jsonObject: any, fn:string) {
 export async function openFolder(uri?: string) {
     let selectedFolder:vscode.Uri[] | undefined;
 
-    if (uri != undefined) {
+    if (uri !== undefined) {
         selectedFolder = await vscode.window.showOpenDialog({
             defaultUri: vscode.Uri.file(uri),
             canSelectFolders: true,

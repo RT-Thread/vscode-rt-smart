@@ -277,8 +277,11 @@ export async function deleteEnvFunction(webview: vscode.Webview) {
 async function deleteDirRecursive(dirPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
         fs.rm(dirPath, { recursive: true, force: true }, (err) => {
-            if (err) reject(err);
-            else resolve();
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
         });
     });
 }
