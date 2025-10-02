@@ -1,4 +1,4 @@
-// Banner component styles
+// Banner component styles - simplified
 @import '../styles/mixins.less';
 @import '../styles/variables.less';
 
@@ -6,10 +6,6 @@
   display: flex;
   padding: @spacing-lg;
   gap: @spacing-sm;
-  background-color: @el-bg-color;
-  color: @el-text-color-regular;
-  border-bottom: 1px solid @el-border-color-lighter;
-  box-shadow: @box-shadow-lighter;
 }
 
 .logo {
@@ -20,20 +16,18 @@
 .info {
   flex: 1;
   padding-top: 5px;
-  
+
   h1 {
     font-size: @font-size-medium;
     font-weight: 500;
-    color: @el-text-color-primary;
     margin: 0;
   }
-  
+
   p {
     font-size: @font-size-extra-small;
-    color: @el-text-color-secondary;
     margin: @spacing-xs 0 @spacing-sm;
   }
-  
+
   .bar {
     height: 3px;
     background: linear-gradient(90deg, #32B7BC, transparent);

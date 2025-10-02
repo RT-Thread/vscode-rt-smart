@@ -1,8 +1,8 @@
 <template>
-  <div class="container">
-    <Banner sub-title="分析" />
+  <div class="rt-page analyze-page container">
+    <Banner sub-title="符号分析" />
 
-    <div class="content_area">
+    <div class="rt-page__content content_area">
       <el-tabs
         v-model="activeName"
         class="section-tabs"
@@ -54,11 +54,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import Banner from "../components/Banner.vue";
+import { useTheme } from '../composables/useTheme';
 import { Close } from '@element-plus/icons-vue';
 import type { TabPaneName, TabsPaneContext } from "element-plus";
 declare var acquireVsCodeApi: any;
 
 const vscode = acquireVsCodeApi();
+
+useTheme();
 
 interface Section {
   name: string;

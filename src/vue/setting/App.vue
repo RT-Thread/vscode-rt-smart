@@ -1,13 +1,16 @@
 <template>
-    <div>
+    <div class="rt-page setting-page">
         <router-view></router-view>
     </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUpdated } from 'vue';
+import { useTheme } from '../composables/useTheme';
 import { extensionInfo, envInfo } from "./data";
 import { sendCommand } from '../api/vscode';
+
+useTheme();
 
 onUpdated(() => {
     console.log('App updated');

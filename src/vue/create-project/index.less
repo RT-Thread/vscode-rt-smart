@@ -1,150 +1,95 @@
-// Create Project page styles
 @import '../styles/mixins.less';
-@import '../styles/variables.less';
 
-.container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  background-color: @el-bg-color;
-  color: @el-text-color-regular;
+.create-project-page {
+  .rt-page__content {
+    padding-top: @spacing-base;
+  }
 }
 
-.content_area {
-  width: 100%;
-  height: 100%;
-  background-color: @el-bg-color;
-  color: @el-text-color-regular;
-  padding: 0 @spacing-lg;
-
-  .body-box {
-    width: 80%;
-    min-width: 800px;
-    margin: 0 auto;
-
-    // Form styles using Element Plus theme
-    .el-form {
-      :deep(.el-form-item__label) {
-        justify-content: flex-start;
-        color: @el-text-color-regular;
-        font-size: @font-size-base;
-      }
-
-      .file-box {
-        width: 0;
-      }
-
-      .el-input {
-        height: 40px;
-        font-size: @font-size-base;
-      }
-
-      .el-form-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: @spacing-lg;
-      }
-
-      .row-box {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        column-gap: @spacing-lg;
-
-        // Input fields
-        .el-input {
-          flex: 1;
-        }
-
-        // Select dropdowns with proper Element Plus styling
-        .el-select {
-          font-size: @font-size-base;
-        }
-
-        // Buttons using Element Plus primary style
-        .el-button {
-          min-width: 98px;
-        }
-
-        // Checkbox alignment
-        p {
-          margin: 0;
-        }
-      }
-
-      :deep(.el-checkbox) {
-        margin-right: 0;
-        
-        .el-checkbox__label {
-          color: @el-text-color-regular;
-          font-size: @font-size-base;
-        }
-        
-        &.is-disabled .el-checkbox__label {
-          color: @el-text-color-disabled;
-        }
-      }
+.create-project-card {
+  .el-form {
+    :deep(.el-form-item) {
+      margin-bottom: @spacing-lg;
     }
 
-    // Description section
-    h3 {
-      .text-title();
-      margin-top: @spacing-xxl;
-      margin-bottom: @spacing-base;
-    }
-
-    // Warning text styling
-    p, div {
-      color: @el-text-color-regular;
+    :deep(.el-form-item__label) {
+      justify-content: flex-start;
+      color: @color-text-secondary;
       font-size: @font-size-base;
-      line-height: @line-height-normal;
-    }
-
-    .iframe-box {
-      width: 100%;
-      height: auto;
     }
   }
 }
 
-// Form overrides for better Element Plus integration
-:deep(.el-form) {
-  .el-form-item {
-    border: none;
-    
-    &__content {
-      line-height: 40px;
+.create-project-row {
+  display: flex;
+  align-items: center;
+  column-gap: @spacing-lg;
+
+  &--name,
+  &--path,
+  &--baseline {
+    // Grid keeps Browse/Create buttons aligned across rows
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    align-items: center;
+    column-gap: @spacing-lg;
+  }
+
+  &--name {
+    .el-input {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-width: 0;
     }
   }
 
-  // Primary button style
-  .el-button--primary {
-    background-color: @el-color-primary;
-    border-color: @el-color-primary;
-    
-    &:hover {
-      background-color: @el-color-primary-light-3;
-      border-color: @el-color-primary-light-3;
-    }
-    
-    &.is-plain {
-      color: @el-color-primary;
-      background-color: @el-color-primary-light-9;
-      border-color: @el-color-primary-light-5;
-      
-      &:hover {
-        background-color: @el-color-primary;
-        border-color: @el-color-primary;
-        color: white;
-      }
+  &--path {
+    .el-input {
+      grid-column: 1 / span 2;
+      width: 100%;
+      min-width: 0;
     }
   }
 
-  // Input and Select focus states
-  .el-input__wrapper,
-  .el-select .el-input.is-focus .el-input__wrapper {
-    box-shadow: 0 0 0 1px @el-color-primary inset;
+  &--baseline {
+    .create-project-select {
+      width: 100%;
+      min-width: 0;
+    }
   }
+}
+
+
+.create-project-select {
+  min-width: 220px;
+}
+
+.create-project-checkbox {
+  flex: 1;
+}
+
+.create-project-note {
+  p {
+    margin: 0 0 @spacing-sm;
+    color: @color-text-secondary;
+  }
+}
+
+.create-project-warning {
+  margin: 0;
+  color: @color-warning;
+  font-weight: 500;
+}
+
+.create-project-card :deep(.el-input) {
+  height: 40px;
+}
+
+.create-project-card :deep(.el-checkbox__label) {
+  font-size: @font-size-base;
+}
+
+.create-project-card :deep(.el-button) {
+  min-width: 100px;
 }

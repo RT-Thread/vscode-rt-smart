@@ -120,3 +120,24 @@
 @vscode-button-background: var(--vscode-button-background);
 @vscode-button-foreground: var(--vscode-button-foreground);
 @vscode-button-hoverBackground: var(--vscode-button-hoverBackground);
+
+// Theme tokens synchronized with useTheme palette
+@font-family-base: var(--rt-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+@color-surface: var(--rt-surface, @vscode-editor-background);
+@color-surface-alt: var(--rt-surface-alt, @el-bg-color);
+@color-surface-muted: var(--rt-surface-muted, @el-fill-color-light);
+@color-border: var(--rt-border, @el-border-color-lighter);
+@color-border-strong: var(--rt-border-strong, @el-border-color);
+@color-text-primary: var(--rt-text-primary, @el-text-color-primary);
+@color-text-secondary: var(--rt-text-secondary, @el-text-color-secondary);
+@color-text-tertiary: var(--rt-text-tertiary, @el-text-color-placeholder);
+@color-text-inverse: var(--rt-text-inverse, #111111);
+@color-link: var(--rt-link, var(--vscode-textLink-foreground, #4fc1ff));
+@color-muted: var(--rt-muted, rgba(255, 255, 255, 0.45));
+@color-accent: var(--rt-accent, var(--vscode-button-background, @el-color-primary));
+@color-accent-hover: var(--rt-accent-hover, var(--vscode-button-hoverBackground, @el-color-primary-light-3));
+@color-danger: var(--rt-danger, var(--vscode-inputValidation-errorBackground, @el-color-danger));
+@color-warning: var(--rt-warning, var(--vscode-inputValidation-warningBackground, @el-color-warning));
+@color-success: var(--rt-success, var(--vscode-inputValidation-infoBackground, @el-color-success));
+@color-scrollbar: var(--rt-scrollbar, var(--vscode-scrollbarSlider-background, rgba(255, 255, 255, 0.25)));
+@shadow-soft: var(--rt-shadow, rgba(0, 0, 0, 0.24));
