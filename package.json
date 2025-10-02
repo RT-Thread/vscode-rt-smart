@@ -187,8 +187,18 @@
     },
     "dependencies": {
         "@vue/shared": "^3.x.x",
+        "@neilsustc/markdown-it-katex": "^1.0.0",
         "element-plus": "^2.4.2",
-        "marked": "^14.1.3",
+        "highlight.js": "^11.10.0",
+        "katex": "^0.16.11",
+        "markdown-it": "^13.0.2",
+        "markdown-it-deflist": "^2.1.0",
+        "markdown-it-emoji": "^3.0.0",
+        "markdown-it-footnote": "^4.0.0",
+        "markdown-it-github-alerts": "^0.1.2",
+        "markdown-it-sub": "^1.0.0",
+        "markdown-it-sup": "^1.0.0",
+        "markdown-it-task-lists": "^2.1.1",
         "vue": "^3.3.8",
         "vue-router": "^4.5.0"
     },
@@ -196,6 +206,7 @@
         "ms-python.python"
     ],
     "devDependencies": {
+        "@types/markdown-it": "^14.0.1",
         "@types/mocha": "^10.0.7",
         "@types/node": "20.x",
         "@types/vscode": "^1.96.0",

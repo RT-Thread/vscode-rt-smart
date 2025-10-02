@@ -3,7 +3,7 @@
         <Banner sub-title="关于" />
 
         <div class="content_area">
-            <div v-html="readmeMarkdown"></div>
+            <div class="markdown-body" v-html="readmeMarkdown"></div>
 
             <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
         </div>
@@ -12,10 +12,11 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { imgUrl } from '../assets/img';
 import { sendCommand } from '../api/vscode';
-import { extensionInfo } from '../setting/data';
 import Banner from '../components/Banner.vue';
+import 'katex/dist/katex.min.css';
+import 'highlight.js/styles/github.css';
+import '../assets/markdown.css';
 
 let readmeMarkdown = ref('');
 
