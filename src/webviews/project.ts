@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getWorkspaceFolder } from '../api';
@@ -24,12 +24,13 @@ async function findRtconfigDirectories(bspDir: string): Promise<TreeNode[]> {
     const root:TreeNode[] = [];
 
     async function searchDir(dir: string): Promise<void> {
-        let parent:any = undefined
+        let parent:any = undefined;
         const entries = await fs.promises.readdir(dir, { withFileTypes: true });
 
         for (const entry of entries) {
-            if (entry.name.includes('template'))
+            if (entry.name.includes('template')) {
                 continue; // Skip directories containing 'template'
+            }
 
             if (entry.isDirectory()) {
                 const fullPath = path.join(dir, entry.name);
@@ -47,17 +48,17 @@ async function findRtconfigDirectories(bspDir: string): Promise<TreeNode[]> {
                         // rename the node name
                         node.name = items.slice(1, items.length).join(path.sep);
 
-                        if (parent == undefined) {
+                        if (parent === undefined) {
                             // search for the parent node in the root array
                             for (let i = 0; i < root.length; i++) {
-                                if (root[i].name == items[0]) {
+                                if (root[i].name === items[0]) {
                                     parent = root[i];
                                     break;
                                 }
                             }
 
                             // not found, create a new parent node
-                            if (parent == undefined) {
+                            if (parent === undefined) {
                                 const parent_node : TreeNode = {
                                     id: "" + Math.random().toString(36).substring(2, 15),
                                     name: items[0],

@@ -11,3 +11,6 @@ ref/
 # Auto-generated type declaration files
 src/vue/auto-imports.d.ts
 src/vue/components.d.ts
+
+rtthread.elf
+rtthread.map

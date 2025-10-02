@@ -1,0 +1,99 @@
+// Projects page styles
+@import '../styles/mixins.less';
+@import '../styles/variables.less';
+
+.container {
+  .container-base();
+  padding: 0;
+}
+
+.content_area {
+  padding: @spacing-lg;
+  background-color: @el-bg-color;
+  color: @el-text-color-regular;
+  
+  // Description text
+  > br + text,
+  > text {
+    color: @el-text-color-regular;
+    font-size: @font-size-base;
+    line-height: @line-height-normal;
+  }
+  
+  hr {
+    margin: @spacing-base 0;
+    border: none;
+    border-top: 1px solid @el-border-color-lighter;
+  }
+  
+  // Button container
+  > div[style*="text-align: right"] {
+    text-align: right;
+    margin-bottom: @spacing-md;
+    
+    .el-button {
+      margin-left: @spacing-sm;
+    }
+  }
+}
+
+// Table styles using Element Plus theme
+.el-table {
+  .table-container();
+  
+  :deep(.el-table__header-wrapper) {
+    th {
+      background-color: @el-fill-color-light;
+      color: @el-text-color-primary;
+      font-weight: 500;
+    }
+  }
+  
+  :deep(.el-table__body-wrapper) {
+    td {
+      color: @el-text-color-regular;
+    }
+    
+    .el-table__row:hover {
+      > td {
+        background-color: @el-fill-color-lighter;
+      }
+    }
+    
+    // Selection checkbox column
+    .el-table-column--selection {
+      .el-checkbox {
+        .el-checkbox__input.is-checked {
+          .el-checkbox__inner {
+            background-color: @el-color-primary;
+            border-color: @el-color-primary;
+          }
+        }
+      }
+    }
+  }
+  
+  // Loading overlay
+  :deep(.el-loading-mask) {
+    background-color: rgba(255, 255, 255, 0.9);
+    
+    .el-loading-spinner {
+      .circular circle {
+        stroke: @el-color-primary;
+      }
+    }
+  }
+  
+  // Expand icon
+  :deep(.el-table__expand-icon) {
+    color: @el-text-color-secondary;
+    
+    &:hover {
+      color: @el-color-primary;
+    }
+    
+    &.el-table__expand-icon--expanded {
+      transform: rotate(90deg);
+    }
+  }
+}

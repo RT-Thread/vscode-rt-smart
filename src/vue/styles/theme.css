@@ -1,0 +1,393 @@
+/* VS Code Theme Variables Mapping for Vue Components */
+:root {
+  /* Background colors */
+  --app-bg: var(--vscode-editor-background);
+  --app-sidebar-bg: var(--vscode-sideBar-background);
+  --app-panel-bg: var(--vscode-panel-background);
+  --app-input-bg: var(--vscode-input-background);
+  --app-dropdown-bg: var(--vscode-dropdown-background);
+  --app-hover-bg: var(--vscode-list-hoverBackground);
+  --app-selection-bg: var(--vscode-list-activeSelectionBackground);
+  
+  /* Foreground colors */
+  --app-fg: var(--vscode-editor-foreground);
+  --app-fg-secondary: var(--vscode-descriptionForeground);
+  --app-fg-disabled: var(--vscode-disabledForeground);
+  
+  /* Border colors */
+  --app-border: var(--vscode-panel-border, var(--vscode-editorGroup-border));
+  --app-border-light: var(--vscode-widget-border);
+  --app-input-border: var(--vscode-input-border);
+  
+  /* Button colors */
+  --app-button-bg: var(--vscode-button-background);
+  --app-button-fg: var(--vscode-button-foreground);
+  --app-button-hover-bg: var(--vscode-button-hoverBackground);
+  --app-button-secondary-bg: var(--vscode-button-secondaryBackground);
+  --app-button-secondary-fg: var(--vscode-button-secondaryForeground);
+  --app-button-secondary-hover-bg: var(--vscode-button-secondaryHoverBackground);
+  
+  /* Status colors */
+  --app-success: var(--vscode-terminal-ansiGreen, #67c23a);
+  --app-warning: var(--vscode-terminal-ansiYellow, #e6a23c);
+  --app-error: var(--vscode-terminal-ansiRed, #f56c6c);
+  --app-info: var(--vscode-terminal-ansiBlue, #409eff);
+  
+  /* Table colors */
+  --app-table-header-bg: var(--vscode-editor-background);
+  --app-table-row-hover: var(--vscode-list-hoverBackground);
+  --app-table-border: var(--vscode-widget-border);
+  
+  /* Link colors */
+  --app-link: var(--vscode-textLink-foreground);
+  --app-link-hover: var(--vscode-textLink-activeForeground);
+  
+  /* Shadow */
+  --app-shadow: var(--vscode-widget-shadow);
+}
+
+:root {
+  --el-bg-color: var(--app-bg);
+  --el-text-color-primary: var(--app-fg);
+  --el-text-color-regular: var(--app-fg-secondary);
+
+  --el-fill-color-light: var(--app-bg)
+  --el-color-primary: var(--app-fg);
+}
+
+/* Common styles for all components */
+body {
+  background-color: var(--app-bg);
+  color: var(--app-fg);
+  margin: 0;
+  padding: 0;
+}
+
+/* Force apply theme to body and all elements */
+* {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* Element Plus theme overrides */
+
+.el-input__wrapper {
+  background-color: var(--app-input-bg);
+  border-color: var(--app-input-border);
+  box-shadow: none;
+}
+
+.el-input__inner {
+  color: var(--app-fg);
+  background-color: transparent;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--app-link);
+}
+
+.el-select {
+  --el-select-input-color: var(--app-fg);
+  --el-select-border-color-hover: var(--app-link);
+  --el-select-disabled-border: var(--app-border);
+}
+
+.el-select__wrapper {
+  background-color: var(--app-input-bg) !important;
+  border-color: var(--app-input-border) !important;
+  box-shadow: none !important;
+}
+
+.el-select__wrapper:hover {
+  border-color: var(--app-link) !important;
+}
+
+.el-select__placeholder {
+  color: var(--app-fg-disabled);
+}
+
+.el-select__caret {
+  color: var(--app-fg-secondary);
+}
+
+.el-select-dropdown {
+  background-color: var(--app-dropdown-bg);
+  border-color: var(--app-border);
+}
+
+.el-select-dropdown__item {
+  color: var(--app-fg);
+}
+
+.el-select-dropdown__item:hover {
+  background-color: var(--app-hover-bg);
+}
+
+.el-select-dropdown__item.selected {
+  color: var(--app-link);
+  font-weight: 500;
+}
+
+.el-table {
+  --el-table-bg-color: var(--app-bg);
+  --el-table-text-color: var(--app-fg);
+  --el-table-header-bg-color: var(--app-table-header-bg);
+  --el-table-header-text-color: var(--app-fg);
+  --el-table-row-hover-bg-color: var(--app-table-row-hover);
+  --el-table-border-color: var(--app-table-border);
+  background-color: transparent;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--app-table-header-bg);
+  color: var(--app-fg);
+}
+
+.el-table tr {
+  background-color: transparent;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--app-table-row-hover);
+}
+
+.el-dialog {
+  --el-dialog-bg-color: var(--app-panel-bg);
+  --el-dialog-title-text-color: var(--app-fg);
+  --el-dialog-box-shadow: var(--app-shadow);
+  background-color: var(--app-panel-bg) !important;
+  border: 1px solid var(--app-border);
+  color: var(--app-fg);
+}
+
+.el-dialog__wrapper {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.el-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Light theme specific dialog overlay */
+body:has(.light-theme) .el-overlay,
+body.light-theme .el-overlay {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dialog input styles in dialog context */
+.el-dialog .el-input__wrapper {
+  background-color: var(--app-input-bg) !important;
+  border-color: var(--app-input-border) !important;
+}
+
+.el-dialog .el-input__inner {
+  color: var(--app-fg) !important;
+  background-color: transparent !important;
+}
+
+.el-dialog .el-textarea__inner {
+  background-color: var(--app-input-bg) !important;
+  color: var(--app-fg) !important;
+  border-color: var(--app-input-border) !important;
+}
+
+/* Dialog button styles */
+.el-dialog .el-button--default {
+  background-color: var(--app-button-secondary-bg) !important;
+  color: var(--app-button-secondary-fg) !important;
+  border-color: var(--app-border) !important;
+}
+
+.el-dialog .el-button--default:hover {
+  background-color: var(--app-button-secondary-hover-bg) !important;
+  border-color: var(--app-border) !important;
+}
+
+.el-dialog .el-button--primary {
+  background-color: var(--app-button-bg) !important;
+  color: var(--app-button-fg) !important;
+  border-color: var(--app-button-bg) !important;
+}
+
+.el-dialog .el-button--primary:hover {
+  background-color: var(--app-button-hover-bg) !important;
+  border-color: var(--app-button-hover-bg) !important;
+}
+
+.el-dialog .el-button--primary.is-plain {
+  background-color: var(--app-button-secondary-bg) !important;
+  color: var(--app-link) !important;
+  border-color: var(--app-link) !important;
+}
+
+.el-dialog .el-button--primary.is-plain:hover {
+  background-color: var(--app-link) !important;
+  color: var(--app-button-fg) !important;
+  border-color: var(--app-link) !important;
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--app-border);
+  padding: 20px;
+  background-color: var(--app-panel-bg);
+}
+
+.el-dialog__title {
+  color: var(--app-fg) !important;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.el-dialog__headerbtn {
+  top: 20px;
+  right: 20px;
+  font-size: 20px;
+  color: var(--app-fg-secondary);
+}
+
+.el-dialog__headerbtn:hover {
+  color: var(--app-fg);
+}
+
+.el-dialog__body {
+  color: var(--app-fg);
+  background-color: var(--app-panel-bg);
+  padding: 20px;
+}
+
+.el-dialog__footer {
+  padding: 20px;
+  border-top: 1px solid var(--app-border);
+  background-color: var(--app-panel-bg);
+}
+
+.el-form-item__label {
+  color: var(--app-fg);
+}
+
+.el-checkbox {
+  --el-checkbox-text-color: var(--app-fg);
+  --el-checkbox-checked-text-color: var(--app-fg);
+  --el-checkbox-checked-bg-color: var(--app-info);
+  --el-checkbox-checked-input-border-color: var(--app-info);
+}
+
+.el-checkbox__label {
+  color: var(--app-fg) !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--app-info);
+  border-color: var(--app-info);
+}
+
+.el-checkbox__input.is-disabled .el-checkbox__inner {
+  background-color: var(--app-input-bg);
+  border-color: var(--app-border);
+}
+
+.el-checkbox__input.is-disabled .el-checkbox__label {
+  color: var(--app-fg-disabled);
+}
+
+.el-tag--success {
+  --el-tag-bg-color: var(--app-success);
+  --el-tag-text-color: white;
+  opacity: 0.9;
+}
+
+.el-tag--warning {
+  --el-tag-bg-color: var(--app-warning);
+  --el-tag-text-color: white;
+  opacity: 0.9;
+}
+
+.el-tag--danger {
+  --el-tag-bg-color: var(--app-error);
+  --el-tag-text-color: white;
+  opacity: 0.9;
+}
+
+.el-tag--info {
+  --el-tag-bg-color: var(--app-info);
+  --el-tag-text-color: white;
+  opacity: 0.9;
+}
+
+.el-loading-mask {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Popper and dropdown styles */
+.el-popper {
+  background-color: var(--app-dropdown-bg) !important;
+  border: 1px solid var(--app-border) !important;
+  color: var(--app-fg) !important;
+}
+
+.el-popper__arrow::before {
+  background-color: var(--app-dropdown-bg) !important;
+  border-color: var(--app-border) !important;
+}
+
+/* Message box styles */
+.el-message-box {
+  background-color: var(--app-panel-bg);
+  border: 1px solid var(--app-border);
+}
+
+.el-message-box__header {
+  color: var(--app-fg);
+}
+
+.el-message-box__content {
+  color: var(--app-fg);
+}
+
+.el-message-box__btns .el-button {
+  background-color: var(--app-button-secondary-bg);
+  color: var(--app-button-secondary-fg);
+  border-color: var(--app-border);
+}
+
+.el-message-box__btns .el-button--primary {
+  background-color: var(--app-button-bg);
+  color: var(--app-button-fg);
+  border-color: var(--app-button-bg);
+}
+
+/* Menu styles */
+.el-menu {
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: var(--app-fg);
+  --el-menu-active-color: var(--app-link);
+  --el-menu-hover-bg-color: var(--app-hover-bg);
+  --el-menu-hover-text-color: var(--app-link);
+  background-color: transparent !important;
+}
+
+.el-menu-item {
+  color: var(--app-fg) !important;
+  background-color: transparent !important;
+}
+
+.el-menu-item:hover {
+  background-color: var(--app-hover-bg) !important;
+  color: var(--app-link) !important;
+}
+
+.el-menu-item.is-active {
+  background-color: var(--app-selection-bg) !important;
+  color: var(--app-link) !important;
+}
+
+.el-menu--horizontal {
+  border-bottom: none !important;
+}
+
+.el-menu--horizontal .el-menu-item {
+  border-bottom: 2px solid transparent;
+}
+
+.el-menu--horizontal .el-menu-item.is-active {
+  border-bottom-color: var(--app-link) !important;
+}

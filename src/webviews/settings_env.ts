@@ -2,7 +2,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
+
+// 保存当前执行的进程，用于强制关闭
+let currentEnvProcess: ChildProcess | null = null;
 
 // Env 相关函数
 export async function checkEnvStatus(): Promise<{ installed: boolean; path: string; envVersion?: string; envGitRev?: string }> {
@@ -138,7 +141,7 @@ async function installWindowsEnv(webview: vscode.Webview) {
         webview.postMessage({ 
         command: 'installProgress', 
         type: 'info', 
-        message: '开始安装 RT-Thread Env...' 
+        message: '请确保网络正常，开始安装 RT-Thread Env...' 
         });
 
         try {
@@ -274,8 +277,11 @@ export async function deleteEnvFunction(webview: vscode.Webview) {
 async function deleteDirRecursive(dirPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
         fs.rm(dirPath, { recursive: true, force: true }, (err) => {
-            if (err) reject(err);
-            else resolve();
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
         });
     });
 }
@@ -286,6 +292,9 @@ function executeCommand(command: string, webview: vscode.Webview, cwd?: string):
         const cmd = parts[0];
         const args = parts.slice(1);
         const proc = spawn(cmd, args, { shell: true, cwd });
+        
+        // 保存当前进程引用
+        currentEnvProcess = proc;
 
         webview.postMessage({ command: 'installProgress', type: 'info', message: command });
         proc.stdout.on('data', (data: Buffer) => {
@@ -296,6 +305,7 @@ function executeCommand(command: string, webview: vscode.Webview, cwd?: string):
             webview.postMessage({ command: 'installProgress', type: 'warning', message: msg });
         });
         proc.on('close', (code) => {
+            currentEnvProcess = null; // 清除进程引用
             if (code === 0) {
                 resolve();
             } else {
@@ -304,6 +314,7 @@ function executeCommand(command: string, webview: vscode.Webview, cwd?: string):
             }
         });
         proc.on('error', (err) => {
+            currentEnvProcess = null; // 清除进程引用
             webview.postMessage({ command: 'installProgress', type: 'error', message: `命令执行失败: ${err.message}` });
             reject(err);
         });
@@ -339,6 +350,44 @@ async function getLocation(): Promise<'CN' | 'GLOBAL'> {
     }
 }
 
+// 强制关闭当前正在执行的Env操作
+function forceCloseEnvOperation(webview: vscode.Webview) {
+    if (currentEnvProcess) {
+        try {
+            // 在 Windows 上使用 taskkill，在 Linux/Mac 上使用 kill
+            if (process.platform === 'win32') {
+                // Windows: 使用 taskkill /T 来终止进程树
+                if (currentEnvProcess.pid) {
+                    spawn('taskkill', ['/F', '/T', '/PID', currentEnvProcess.pid.toString()]);
+                }
+            } else {
+                // Linux/Mac: 使用 kill -9
+                currentEnvProcess.kill('SIGKILL');
+            }
+            
+            currentEnvProcess = null;
+            
+            webview.postMessage({ 
+                command: 'installProgress', 
+                type: 'warning', 
+                message: '操作已被强制终止' 
+            });
+        } catch (error) {
+            webview.postMessage({ 
+                command: 'installProgress', 
+                type: 'error', 
+                message: `强制关闭失败: ${error}` 
+            });
+        }
+    } else {
+        webview.postMessage({ 
+            command: 'installProgress', 
+            type: 'info', 
+            message: '没有正在执行的操作' 
+        });
+    }
+}
+
 // 处理 Env 相关消息
 export function handleEnvMessage(webview: vscode.Webview, message: any): boolean {
     switch (message.command) {
@@ -355,6 +404,9 @@ export function handleEnvMessage(webview: vscode.Webview, message: any): boolean
             return true;
         case 'deleteEnv':
             deleteEnvFunction(webview);
+            return true;
+        case 'forceCloseEnvOperation':
+            forceCloseEnvOperation(webview);
             return true;
     }
     return false;
