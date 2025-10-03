@@ -35,7 +35,7 @@ export let cmds: Object = {
         ],
         name: 'Build',
         iconId: 'github-action',
-        label: 'build',
+        label: 'Build',
         isExpanded: true
     },
     Settings : {
@@ -84,7 +84,7 @@ export let cmds: Object = {
         ],
         name: 'Settings',
         iconId: 'gear',
-        label: 'settings',
+        label: 'Settings',
         isExpanded: true
     },
     Packages : {
@@ -112,7 +112,7 @@ export let cmds: Object = {
         ],
         name: 'Packages',
         iconId: 'extensions',
-        label: 'packages',
+        label: 'Packages',
         isExpanded: false
     }
-}
+};

@@ -20,6 +20,7 @@ export const envInfo = ref<any>({
     isInstalling: false,
     installProgress: [],
     showProgressLog: false,
+    showForceCloseButton: false, // 控制强制关闭按钮的显示
 
     version : "v2.0.1",
     path: "~/.env",

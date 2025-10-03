@@ -1,8 +1,8 @@
 <template>
-    <div class="container">
+    <div class="rt-page about-page container">
         <Banner sub-title="关于" />
 
-        <div class="content_area">
+        <div class="rt-page__content content_area">
             <div class="markdown-body" v-html="readmeMarkdown"></div>
 
             <el-button type="primary" @click="openRTThreadGitHub">Open RT-Thread/Github</el-button>
@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useTheme } from '../composables/useTheme';
 import { sendCommand } from '../api/vscode';
 import Banner from '../components/Banner.vue';
 import 'katex/dist/katex.min.css';
@@ -19,6 +20,8 @@ import 'highlight.js/styles/github.css';
 import '../assets/markdown.css';
 
 let readmeMarkdown = ref('');
+
+useTheme();
 
 const openRTThreadGitHub = () => {
     sendCommand('openURL', ['https://github.com/RT-Thread/rt-thread']);
@@ -41,53 +44,6 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.container {
-    padding: 0;
-}
-
-.header_box {
-    background-color: #fff;
-    border-bottom: 1px solid #e6e6e6;
-    padding: 0 20px;
-}
-
-.header_logo {
-    display: flex;
-    align-items: center;
-    column-gap: 12px;
-    font-size: 18px;
-    color: #333;
-    height: 100%;
-
-    .logo_img {
-        width: 228px;
-        height: 68px;
-    }
-
-    .logo_text {
-        color: #333;
-        padding-top: 15px;
-
-        p {
-            font-size: 18px;
-            margin: 0;
-        }
-
-        span {
-            font-size: 12px;
-        }
-    }
-}
-
-.content_area {
-    padding: 20px;
-}
-
-.page_title {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 20px;
-    font-weight: 500;
-}
+<style scoped lang="less">
+@import './index.less';
 </style>

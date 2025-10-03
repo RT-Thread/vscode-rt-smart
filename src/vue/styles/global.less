@@ -1,0 +1,143 @@
+@import './variables.less';
+@import './mixins.less';
+
+:root {
+  font-family: @font-family-base;
+  color-scheme: light dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: @color-surface;
+  color: @color-text-primary;
+  font-family: @font-family-base;
+  font-size: @font-size-base;
+  line-height: @line-height-normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+a {
+  color: @color-link;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: @color-border;
+  margin: @spacing-lg 0;
+}
+
+code,
+pre {
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier New', monospace;
+}
+
+.rt-page {
+  .container-base();
+  padding: 0;
+  min-height: 100vh;
+}
+
+.rt-page__content {
+  padding: @spacing-xl;
+  color: @color-text-primary;
+}
+
+.rt-stack {
+  display: flex;
+  flex-direction: column;
+  row-gap: @spacing-lg;
+}
+
+.rt-card {
+  background-color: @color-surface-alt;
+  border: 1px solid @color-border;
+  border-radius: @border-radius-base;
+  padding: @spacing-lg;
+  // box-shadow: 0 12px 28px 0 @shadow-soft;
+}
+
+.rt-card--muted {
+  background-color: @color-surface-muted;
+}
+
+.rt-section-title {
+  .text-title();
+  margin-bottom: @spacing-sm;
+}
+
+.rt-section-subtitle {
+  .text-subtitle();
+  margin-bottom: @spacing-base;
+}
+
+.el-button--primary {
+  background-color: @color-accent;
+  border-color: @color-accent;
+  color: @color-text-inverse;
+  transition: @transition-all;
+
+  &:hover,
+  &:focus-visible {
+    background-color: @color-accent-hover;
+    border-color: @color-accent-hover;
+  }
+}
+
+.el-button.is-plain.el-button--primary {
+  color: @color-accent;
+  background-color: color-mix(in srgb, @color-accent 12%, transparent);
+  border-color: color-mix(in srgb, @color-accent 35%, @color-border);
+
+  &:hover {
+    background-color: color-mix(in srgb, @color-accent 18%, transparent);
+  }
+}
+
+.el-input__wrapper,
+.el-input,
+.el-select {
+  background-color: @color-surface-muted;
+  color: @color-text-primary;
+}
+
+.el-table {
+  background-color: @color-surface-alt;
+  color: @color-text-primary;
+}
+
+.el-table__header th {
+  background-color: @color-surface-muted;
+  color: @color-text-secondary;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: @color-scrollbar;
+  border-radius: @border-radius-base;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}

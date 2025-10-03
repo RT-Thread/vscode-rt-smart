@@ -7,17 +7,15 @@
           :collapse="isSidebarOpen"
           :collapse-transition="false"
           router
-          :default-active="defaultActive"
-          background-color="#fff"
-          text-color="#333"
+          :default-active="activeMenu"
           style="border: none"
           mode="horizontal"
         >
           <el-menu-item
             v-for="item in list"
             :key="item.path"
-            :index="item.path"
-            :route="item.path"
+            :index="item.redirect || item.path"
+            :route="item.redirect || item.path"
           >
             <span class="title">{{ item.meta.title }}</span>
           </el-menu-item>
@@ -39,10 +37,10 @@ import { imgUrl } from '../../../assets/img'
 import Banner from '../../../components/Banner.vue';
 
 interface MenuRoute {
-  path: string
-  redirect?: string
-  children: any
-  meta: any
+    path: string
+    redirect?: string
+    children: any
+    meta: any
 }
 
 const route = useRoute()
@@ -51,59 +49,56 @@ const isSidebarOpen = ref(false)
 
 type ListItemType = MenuRoute & { icon?: string }
 const list: any = computed(() => {
-  return getMenuList(routes)
+    return getMenuList(routes)
 })
 
-// 使用 ref 来存储当前激活的菜单项
-const activeMenu = ref('')
+const activeMenu = ref('/environment')
 
-// 计算默认激活的菜单项
-const defaultActive = computed(() => {
-  return activeMenu.value || route.path || '/environment'
-})
+const resolveActivePath = (path?: string): string => {
+    if (!path || path === '/') {
+        return '/environment'
+    }
+    return path
+}
 
-// 在组件挂载后设置默认激活菜单
 onMounted(() => {
-  // 如果当前路径是根路径或没有路径，设置为环境工具
-  if (!route.path || route.path === '/') {
-    activeMenu.value = '/environment'
-    // 确保路由也跳转到环境工具
-    router.push('/environment')
-  } else {
-    activeMenu.value = route.path
-  }
+    const resolvedPath = resolveActivePath(route.path)
+    activeMenu.value = resolvedPath
+    if (resolvedPath !== route.path) {
+        router.replace(resolvedPath)
+    }
 })
 
-// 监听路由变化，同步更新激活菜单
-watch(() => route.path, (newPath) => {
-  if (newPath) {
-    activeMenu.value = newPath
-  }
-})
+watch(
+    () => route.path,
+    (newPath) => {
+        activeMenu.value = resolveActivePath(newPath)
+    }
+)
 
 const getMenuList = (list: MenuRoute[], basePath?: string): ListItemType[] => {
-  if (!list || list.length === 0) {
-    return []
-  }
-  list.sort((a, b) => {
-    return (a.meta?.orderNo || 0) - (b.meta?.orderNo || 0)
-  })
-  return list
-    .map((item) => {
-      const path =
-        basePath && !item.path.includes(basePath)
-          ? `${basePath}/${item.path}`
-          : item.path
-      return {
-        path,
-        title: item.meta?.title,
-        icon: item.meta?.icon,
-        children: getMenuList(item.children, path),
-        meta: item.meta,
-        redirect: item.redirect
-      }
+    if (!list || list.length === 0) {
+        return []
+    }
+    list.sort((a, b) => {
+        return (a.meta?.orderNo || 0) - (b.meta?.orderNo || 0)
     })
-    .filter((item) => item.meta && item.meta.hidden !== true)
+    return list
+        .map((item) => {
+            const path =
+                basePath && !item.path.includes(basePath)
+                    ? `${basePath}/${item.path}`
+                    : item.path
+            return {
+                path,
+                title: item.meta?.title,
+                icon: item.meta?.icon,
+                children: getMenuList(item.children, path),
+                meta: item.meta,
+                redirect: item.redirect
+            }
+        })
+        .filter((item) => item.meta && item.meta.hidden !== true)
 }
 </script>
 

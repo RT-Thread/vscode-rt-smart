@@ -1,0 +1,67 @@
+// Analyze page styles
+@import '../styles/mixins.less';
+@import '../styles/variables.less';
+
+.container {
+  .container-base();
+  padding: 0;
+  min-height: 100vh;
+}
+
+.content_area {
+  // Use Element Plus default styles
+}
+
+// Tabs styles
+.section-tabs {
+  // Use Element Plus default tab styles
+
+  > .el-tabs__content {
+    padding: @spacing-xxl;
+    font-size: @font-size-base;
+    font-weight: 400;
+  }
+}
+
+// Table styles - using Element Plus theme
+:deep(.el-table) {
+  font-size: @font-size-base;
+}
+
+// Symbol info panel
+.symbol-info-panel {
+  margin-top: @spacing-base;
+  border-radius: @border-radius-base;
+  overflow: hidden;
+
+  .symbol-info-header {
+    .flex-between();
+    padding: @spacing-sm @spacing-base;
+
+    span {
+      .text-title();
+      font-size: @font-size-medium;
+    }
+  }
+
+  .symbol-info-content {
+    padding: @spacing-base;
+    max-height: 300px;
+    overflow-y: auto;
+    .scrollbar-style();
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'Courier New', monospace;
+      font-size: @font-size-small;
+      line-height: @line-height-normal;
+    }
+  }
+}
+
+// Icon styles
+:deep(.el-icon) {
+  font-size: 16px;
+}

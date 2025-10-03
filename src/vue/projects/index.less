@@ -1,0 +1,39 @@
+@import '../styles/mixins.less';
+
+.projects-page {
+  .rt-page__content {
+    padding-top: @spacing-base;
+  }
+}
+
+.projects-card {
+  display: flex;
+  flex-direction: column;
+  row-gap: @spacing-lg;
+}
+
+.projects-tip {
+  margin: 0;
+  color: @color-text-secondary;
+  line-height: @line-height-normal;
+}
+
+.projects-actions {
+  display: flex;
+  justify-content: flex-end;
+  column-gap: @spacing-sm;
+}
+
+.projects-card .el-table {
+  .table-container();
+  border: none;
+  background-color: transparent;
+
+  :deep(.el-table__header th) {
+    background-color: @color-surface-muted;
+  }
+
+  :deep(.el-table__body-wrapper) {
+    .scrollbar-style();
+  }
+}

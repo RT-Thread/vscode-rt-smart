@@ -1,4 +1,4 @@
-import path from 'path';
+﻿import path from 'path';
 import * as vscode from 'vscode';
 import os from 'os';
 import fs from 'fs';
@@ -14,24 +14,24 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
         const isRTT = isRTThreadProject();
         const isRTTWorksapce = isRTThreadWorksapce();
-        if (isRTT != true && isRTTWorksapce != true) {
+        if (isRTT !== true && isRTTWorksapce !== true) {
             console.log("not RT-Thread project or workspace, return empty tree item.");
         }
 
-        if (isRTThreadProject() != true && isRTThreadWorksapce() != true) {
+        if (isRTThreadProject() !== true && isRTThreadWorksapce() !== true) {
             // only show Create Project and RT-Thread Setting command when not in RT-Thread project
-            let createProject = new vscode.TreeItem("create project", vscode.TreeItemCollapsibleState.None);
+            let createProject = new vscode.TreeItem("Create Project", vscode.TreeItemCollapsibleState.None);
             createProject.iconPath = new vscode.ThemeIcon("new-folder");
-            createProject.label = "create project";
+            createProject.label = "Create Project";
             createProject.command = {
                 command: "extension.showCreateProject",
                 title: "show create project page",
                 arguments: [],
             };
 
-            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
+            let rtSetting = new vscode.TreeItem("RT-Thread Setting", vscode.TreeItemCollapsibleState.None);
             rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
-            rtSetting.label = "rt-thread setting";
+            rtSetting.label = "RT-Thread Setting";
             rtSetting.command = {
                 command: "extension.showSetting",
                 title: "show rt-thread setting page",
@@ -45,7 +45,7 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 command: "extension.showAbout",
                 title: "show about page",
                 arguments: [],
-            }
+            };
 
             return [createProject, rtSetting, about];
         }
@@ -54,9 +54,9 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             let children = [];
             
             // 添加创建工程项
-            let createProject = new vscode.TreeItem("create project", vscode.TreeItemCollapsibleState.None);
+            let createProject = new vscode.TreeItem("Create Project", vscode.TreeItemCollapsibleState.None);
             createProject.iconPath = new vscode.ThemeIcon("new-folder");
-            createProject.label = "create project";
+            createProject.label = "Create Project";
             createProject.command = {
                 command: "extension.showCreateProject",
                 title: "show create project page",
@@ -64,9 +64,9 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             };
             children.push(createProject);
 
-            let rtSetting = new vscode.TreeItem("rt-thread setting", vscode.TreeItemCollapsibleState.None);
+            let rtSetting = new vscode.TreeItem("RT-Thread Setting", vscode.TreeItemCollapsibleState.None);
             rtSetting.iconPath = new vscode.ThemeIcon("settings-gear");
-            rtSetting.label = "rt-thread setting";
+            rtSetting.label = "RT-Thread Setting";
             rtSetting.command = {
                 command: "extension.showSetting",
                 title: "show rt-thread setting page",
@@ -82,6 +82,16 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 children.push(item);
             };
 
+            let analyze = new vscode.TreeItem("Symbolic Analysis", vscode.TreeItemCollapsibleState.None);
+            analyze.iconPath = new vscode.ThemeIcon("search-fuzzy");
+            analyze.label = "Symbolic Analysis";
+            analyze.command = {
+                command: "extension.showAnalyze",
+                title: "show symbolic analysis page",
+                arguments: [],
+            };
+            children.push(analyze);
+
             let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
             about.iconPath = new vscode.ThemeIcon("info");
             about.label = "About";
@@ -89,8 +99,9 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 command: "extension.showAbout",
                 title: "show about page",
                 arguments: [],
-            }
+            };
             children.push(about);
+
 
             return children;
         } else {
@@ -99,15 +110,15 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             const kconfig = vscode.extensions.getExtension('rt-thread.rt-thread-kconfig');
 
             for (const [key, value] of Object.entries(cmds)) {
-                if (element.label == value.label) {
+                if (element.label === value.label) {
                     for (const cmdItem of value.subcmds) {
                         let item = new vscode.TreeItem(cmdItem.name);
                         item.iconPath = new vscode.ThemeIcon(cmdItem.iconId);
-                        if (cmdItem.name == 'menuconfig' && kconfig != undefined) {
+                        if (cmdItem.name === 'menuconfig' && kconfig !== undefined) {
                             item.command = {
                                 command: "rt-thread-kconfig.menuconfig.windows",
                                 title: cmdItem.cmd.title
-                            }
+                            };
                         }
                         else {
                             item.command = {
@@ -184,11 +195,11 @@ class GroupsDataProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
             if (treeElement) {
                 if (treeElement.length > 0) {
                 }
-                else if (element.contextType == "project_folder") {
+                else if (element.contextType === "project_folder") {
                     listFolderTreeItem(element);
                 }
             }
-            else if (element.contextType == "project_folder") {
+            else if (element.contextType === "project_folder") {
                 listFolderTreeItem(element);
             }
             children = element.children;
@@ -235,11 +246,11 @@ class ProjectFilesDataProvider implements vscode.TreeDataProvider<ProjectTreeIte
             if (treeElement) {
                 if (treeElement.length > 0) {
                 }
-                else if (element.contextType == "project_folder") {
+                else if (element.contextType === "project_folder") {
                     listFolderTreeItem(element);
                 }
             }
-            else if (element.contextType == "project_folder") {
+            else if (element.contextType === "project_folder") {
                 listFolderTreeItem(element);
             }
             children = element.children;
@@ -349,3 +360,4 @@ export function initDockView(context: vscode.ExtensionContext) {
     const treeDataprovider = new CmdTreeDataProvider();
     context.subscriptions.push(vscode.window.registerTreeDataProvider("treeId", treeDataprovider));
 }
+

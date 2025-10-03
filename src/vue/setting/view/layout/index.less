@@ -1,76 +1,49 @@
+@import '../../../styles/mixins.less';
+
 .common-layout {
+  min-height: 100vh;
+  background-color: @color-surface;
+  color: @color-text-primary;
 
-    .header_box {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        height: 86px;
+  .el-aside {
+    width: 100%;
+    padding: 0 @spacing-xxl;
+    transition: @transition-all;
 
-        .header_logo {
-            display: flex;
-            align-items: center;
-            column-gap: 12px;
-            font-size: 18px;
-            color: #333;
-
-            .logo_img {
-                width: 228px;
-                height: 68px;
-            }
-
-            .logo_text {
-                color: #333;
-                padding-top: 15px;
-
-                p {
-                    font-size: 18px;
-                }
-
-                span {
-                    font-size: 12px;
-                }
-            }
-        }
-
+    .el-menu {
+      background-color: transparent;
+      border: none !important;
+      color: @color-text-secondary;
     }
 
-    .el-aside {
-        width: 100%;
-        transition-property: all;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 300ms;
-        background: #fff;
-        padding: 0 55px;
-        border-bottom: #E0E3EA 1px solid;
+    .el-menu-item {
+      transition: @transition-all;
+      border-radius: @border-radius-base;
+      color: @color-text-secondary;
 
-        .el-menu-item {
-            color: #333;
-            background: #fff;
+      .title {
+        font-size: @font-size-base;
+      }
 
-            .title {
-                font-size: 14px;
-            }
+      &:hover {
+        background-color: @color-surface-muted;
+        color: @color-text-primary;
+      }
 
-            &:hover {
-                background: #f2f3f5;
-            }
-
-            &.is-active {
-                background: #f2f3f5;
-                color: #165dff;
-            }
-        }
-
+      &.is-active {
+        font-weight: 600;
+        color: @color-accent;
+        background-color: color-mix(in srgb, @color-accent 12%, transparent);
+      }
     }
+  }
 
-    .container_main {
-        width: 100%;
+  .container_main {
+    width: 100%;
 
-        .main_box {
-            width: 100%;
-            background: #fff;
-            padding: 14px 55px;
-        }
-
+    .main_box {
+      width: 100%;
+      padding: @spacing-lg @spacing-xxl;
     }
+  }
 }

@@ -1,0 +1,178 @@
+﻿@import '../styles/mixins.less';
+
+.about-page {
+  .rt-page__content {
+    padding: @spacing-xl @spacing-xxl;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .content_area {
+    padding: 0;
+
+    > div {
+      font-family: @font-family-base;
+      font-size: @font-size-base;
+      line-height: 1.7;
+      color: @color-text-primary;
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-weight: 600;
+        color: @color-text-primary;
+        line-height: 1.3;
+        margin-top: @spacing-xxl;
+        margin-bottom: @spacing-md;
+
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+
+      h1 {
+        font-size: 32px;
+        padding-bottom: @spacing-sm;
+        border-bottom: 1px solid @color-border;
+      }
+
+      h2 {
+        font-size: 24px;
+        padding-bottom: @spacing-xs;
+        border-bottom: 1px solid @color-border;
+      }
+
+      h3 { font-size: 20px; }
+      h4 { font-size: 18px; }
+      h5 { font-size: 16px; }
+      h6 { font-size: 14px; color: @color-text-secondary; }
+
+      p {
+        margin: 0 0 @spacing-base;
+      }
+
+      a {
+        color: @color-link;
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+          text-decoration: underline;
+        }
+      }
+
+      ul,
+      ol {
+        margin: 0 0 @spacing-base;
+        padding-left: @spacing-xl;
+
+        li {
+          margin-bottom: @spacing-xs;
+          line-height: 1.7;
+
+          ul,
+          ol {
+            margin-top: @spacing-xs;
+            padding-left: @spacing-lg;
+          }
+        }
+      }
+
+      blockquote {
+        margin: @spacing-lg 0;
+        padding: @spacing-base @spacing-lg;
+        border-left: 4px solid @color-accent;
+        background-color: color-mix(in srgb, @color-accent 8%, transparent);
+        color: @color-text-secondary;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: @spacing-lg 0;
+        font-size: @font-size-base;
+
+        th,
+        td {
+          border: 1px solid @color-border;
+          padding: @spacing-sm @spacing-base;
+          text-align: left;
+          line-height: 1.6;
+        }
+
+        th {
+          background-color: @color-surface-muted;
+          font-weight: 600;
+        }
+      }
+
+      code {
+        font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier New', monospace;
+        background-color: color-mix(in srgb, @color-surface-muted 70%, transparent);
+        padding: 0.2em 0.4em;
+        border-radius: @border-radius-small;
+      }
+
+      pre {
+        font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier New', monospace;
+        background-color: @color-surface-muted;
+        border: 1px solid @color-border;
+        border-radius: @border-radius-base;
+        padding: @spacing-base;
+        overflow: auto;
+        margin: @spacing-lg 0;
+        .scrollbar-style();
+
+        code {
+          background: transparent;
+          padding: 0;
+        }
+      }
+
+      hr {
+        border: none;
+        height: 1px;
+        background-color: @color-border;
+        margin: @spacing-xl 0;
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 3px 6px;
+        font-size: 12px;
+        font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier New', monospace;
+        background-color: @color-surface-muted;
+        border: 1px solid @color-border;
+        border-radius: @border-radius-base;
+        box-shadow: inset 0 -1px 0 color-mix(in srgb, @color-border 50%, transparent);
+      }
+
+      figure.rt-md-image {
+        margin: @spacing-xl 0;
+        text-align: center;
+
+        img {
+          max-width: 100%;
+          border-radius: @border-radius-base;
+          border: 1px solid @color-border;
+          background-color: @color-surface;
+          box-shadow: 0 8px 24px 0 color-mix(in srgb, @shadow-soft 40%, transparent);
+        }
+
+        figcaption {
+          margin-top: @spacing-sm;
+          font-size: @font-size-small;
+          color: @color-text-secondary;
+        }
+      }
+    }
+
+    .el-button {
+      margin-top: @spacing-xl;
+    }
+  }
+}
+

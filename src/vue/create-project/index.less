@@ -1,0 +1,95 @@
+@import '../styles/mixins.less';
+
+.create-project-page {
+  .rt-page__content {
+    padding-top: @spacing-base;
+  }
+}
+
+.create-project-card {
+  .el-form {
+    :deep(.el-form-item) {
+      margin-bottom: @spacing-lg;
+    }
+
+    :deep(.el-form-item__label) {
+      justify-content: flex-start;
+      color: @color-text-secondary;
+      font-size: @font-size-base;
+    }
+  }
+}
+
+.create-project-row {
+  display: flex;
+  align-items: center;
+  column-gap: @spacing-lg;
+
+  &--name,
+  &--path,
+  &--baseline {
+    // Grid keeps Browse/Create buttons aligned across rows
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    align-items: center;
+    column-gap: @spacing-lg;
+  }
+
+  &--name {
+    .el-input {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-width: 0;
+    }
+  }
+
+  &--path {
+    .el-input {
+      grid-column: 1 / span 2;
+      width: 100%;
+      min-width: 0;
+    }
+  }
+
+  &--baseline {
+    .create-project-select {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+}
+
+
+.create-project-select {
+  min-width: 220px;
+}
+
+.create-project-checkbox {
+  flex: 1;
+}
+
+.create-project-note {
+  p {
+    margin: 0 0 @spacing-sm;
+    color: @color-text-secondary;
+  }
+}
+
+.create-project-warning {
+  margin: 0;
+  color: @color-warning;
+  font-weight: 500;
+}
+
+.create-project-card :deep(.el-input) {
+  height: 40px;
+}
+
+.create-project-card :deep(.el-checkbox__label) {
+  font-size: @font-size-base;
+}
+
+.create-project-card :deep(.el-button) {
+  min-width: 100px;
+}

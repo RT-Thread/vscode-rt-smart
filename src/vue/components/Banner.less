@@ -1,0 +1,36 @@
+// Banner component styles - simplified
+@import '../styles/mixins.less';
+@import '../styles/variables.less';
+
+.banner {
+  display: flex;
+  padding: @spacing-lg;
+  gap: @spacing-sm;
+}
+
+.logo {
+  height: 60px;
+  object-fit: contain;
+}
+
+.info {
+  flex: 1;
+  padding-top: 5px;
+
+  h1 {
+    font-size: @font-size-medium;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  p {
+    font-size: @font-size-extra-small;
+    margin: @spacing-xs 0 @spacing-sm;
+  }
+
+  .bar {
+    height: 3px;
+    background: linear-gradient(90deg, #32B7BC, transparent);
+    border-radius: @border-radius-small;
+  }
+}

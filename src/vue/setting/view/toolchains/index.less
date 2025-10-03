@@ -1,180 +1,124 @@
-/* 工具链管理页面样式 */
+@import '../../../styles/mixins.less';
+
 .content {
-    padding: 20px;
-    height: 100%;
-    box-sizing: border-box;
-    background-color: #f5f7fa;
+  padding: @spacing-xl;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .body-box {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  .card-container();
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  row-gap: @spacing-lg;
 }
 
-/* 页面头部 */
 .header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e4e7ed;
+  .card-header();
+  margin-bottom: 0;
+  padding-bottom: @spacing-base;
+  border-bottom: 1px solid @color-border;
 }
 
 .page-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #303133;
-    margin: 0;
+  .text-title();
+  margin: 0;
 }
 
 .header-actions {
-    display: flex;
-    gap: 12px;
+  display: flex;
+  column-gap: @spacing-sm;
 }
 
-/* 表格容器 */
 .table-container {
-    flex: 1;
-    overflow: auto;
-    margin-bottom: 20px;
+  .table-container();
+  flex: 1;
+  overflow: auto;
 }
 
-/* 自定义表格样式 */
 .el-table {
-    font-size: 14px;
-    
-    .el-table__header {
-        th {
-            background-color: #f5f7fa;
-            color: #606266;
-            font-weight: 600;
-        }
-    }
-    
-    .el-table__row {
-        &:hover {
-            background-color: #f5f7fa;
-        }
-    }
+  font-size: @font-size-base;
+  background-color: transparent;
 }
 
-/* 操作按钮样式 */
-.el-button--primary.is-link {
-    color: #409eff;
-    
-    &:hover {
-        color: #66b1ff;
-    }
-}
-
-.el-button--danger.is-link {
-    color: #f56c6c;
-    
-    &:hover {
-        color: #f78989;
-    }
-}
-
-
-/* 对话框表单样式 */
 .toolchain-form {
-    padding: 16px 0;
-    
-    .el-form-item {
-        margin-bottom: 24px;
-        
-        &:last-child {
-            margin-bottom: 0;
-        }
+  padding: @spacing-base 0;
+
+  .el-form-item {
+    margin-bottom: @spacing-xl;
+
+    &:last-child {
+      margin-bottom: 0;
     }
-    
-    .el-form-item__label {
-        font-weight: 500;
-        color: #606266;
-    }
-    
-    .el-input__inner {
-        height: 36px;
-    }
-    
-    .el-textarea__inner {
-        font-family: inherit;
-        line-height: 1.5;
-    }
+  }
+
+  .el-form-item__label {
+    font-weight: 500;
+    color: @color-text-secondary;
+  }
+
+  .el-input__inner {
+    height: 36px;
+  }
+
+  .el-textarea__inner {
+    font-family: inherit;
+    line-height: @line-height-normal;
+  }
 }
 
-/* 路径输入组 */
 .path-input-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    
-    .el-input {
-        flex: 1;
-    }
-    
-    .el-button {
-        min-width: 80px;
-    }
+  display: flex;
+  column-gap: @spacing-sm;
+  align-items: center;
+
+  .el-input {
+    flex: 1;
+  }
+
+  .el-button {
+    min-width: 80px;
+  }
 }
 
-/* 对话框底部 */
 .dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+  display: flex;
+  justify-content: flex-end;
+  column-gap: @spacing-sm;
 }
 
-/* 主按钮样式调整 */
-.el-button--primary {
-    background-color: #409eff;
-    border-color: #409eff;
-    
-    &:hover {
-        background-color: #66b1ff;
-        border-color: #66b1ff;
-    }
-}
-
-/* 空数据状态 */
 .el-table__empty-text {
-    color: #909399;
-    font-size: 14px;
-    padding: 40px 0;
+  font-size: @font-size-base;
+  padding: @spacing-xxl 0;
+  color: @color-text-secondary;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
-    .content {
-        padding: 12px;
+  .content {
+    padding: @spacing-lg;
+  }
+
+  .body-box {
+    padding: @spacing-lg;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: @spacing-sm;
+  }
+
+  .page-title {
+    font-size: @font-size-large;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+
+    .el-button {
+      width: 100%;
     }
-    
-    .body-box {
-        padding: 16px;
-    }
-    
-    .header-section {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .page-title {
-        font-size: 18px;
-    }
-    
-    .header-actions {
-        width: 100%;
-        flex-direction: column;
-        
-        .el-button {
-            width: 100%;
-        }
-    }
+  }
 }

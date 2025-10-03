@@ -1,311 +1,226 @@
-/* SDK管理页面样式 */
+@import '../../../styles/mixins.less';
+
 .sdk-container {
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    background-color: #f5f7fa;
-    box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: @spacing-xl;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  row-gap: @spacing-lg;
 }
 
-/* 页面头部 */
 .sdk-header {
-    background-color: #fff;
-    border-radius: 8px 8px 0 0;
-    padding: 20px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e4e7ed;
-}
+  .card-container();
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: @spacing-lg;
+  padding: @spacing-lg @spacing-xl;
 
-.sdk-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #303133;
+  .sdk-title {
+    .text-title();
     margin: 0;
-}
+  }
 
-.sdk-actions {
+  .sdk-actions {
     display: flex;
-    gap: 12px;
+    column-gap: @spacing-sm;
+  }
 }
 
-/* SDK内容区域 */
 .sdk-content {
-    background-color: #fff;
-    border-radius: 0 0 8px 8px;
-    overflow: hidden;
-}
+  .table-container();
+  padding: 0;
 
-/* 表格样式 */
-.el-table {
-    font-size: 14px;
-    
-    .el-table__header {
-        th {
-            background-color: #f5f7fa;
-            color: #606266;
-            font-weight: 600;
-            border-bottom: 1px solid #e4e7ed;
-        }
-    }
-    
-    .el-table__row {
-        &:hover {
-            background-color: #f5f7fa;
-        }
-    }
-    
-    // 隐藏默认的展开图标
+  .el-table {
+    background-color: transparent;
+
     .el-table__expand-icon {
-        display: none;
+      display: none;
     }
+  }
 }
 
-/* SDK名称样式 */
 .sdk-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    
-    .expand-icon {
-        font-size: 12px;
-        color: #909399;
-        transition: transform 0.3s;
-        
-        &.el-icon-arrow-down {
-            transform: rotate(90deg);
-        }
+  display: flex;
+  align-items: center;
+  column-gap: @spacing-sm;
+  cursor: pointer;
+  color: @color-text-primary;
+
+  .expand-icon {
+    font-size: @font-size-small;
+    transition: transform @transition-duration ease;
+
+    &.el-icon-arrow-down {
+      transform: rotate(90deg);
     }
-    
-    span {
-        color: #303133;
-        font-weight: 500;
-    }
+  }
+
+  span {
+    font-weight: 500;
+  }
 }
 
-/* 安装状态样式 */
 .install-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    
-    .el-tag {
-        min-width: 60px;
-    }
-    
-    .installed-version {
-        color: #67c23a;
-        font-weight: 500;
-    }
-    
-    .selected-version {
-        color: #e6a23c;
-        font-weight: 500;
-    }
+  display: flex;
+  align-items: center;
+  column-gap: @spacing-sm;
+
+  .el-tag {
+    min-width: 60px;
+  }
+
+  .installed-version,
+  .selected-version {
+    font-weight: 500;
+    color: @color-text-secondary;
+  }
 }
 
-/* 展开内容区域 */
 .sdk-expand-content {
-    padding: 20px 40px;
-    background-color: #fafbfc;
-    border-top: 1px solid #ebeef5;
+  padding: @spacing-lg @spacing-xl;
+  background-color: @color-surface;
 }
 
 .sdk-versions {
+  display: flex;
+  flex-direction: column;
+  row-gap: @spacing-sm;
+
+  .version-radio-item {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    
-    .version-radio-item {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-        
-        &:hover {
-            background-color: #f5f7fa;
-        }
-        
-        input[type="radio"] {
-            width: 16px;
-            height: 16px;
-            margin: 0;
-            cursor: pointer;
-            accent-color: #409eff;
-        }
-        
-        label {
-            margin-left: 8px;
-            font-size: 14px;
-            color: #606266;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        input[type="radio"]:checked + label {
-            color: #409eff;
-            font-weight: 500;
-        }
+    align-items: center;
+    column-gap: @spacing-sm;
+    cursor: pointer;
+    padding: @spacing-xs @spacing-sm;
+    border-radius: @border-radius-base;
+    transition: background-color @transition-duration-fast ease;
+
+    &:hover {
+      background-color: @color-surface-muted;
     }
+
+    input[type='radio'] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    label {
+      margin-left: @spacing-xs;
+      font-size: @font-size-base;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    input[type='radio']:checked + label {
+      font-weight: 600;
+      color: @color-accent;
+    }
+  }
 }
 
-/* 按钮样式 */
-.el-button {
-    min-width: 80px;
-    
-    &--primary {
-        background-color: #409eff;
-        border-color: #409eff;
-        
-        &:hover {
-            background-color: #66b1ff;
-            border-color: #66b1ff;
-        }
-        
-        &.is-plain {
-            color: #409eff;
-            background: #ecf5ff;
-            border-color: #b3d8ff;
-            
-            &:hover {
-                color: #fff;
-                background-color: #409eff;
-                border-color: #409eff;
-            }
-        }
-    }
-}
-
-/* 空数据状态 */
 .el-table__empty-text {
-    color: #909399;
-    font-size: 14px;
-    padding: 40px 0;
+  font-size: @font-size-base;
+  padding: @spacing-xxl 0;
+  color: @color-text-secondary;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .sdk-container {
-        padding: 12px;
-    }
-    
-    .sdk-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 16px;
-    }
-    
-    .sdk-title {
-        font-size: 18px;
-    }
-    
-    .sdk-actions {
-        width: 100%;
-        
-        .el-button {
-            flex: 1;
-        }
-    }
-    
-    .sdk-expand-content {
-        padding: 16px 20px;
-    }
-}
-
-/* 日志模态窗口样式 */
 .sdk-log-dialog {
-    max-width: 1200px;
-    
-    .el-dialog__header {
-        padding: 0;
-    }
-    
-    .el-dialog__body {
-        padding: 0;
-    }
+  max-width: 1200px;
 }
 
 .log-dialog-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    
-    .dialog-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #303133;
-    }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: @spacing-lg;
+
+  .dialog-title {
+    .text-title();
+    font-size: @font-size-large;
+  }
 }
 
 .log-container {
-    background-color: #1e1e1e;
-    border-radius: 4px;
-    padding: 0;
-    height: 60vh;
-    max-height: 600px;
-    min-height: 400px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+  border-radius: @border-radius-base;
+  height: 60vh;
+  max-height: 600px;
+  min-height: 400px;
+  overflow: hidden;
+  position: relative;
+  background-color: @color-surface;
 }
 
 .terminal-content {
+  height: 100%;
+  width: 100%;
+
+  .xterm {
     height: 100%;
-    width: 100%;
-    
-    // xterm.js 终端样式
-    .xterm {
-        height: 100%;
-        padding: 10px;
-    }
-    
-    .xterm-viewport {
-        overflow-y: auto !important;
-        
-        &::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        &::-webkit-scrollbar-track {
-            background: #2d2d30;
-            border-radius: 4px;
-        }
-        
-        &::-webkit-scrollbar-thumb {
-            background: #424242;
-            border-radius: 4px;
-            
-            &:hover {
-                background: #4e4e52;
-            }
-        }
-    }
+    padding: @spacing-sm;
+  }
+
+  .xterm-viewport {
+    overflow-y: auto !important;
+  }
 }
 
 .log-dialog-footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    
-    .update-status {
-        padding: 10px 20px;
-        font-size: 14px;
-        
-        i {
-            margin-right: 8px;
-            animation: rotate 1s linear infinite;
-        }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: @spacing-base;
+  padding: @spacing-lg;
+
+  .update-status {
+    padding: @spacing-sm @spacing-base;
+    font-size: @font-size-base;
+
+    i {
+      margin-right: @spacing-xs;
+      animation: rotate 1s linear infinite;
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .sdk-container {
+    padding: @spacing-lg;
+  }
+
+  .sdk-header {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: @spacing-sm;
+    padding: @spacing-lg;
+  }
+
+  .sdk-title {
+    font-size: @font-size-large;
+  }
+
+  .sdk-actions {
+    width: 100%;
+
+    .el-button {
+      flex: 1;
+    }
+  }
+
+  .sdk-expand-content {
+    padding: @spacing-lg;
+  }
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
