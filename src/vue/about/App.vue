@@ -15,8 +15,6 @@ import { onMounted, ref } from 'vue';
 import { useTheme } from '../composables/useTheme';
 import { sendCommand } from '../api/vscode';
 import Banner from '../components/Banner.vue';
-import 'katex/dist/katex.min.css';
-import 'highlight.js/styles/github.css';
 import '../assets/markdown.css';
 
 let readmeMarkdown = ref('');

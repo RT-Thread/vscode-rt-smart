@@ -10,9 +10,24 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
-# Exclude all node_modules except marked
+# Exclude all node_modules except markdown-it related packages
 **/node_modules/**
-!node_modules/marked/**
+!node_modules/markdown-it/**
+!node_modules/markdown-it-*/**
+!node_modules/argparse/**
+!node_modules/entities/**
+!node_modules/linkify-it/**
+!node_modules/mdurl/**
+!node_modules/punycode.js/**
+!node_modules/uc.micro/**
+!node_modules/highlight.js/**
+
+# Exclude unnecessary files from included packages to reduce size
+node_modules/highlight.js/**/*.md
+node_modules/highlight.js/styles/**
+node_modules/highlight.js/scss/**
+node_modules/highlight.js/es/**
+node_modules/markdown-it*/**/*.md
 **/.git/**
 **/package-lock.json
 **/.DS_Store
