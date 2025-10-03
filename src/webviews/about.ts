@@ -28,7 +28,6 @@ function renderReadmeMarkdown(context: vscode.ExtensionContext, webview: vscode.
     let htmlContent = markdownRenderer.render(markdownText, {
         breaks: false,
         linkify: true,
-        enableMath: true,
     });
 
     htmlContent = rewriteImageSources(htmlContent, context, webview, path.dirname(readmeMarkdownPath));

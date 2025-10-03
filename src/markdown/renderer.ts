@@ -1,27 +1,36 @@
 import MarkdownIt from 'markdown-it';
 import markdownItTaskLists from 'markdown-it-task-lists';
 import markdownItGithubAlerts from 'markdown-it-github-alerts';
-import markdownItKatex from '@neilsustc/markdown-it-katex';
 import markdownItFootnote from 'markdown-it-footnote';
 import markdownItDeflist from 'markdown-it-deflist';
 import * as markdownItEmoji from 'markdown-it-emoji';
 import markdownItSub from 'markdown-it-sub';
 import markdownItSup from 'markdown-it-sup';
-import hljs from 'highlight.js';
+// Use core library and register only essential languages for RT-Thread development
+import hljs from 'highlight.js/lib/core';
+import c from 'highlight.js/lib/languages/c';
+import cpp from 'highlight.js/lib/languages/cpp';
+import python from 'highlight.js/lib/languages/python';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+
+// Register only essential languages: C/C++, Python, JavaScript/TypeScript
+hljs.registerLanguage('c', c);
+hljs.registerLanguage('cpp', cpp);
+hljs.registerLanguage('c++', cpp);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('py', python);
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('js', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('ts', typescript);
 import { slugifyHeading } from './slugify';
 import SlugifyMode from './slugifyMode';
 
 export interface MarkdownRenderOptions {
     breaks?: boolean;
     linkify?: boolean;
-    enableMath?: boolean;
     slugifyMode?: SlugifyMode;
-    mathMacros?: Record<string, string>;
-}
-
-interface MathOptions {
-    throwOnError?: boolean;
-    macros?: Record<string, string>;
 }
 
 interface EngineRecord {
@@ -33,10 +42,9 @@ export class MarkdownRenderer {
     private engines = new Map<string, EngineRecord>();
 
     public render(text: string, options: MarkdownRenderOptions = {}): string {
-        const enableMath = options.enableMath !== false;
         const slugifyMode = options.slugifyMode ?? SlugifyMode.GitHub;
-        const key = this.composeEngineKey(enableMath, slugifyMode, options.mathMacros);
-        const engineRecord = this.ensureEngine(key, enableMath, slugifyMode, options.mathMacros);
+        const key = this.composeEngineKey(slugifyMode);
+        const engineRecord = this.ensureEngine(key, slugifyMode);
 
         engineRecord.slugCount.clear();
 
@@ -49,23 +57,22 @@ export class MarkdownRenderer {
         return engineRecord.md.render(text, env);
     }
 
-    private composeEngineKey(enableMath: boolean, slugifyMode: SlugifyMode, macros?: Record<string, string>): string {
-        const macroEntries = macros ? Object.keys(macros).sort().map((k) => `${k}:${macros[k]}`) : [];
-        return `${enableMath ? 'math' : 'nomath'}|${slugifyMode}|${macroEntries.join(',')}`;
+    private composeEngineKey(slugifyMode: SlugifyMode): string {
+        return `${slugifyMode}`;
     }
 
-    private ensureEngine(key: string, enableMath: boolean, slugifyMode: SlugifyMode, macros?: Record<string, string>): EngineRecord {
+    private ensureEngine(key: string, slugifyMode: SlugifyMode): EngineRecord {
         let record = this.engines.get(key);
         if (!record) {
             const slugCount = new Map<string, number>();
-            const md = this.createEngine(enableMath, slugCount, slugifyMode, macros);
+            const md = this.createEngine(slugCount, slugifyMode);
             record = { md, slugCount };
             this.engines.set(key, record);
         }
         return record;
     }
 
-    private createEngine(enableMath: boolean, slugCount: Map<string, number>, slugifyMode: SlugifyMode, macros?: Record<string, string>): MarkdownIt {
+    private createEngine(slugCount: Map<string, number>, slugifyMode: SlugifyMode): MarkdownIt {
         const md = new MarkdownIt({
             html: true,
             highlight: (str: string, lang?: string) => {
@@ -90,15 +97,6 @@ export class MarkdownRenderer {
         md.use(markdownItEmoji.full || markdownItEmoji);
         md.use(markdownItSub);
         md.use(markdownItSup);
-
-        if (enableMath) {
-            require('katex/contrib/mhchem');
-            const katexOptions: MathOptions = { throwOnError: false };
-            if (macros && Object.keys(macros).length > 0) {
-                katexOptions.macros = JSON.parse(JSON.stringify(macros));
-            }
-            md.use(markdownItKatex, katexOptions);
-        }
 
         this.addNamedHeaders(md, slugCount, slugifyMode);
         return md;
