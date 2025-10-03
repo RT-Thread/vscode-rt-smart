@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as fs from 'fs';
-import * as marked from 'marked';
 import * as path from 'path';
 import { postMessageExtensionData } from '../extension';
+import { markdownRenderer } from '../markdown';
 
 let aboutViewPanel: vscode.WebviewPanel | null = null;
 const name = "about";
 const title = "About RT-Thread";
 
-function renderReadmeMarkdown(context: vscode.ExtensionContext) {
+function renderReadmeMarkdown(context: vscode.ExtensionContext, webview: vscode.Webview) {
     let homeDir = os.homedir();
     const venvPath = path.join(homeDir, ".env", ".venv");
 
@@ -25,9 +25,62 @@ function renderReadmeMarkdown(context: vscode.ExtensionContext) {
     const readmeMarkdownPath = path.join(context.extensionPath, 'README.md');
     let markdownText = fs.readFileSync(readmeMarkdownPath, 'utf8');
     markdownText = markdownText.replace(/\$\{status\}/g, status);
-    let htmlContent = marked.parse(markdownText);
+    let htmlContent = markdownRenderer.render(markdownText, {
+        breaks: false,
+        linkify: true,
+        enableMath: true,
+    });
+
+    htmlContent = rewriteImageSources(htmlContent, context, webview, path.dirname(readmeMarkdownPath));
 
     return htmlContent;
+}
+
+function rewriteImageSources(html: string, context: vscode.ExtensionContext, webview: vscode.Webview, baseDir: string) {
+    const imgTagPattern = /<img\b[^>]*?\bsrc="([^"]+)"[^>]*>/ig;
+
+    return html.replace(imgTagPattern, (match, src: string) => {
+        const resolvedSrc = resolveResourceUri(src, context, webview, baseDir);
+        if (!resolvedSrc || resolvedSrc === src) {
+            return match;
+        }
+        return match.replace(`src="${src}"`, `src="${resolvedSrc}"`);
+    });
+}
+
+function resolveResourceUri(src: string, context: vscode.ExtensionContext, webview: vscode.Webview, baseDir: string) {
+    const trimmed = src.trim();
+
+    if (/^(https?:|data:|vscode-resource:|vscode-webview-resource:)/i.test(trimmed)) {
+        return trimmed;
+    }
+
+    if (trimmed.startsWith('//') || trimmed.startsWith('about:') || trimmed.startsWith('file:') || trimmed.startsWith('#')) {
+        return trimmed;
+    }
+
+    const parts = trimmed.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+    if (!parts) {
+        return trimmed;
+    }
+
+    const [ , rawPath, query = '', hash = '' ] = parts;
+
+    let fsPath: string;
+    if (path.isAbsolute(rawPath)) {
+        fsPath = rawPath;
+    } else {
+        fsPath = path.join(baseDir, rawPath);
+    }
+
+    if (!fs.existsSync(fsPath)) {
+        return trimmed;
+    }
+
+    const resourceUri = vscode.Uri.file(fsPath);
+    const webviewUri = webview.asWebviewUri(resourceUri).toString();
+
+    return `${webviewUri}${query}${hash}`;
 }
 
 export function openAboutWebview(context: vscode.ExtensionContext) {
@@ -66,7 +119,7 @@ export function openAboutWebview(context: vscode.ExtensionContext) {
         panel.webview.onDidReceiveMessage(message => {
             switch (message.command) {
                 case 'renderReadme':
-                    let readme = renderReadmeMarkdown(context);
+                    let readme = renderReadmeMarkdown(context, panel.webview);
                     if (readme) {
                         panel.webview.postMessage({command: 'setReadme', data: readme});
                     }
