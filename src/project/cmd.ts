@@ -1,6 +1,7 @@
 import * as os from 'os';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { getWorkspaceFolder } from '../api';
 import { executeCommand } from '../terminal';
@@ -55,7 +56,14 @@ export function setCurrentProject(arg: any) {
         // update workspace.json file
         let workspaceJson = readWorkspaceJson();
         if (workspaceJson) {
-            workspaceJson.currentProject = arg.fn;
+            const workspaceFolder = getWorkspaceFolder();
+            let relativeProject = arg.fn;
+            if (workspaceFolder && typeof arg.fn === 'string' && arg.fn.length > 0) {
+                if (path.isAbsolute(arg.fn)) {
+                    relativeProject = path.relative(workspaceFolder, arg.fn);
+                }
+            }
+            workspaceJson.currentProject = relativeProject;
             writeWorkspaceJson(workspaceJson);
         }
     }
