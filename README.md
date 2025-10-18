@@ -8,6 +8,12 @@ RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 
 
 ### 版本说明
 
+**v0.4.12**
+- 加入RT-Thread ELF文件符号分析的功能；
+- 调整界面，web页面颜色样式可以跟随vscode的浅色/深色自动进行切换；
+- RT-Thread设置界面可以在UI上按照env脚本环境；
+- web页面有统一的RT-Thread logo banner；
+
 **v0.4.11**
 - 添加Vue3、Element Plus的前端页面功能；
 - 更改RT-Thread Groups 到文件浏览视图，并增加编译图标按钮；
@@ -24,7 +30,7 @@ RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 
 
 ### env安装说明
 
-📢 如未安装，请点击<a href="https://github.com/RT-Thread/env" target="_blank">链接</a>了解如何进行安装。
+📢 如未安装，可以使用RT-Thread设置功能进行安装，也可以在命令行下自行安装：
 
 **💻 Windows用户** 请使用PowerShell运行如下的命令进行安装：
 
