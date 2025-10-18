@@ -192,7 +192,13 @@ export function writeWorkspaceJson(data: any) {
 export function setCurrentProjectInWorkspace(project: string) {
     let workspaceJson = readWorkspaceJson();
     if (workspaceJson) {
-        workspaceJson.currentProject = project;
+        const workspaceFolder = getWorkspaceFolder();
+        let relativeProject = project;
+        if (workspaceFolder && path.isAbsolute(project)) {
+            relativeProject = path.relative(workspaceFolder, project);
+        }
+
+        workspaceJson.currentProject = relativeProject;
         writeWorkspaceJson(workspaceJson);
     }
 }
@@ -201,7 +207,20 @@ export function setCurrentProjectInWorkspace(project: string) {
 export function getCurrentProjectInWorkspace() {
     let workspaceJson = readWorkspaceJson();
     if (workspaceJson) {
-        return workspaceJson.currentProject;
+        const project = workspaceJson.currentProject;
+        if (!project) {
+            return null;
+        }
+
+        // Backward compatible: if absolute, return it; if relative, resolve to absolute
+        if (path.isAbsolute(project)) {
+            return project;
+        }
+
+        const workspaceFolder = getWorkspaceFolder();
+        if (workspaceFolder) {
+            return path.resolve(workspaceFolder, project);
+        }
     }
     return null;
 }
