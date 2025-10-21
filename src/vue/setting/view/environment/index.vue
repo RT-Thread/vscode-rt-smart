@@ -32,10 +32,10 @@
                         <p class="status-title">RT-Thread Env 状态：</p>
                         <ul class="info-text">
                             <li v-if="envInfo.envStatus.installed">
-                                <el-tag type="success" effect="plain">✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}</el-tag>
+                                <label>✅ 已安装 - 版本 {{ envInfo.envStatus.envVersion || 'Unknown' }}</label>
                             </li>
                             <li v-else>
-                                <el-tag type="warning" effect="plain">❌ 未安装</el-tag>
+                                <label>❌ 未安装</label>
                             </li>
                             <li>安装路径: {{ envInfo.envStatus.path }}</li>
                             <li v-if="envInfo.envStatus.envGitRev">
