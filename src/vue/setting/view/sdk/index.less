@@ -80,7 +80,7 @@
 }
 
 .sdk-expand-content {
-  padding: @spacing-lg @spacing-xl;
+  padding: 1px;
   background-color: @color-surface;
 }
 
@@ -88,6 +88,7 @@
   display: flex;
   flex-direction: column;
   row-gap: @spacing-sm;
+  margin-left: 50px;
 
   .version-radio-item {
     display: flex;
@@ -98,10 +99,6 @@
     border-radius: @border-radius-base;
     transition: background-color @transition-duration-fast ease;
 
-    &:hover {
-      background-color: @color-surface-muted;
-    }
-
     input[type='radio'] {
       width: 16px;
       height: 16px;
@@ -111,7 +108,6 @@
 
     label {
       margin-left: @spacing-xs;
-      font-size: @font-size-base;
       cursor: pointer;
       user-select: none;
     }
