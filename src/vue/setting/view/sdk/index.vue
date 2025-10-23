@@ -61,15 +61,13 @@
                 <template #default="scope">
                     <div class="install-status">
                         <template v-if="scope.row.installed">
-                            <el-tag type="success" size="small">已安装</el-tag>
-                            <span class="installed-version">{{ scope.row.installedVersion }}</span>
+                            <label>已安装：{{ scope.row.installedVersion }}</label>
                         </template>
                         <template v-else-if="scope.row.selectedVersion">
-                            <el-tag type="warning" size="small">待安装</el-tag>
-                            <span class="selected-version">{{ scope.row.selectedVersion }}</span>
+                            <label>待安装：{{ scope.row.selectedVersion }}</label>
                         </template>
                         <template v-else>
-                            <el-tag type="info" size="small">未安装</el-tag>
+                            <label>未安装</label>
                         </template>
                     </div>
                 </template>
@@ -134,6 +132,7 @@
 import { ref, onMounted, computed, nextTick, onBeforeUnmount } from 'vue';
 import { sendCommand, showMessage } from '../../../api/vscode';
 import XTerminal from '../../../components/XTerminal.vue';
+import { languages } from 'vscode';
 
 // SDK包版本信息接口
 interface SDKVersion {

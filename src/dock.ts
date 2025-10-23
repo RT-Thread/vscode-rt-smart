@@ -341,6 +341,28 @@ export function initDockView(context: vscode.ExtensionContext) {
     context.subscriptions.push(view);
     vscode.commands.registerCommand('extension.refreshRTThread', () => refreshProjectFilesAndGroups());
 
+    // Auto-refresh trees when project/workspace descriptors change
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+        const projectJsonPattern = new vscode.RelativePattern(workspaceFolder, '.vscode/project.json');
+        const workspaceJsonPattern = new vscode.RelativePattern(workspaceFolder, '.vscode/workspace.json');
+
+        const projectWatcher = vscode.workspace.createFileSystemWatcher(projectJsonPattern);
+        const workspaceWatcher = vscode.workspace.createFileSystemWatcher(workspaceJsonPattern);
+
+        const triggerRefresh = () => vscode.commands.executeCommand('extension.refreshRTThread');
+
+        projectWatcher.onDidChange(triggerRefresh);
+        projectWatcher.onDidCreate(triggerRefresh);
+        projectWatcher.onDidDelete(triggerRefresh);
+
+        workspaceWatcher.onDidChange(triggerRefresh);
+        workspaceWatcher.onDidCreate(triggerRefresh);
+        workspaceWatcher.onDidDelete(triggerRefresh);
+
+        context.subscriptions.push(projectWatcher, workspaceWatcher);
+    }
+
     // update$(cpus)
     const cpus = os.cpus().length;
     for (const [key, value] of Object.entries(cmds)) {
@@ -360,4 +382,3 @@ export function initDockView(context: vscode.ExtensionContext) {
     const treeDataprovider = new CmdTreeDataProvider();
     context.subscriptions.push(vscode.window.registerTreeDataProvider("treeId", treeDataprovider));
 }
-
