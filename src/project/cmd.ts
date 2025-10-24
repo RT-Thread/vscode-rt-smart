@@ -46,6 +46,15 @@ export function openTerminalProject(arg: any) {
     return;
 }
 
+export function openProjectInNewWindow(arg: any) {
+    if (arg && arg.fn) {
+        // Open the BSP directory in a new VS Code window
+        vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(arg.fn), true);
+    }
+
+    return;
+}
+
 export function setCurrentProject(arg: any) {
     if (arg) {
         _currentProject = arg.fn;
