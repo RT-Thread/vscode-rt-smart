@@ -179,15 +179,9 @@ function setupStatusBarItems(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('extension.openMenu', () => {
         const items = getMenuItems();
         if (!items || items.length === 0) {
-            // Show message and open settings when no menu items configured
-            vscode.window.showInformationMessage(
-                '自定义菜单命令未配置，请在设置中添加自定义命令。',
-                '打开设置'
-            ).then(selection => {
-                if (selection === '打开设置') {
-                    vscode.commands.executeCommand('workbench.action.openSettings', 'smart.menuCommands');
-                }
-            });
+            // Directly open settings and show a temporary notification
+            vscode.commands.executeCommand('workbench.action.openSettings', 'smart.menuCommands');
+            vscode.window.setStatusBarMessage('$(info) 自定义菜单命令未配置，请添加自定义命令', 5000);
         } else {
             vscode.window.showQuickPick(items).then(selectedItem => {
                 if (selectedItem) {
