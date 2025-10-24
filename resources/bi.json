@@ -102,10 +102,16 @@
                 "path": "bsp/renesas/ra6m3-hmi-board"
             },
             {
-                "name": "ra6m4-cpk",
-                "description": "Renesas RA6M4 Crypto Partition Kit with enhanced security features. 瑞萨RA6M4加密分区套件，具有增强的安全功能。",
-                "board": "ra6m4-cpk",
-                "path": "bsp/renesas/ra6m4-cpk"
+                "name": "ra8d1-vision-board",
+                "description": "Renesas RA8D1 Vision Board with high-performance graphics and vision processing. 瑞萨RA8D1视觉开发板，具有高性能图形和视觉处理能力。",
+                "board": "ra8d1-vision-board",
+                "path": "bsp/renesas/ra8d1-vision-board"
+            },
+            {
+                "name": "rzn2l-etherkit",
+                "description": "Renesas RZ/N2L EtherKit for industrial Ethernet applications. 瑞萨RZ/N2L以太网套件，用于工业以太网应用。",
+                "board": "rzn2l-etherkit",
+                "path": "bsp/renesas/rzn2l_etherkit"
             }
         ]
     },
@@ -140,6 +146,24 @@
                 "description": "NXP i.MX RT1064 EVK board with ARM Cortex-M7 and advanced peripherals. 恩智浦i.MX RT1064评估板，搭载ARM Cortex-M7和先进外设。",
                 "board": "imxrt1064-evk",
                 "path": "bsp/imxrt/imxrt1064-evk"
+            },
+            {
+                "name": "frdm-mcxa156",
+                "description": "NXP FRDM-MCXA156 Freedom development board with ARM Cortex-M33. 恩智浦FRDM-MCXA156自由开发板，搭载ARM Cortex-M33内核。",
+                "board": "frdm-mcxa156",
+                "path": "bsp/nxp/mcx/mcxa/frdm-mcxa156"
+            },
+            {
+                "name": "frdm-mcxa346",
+                "description": "NXP FRDM-MCXA346 Freedom development board with ARM Cortex-M33. 恩智浦FRDM-MCXA346自由开发板，搭载ARM Cortex-M33内核。",
+                "board": "frdm-mcxa346",
+                "path": "bsp/nxp/mcx/mcxa/frdm-mcxa346"
+            },
+            {
+                "name": "frdm-mcxn947",
+                "description": "NXP FRDM-MCXN947 Freedom development board with dual ARM Cortex-M33 cores. 恩智浦FRDM-MCXN947自由开发板，搭载双核ARM Cortex-M33内核。",
+                "board": "frdm-mcxn947",
+                "path": "bsp/nxp/mcx/mcxn/frdm-mcxn947"
             }
         ]
     },
