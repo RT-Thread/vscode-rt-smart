@@ -93,19 +93,36 @@
         ]
     },
     {
-        "manufacturer": "Espressif",
+        "manufacturer": "Renesas",
         "boards": [
             {
-                "name": "esp32c3",
-                "description": "Espressif ESP32-C3 RISC-V based Wi-Fi and Bluetooth SoC. 乐鑫ESP32-C3基于RISC-V的Wi-Fi和蓝牙SoC。",
-                "board": "esp32c3",
-                "path": "bsp/esp32c3"
+                "name": "ra6m3-hmi-board",
+                "description": "Renesas RA6M3 HMI development board with Cortex-M4 core and rich graphics features. 瑞萨RA6M3 HMI开发板，搭载Cortex-M4内核和丰富的图形功能。",
+                "board": "ra6m3-hmi-board",
+                "path": "bsp/renesas/ra6m3-hmi-board"
             },
             {
-                "name": "esp32",
-                "description": "Espressif ESP32 dual-core Wi-Fi and Bluetooth SoC. 乐鑫ESP32双核Wi-Fi和蓝牙SoC。",
-                "board": "esp32",
-                "path": "bsp/esp32"
+                "name": "ra6m4-cpk",
+                "description": "Renesas RA6M4 Crypto Partition Kit with enhanced security features. 瑞萨RA6M4加密分区套件，具有增强的安全功能。",
+                "board": "ra6m4-cpk",
+                "path": "bsp/renesas/ra6m4-cpk"
+            }
+        ]
+    },
+    {
+        "manufacturer": "Infineon",
+        "boards": [
+            {
+                "name": "psoc62-cy8ckit-062s2-43012",
+                "description": "Infineon PSoC 62 Pioneer Kit with dual-core ARM Cortex-M4/M0+ and Wi-Fi/BT. 英飞凌PSoC 62先锋套件，双核ARM Cortex-M4/M0+和Wi-Fi/BT。",
+                "board": "psoc62-cy8ckit-062s2-43012",
+                "path": "bsp/cypress/psoc6-cy8ckit-062S2-43012"
+            },
+            {
+                "name": "xmc4500-relax",
+                "description": "Infineon XMC4500 Relax Kit with ARM Cortex-M4 for industrial applications. 英飞凌XMC4500 Relax套件，搭载ARM Cortex-M4用于工业应用。",
+                "board": "xmc4500-relax",
+                "path": "bsp/xmc4500-relax"
             }
         ]
     },
