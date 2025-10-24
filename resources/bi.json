@@ -15,22 +15,10 @@
                 "path": "bsp/qemu-virt64-aarch64"
             },
             {
-                "name": "qemu-virt64-riscv64",
-                "description": "QEMU emulated virt riscv64 machine. QEMU模拟的virt riscv64机器。",
-                "board": "qemu-virt64-riscv64",
-                "path": "bsp/qemu-virt64-riscv64"
-            },
-            {
-                "name": "qemu-riscv-virt32",
-                "description": "QEMU emulated RISC-V 32-bit virt machine. QEMU模拟的RISC-V 32位虚拟机器。",
-                "board": "qemu-riscv-virt32",
-                "path": "bsp/qemu-riscv-virt32"
-            },
-            {
-                "name": "qemu-riscv-virt64",
-                "description": "QEMU emulated RISC-V 64-bit virt machine. QEMU模拟的RISC-V 64位虚拟机器。",
-                "board": "qemu-riscv-virt64",
-                "path": "bsp/qemu-riscv-virt64"
+                "name": "qemu-virt64-riscv",
+                "description": "QEMU emulated virt RISC-V 64-bit machine. QEMU模拟的virt RISC-V 64位机器。",
+                "board": "qemu-virt64-riscv",
+                "path": "bsp/qemu-virt64-riscv"
             }
         ]
     },
