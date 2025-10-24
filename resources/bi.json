@@ -119,16 +119,10 @@
         "manufacturer": "Infineon",
         "boards": [
             {
-                "name": "psoc62-cy8ckit-062s2-43012",
-                "description": "Infineon PSoC 62 Pioneer Kit with dual-core ARM Cortex-M4/M0+ and Wi-Fi/BT. 英飞凌PSoC 62先锋套件，双核ARM Cortex-M4/M0+和Wi-Fi/BT。",
-                "board": "psoc62-cy8ckit-062s2-43012",
-                "path": "bsp/cypress/psoc6-cy8ckit-062S2-43012"
-            },
-            {
-                "name": "xmc4500-relax",
-                "description": "Infineon XMC4500 Relax Kit with ARM Cortex-M4 for industrial applications. 英飞凌XMC4500 Relax套件，搭载ARM Cortex-M4用于工业应用。",
-                "board": "xmc4500-relax",
-                "path": "bsp/xmc4500-relax"
+                "name": "psoc6-evaluationkit-062S2",
+                "description": "Infineon PSoC 6 Evaluation Kit with dual-core ARM Cortex-M4/M0+ processor. 英飞凌PSoC 6评估套件，搭载双核ARM Cortex-M4/M0+处理器。",
+                "board": "psoc6-evaluationkit-062S2",
+                "path": "bsp/Infineon/psoc6-evaluationkit-062S2"
             }
         ]
     },
