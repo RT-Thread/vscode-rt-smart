@@ -28,9 +28,9 @@
               <el-select class="create-project-select" v-model="projectInfo.board" :placeholder="'请选择'" @change="boardChanged">
                 <el-option
                   v-for="item in projectInfo.projectList[vendorIndex].boards"
-                  :key="item"
-                  :label="item"
-                  :value="item"
+                  :key="typeof item === 'string' ? item : item.board"
+                  :label="typeof item === 'string' ? item : item.name"
+                  :value="typeof item === 'string' ? item : item.board"
                 />
               </el-select>
               <el-button type="primary" plain @click="createProject">创建</el-button>
@@ -48,6 +48,10 @@
         <h3 class="rt-section-title">创建工程说明</h3>
         <p>请在工程名称中填写名称，它会在工程空间路径中创建这样名称的目录放置新创建的工程。</p>
         <p class="create-project-warning">⚠️ 请确保空间路径 + 工程名称的路径不存在；否则创建检查失败。</p>
+        <div v-if="selectedBoardDescription" class="create-project-board-info">
+          <h4 class="rt-subsection-title">选中的板卡信息</h4>
+          <p>{{ selectedBoardDescription }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -95,6 +99,31 @@ const vendorIndex = computed(() => {
   return current;
 });
 
+const selectedBoardDescription = computed(() => {
+  if (!projectInfo.value.board || !projectInfo.value.projectList || projectInfo.value.projectList.length === 0) {
+    return '';
+  }
+  
+  const currentVendor = projectInfo.value.projectList[vendorIndex.value];
+  if (!currentVendor || !currentVendor.boards) {
+    return '';
+  }
+  
+  const board = currentVendor.boards.find((b: any) => {
+    if (typeof b === 'string') {
+      return b === projectInfo.value.board;
+    } else {
+      return b.board === projectInfo.value.board;
+    }
+  });
+  
+  if (board && typeof board === 'object' && board.description) {
+    return board.description;
+  }
+  
+  return '';
+});
+
 const vendorChanged = () => {
   let current = -1;
   projectInfo.value.projectList.filter((item: any, index: number) => {
@@ -105,7 +134,10 @@ const vendorChanged = () => {
   if (current === -1) {
     projectInfo.value.board = '';
   } else {
-    projectInfo.value.board = projectInfo.value.projectList[current].boards[0];
+    const boards = projectInfo.value.projectList[current].boards;
+    if (boards && boards.length > 0) {
+      projectInfo.value.board = typeof boards[0] === 'string' ? boards[0] : boards[0].board;
+    }
   }
 };
 

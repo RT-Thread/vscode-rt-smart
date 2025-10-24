@@ -111,17 +111,9 @@ export function openCreateProjectWebview(context: vscode.ExtensionContext) {
 
 						let workspace = vscode.workspace.workspaceFolders?.[0];
 						// 获取BSP工程信息
-						if (workspace) {
-							const rtthreadFn = path.join(workspace.uri.fsPath, '.vscode', 'rtthread.json');
-							if (fs.existsSync(rtthreadFn)) {
-								let rtthreadObj = readJsonObject(rtthreadFn);
-								if (rtthreadObj && rtthreadObj.board_info) {
-									extensionInfo.projectList = getBoardInfo();
-								}
-							}
-						}
+						extensionInfo.projectList = getBoardInfo();
 
-						// 如果没有从workspace获取到projectList，则使用默认值
+						// 如果没有从bi.json获取到projectList，则使用默认值
 						if (!extensionInfo.projectList || extensionInfo.projectList.length === 0) {
 							extensionInfo.projectList = [
 								{
