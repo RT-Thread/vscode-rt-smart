@@ -159,18 +159,27 @@
         },
         "configuration": {
             "type": "object",
-            "title": "Custom Commands(menu)",
+            "title": "RT-Thread Smart",
             "properties": {
                 "smart.menuCommands": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "default": []
+                    "default": [],
+                    "description": "自定义构建菜单命令列表，使用 Ctrl+Shift+M 快捷键打开菜单。",
+                    "markdownDescription": "自定义构建菜单命令列表，使用 `Ctrl+Shift+M` 快捷键打开菜单。\n\n**示例：**\n```json\n[\n  \"scons -c\",\n  \"scons --dist\",\n  \"scons --target=mdk5\"\n]\n```",
+                    "scope": "resource",
+                    "order": 0
                 },
                 "smart.parallelBuidNumber": {
                     "type": "number",
-                    "default": 1
+                    "default": 1,
+                    "minimum": 1,
+                    "description": "并行编译使用的 CPU 核心数（默认为 1）。设置大于 1 的值可以加快编译速度。",
+                    "markdownDescription": "并行编译使用的 CPU 核心数（默认为 1）。\n\n设置大于 1 的值可以加快编译速度，例如：\n- `1`: 单核编译\n- `4`: 使用 4 个核心并行编译\n- `8`: 使用 8 个核心并行编译",
+                    "scope": "resource",
+                    "order": 1
                 }
             }
         },

@@ -174,6 +174,32 @@ function setupStatusBarItems(context: vscode.ExtensionContext) {
     });
 
     let menuItems = getMenuItems();
+    
+    // Always register the command, regardless of menu items
+    let disposable = vscode.commands.registerCommand('extension.openMenu', () => {
+        const items = getMenuItems();
+        if (!items || items.length === 0) {
+            // Show message and open settings when no menu items configured
+            vscode.window.showInformationMessage(
+                '自定义菜单命令未配置，请在设置中添加自定义命令。',
+                '打开设置'
+            ).then(selection => {
+                if (selection === '打开设置') {
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'smart.menuCommands');
+                }
+            });
+        } else {
+            vscode.window.showQuickPick(items).then(selectedItem => {
+                if (selectedItem) {
+                    executeCommand(selectedItem);
+                }
+            });
+        }
+    });
+
+    context.subscriptions.push(disposable);
+
+    // Only show status bar item if menu items exist
     if (menuItems && menuItems.length > 0) {
         const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         statusItem.text = '$(menu) 自定义构建...';
@@ -182,17 +208,6 @@ function setupStatusBarItems(context: vscode.ExtensionContext) {
         statusItem.show();
 
         context.subscriptions.push(statusItem);
-
-        let disposable = vscode.commands.registerCommand('extension.openMenu', () => {
-            const items = getMenuItems();
-            vscode.window.showQuickPick(items).then(selectedItem => {
-                if (selectedItem) {
-                    executeCommand(selectedItem);
-                }
-            });
-        });
-
-        context.subscriptions.push(disposable);
     }
 }
 
