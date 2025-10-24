@@ -29,6 +29,26 @@ export function getBoardInfo(): any {
     let bi = [];
 
     for (const item of _bi) {
+        let vendor = { manufacturer : item.manufacturer, boards : [] as any[]};
+
+        for (const board of item.boards) {
+            vendor.boards.push({
+                name: board.name,
+                board: board.board,
+                description: board.description,
+                path: board.path
+            });
+        }
+        bi.push(vendor);
+    }
+
+    return bi;
+}
+
+export function getBoardInfoSimple(): any {
+    let bi = [];
+
+    for (const item of _bi) {
         let vendor = { manufacturer : item.manufacturer, boards : [] as string[]};
 
         for (const board of item.boards) {

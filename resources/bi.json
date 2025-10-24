@@ -1,42 +1,191 @@
 [
     {
-        "manufacturer": "ST",
-        "boards": [
-            {
-                "name": "stm32f407-rt-spark",
-                "description" : "RT-Thread官方的星火一号开发板，基于STM32F407",
-                "board": "stm32f407-rt-spark",
-                "path": "bsp/stm32/stm32f407-rt-spark"
-        
-            },
-            {
-                "name": "stm32f412-st-nucleo",
-                "description": "ST官方的STM32F412 Nucleo开发板",
-                "board": "stm32f412-st-nucleo",
-                "path":"bsp/stm32/stm32f412-st-nucleo"
-            }
-        ]
-    },
-    {
         "manufacturer": "QEMU",
         "boards": [
             {
                 "name": "qemu-vexpress-a9",
-                "description": "VExpress A9评估板卡，可以使用QEMU ARM来模拟ARM Cortex-A 32位系列机器",
+                "description": "VExpress A9 evaluation board, QEMU ARM emulation for ARM Cortex-A 32-bit series machines. VExpress A9评估板卡，可以使用QEMU ARM来模拟ARM Cortex-A 32位系列机器。",
                 "board": "qemu-vexpress-a9",
                 "path": "bsp/qemu-vexpress-a9"        
             },
             {
                 "name": "qemu-virt64-aarch64",
-                "description": "QEMU模拟的virt aarch64机器",
+                "description": "QEMU emulated virt aarch64 machine. QEMU模拟的virt aarch64机器。",
                 "board": "qemu-virt64-aarch64",
                 "path": "bsp/qemu-virt64-aarch64"
             },
             {
-                "name": "qemu-virt64-riscv64",
-                "description": "QEMU模拟的virt riscv64机器",
-                "board": "qemu-virt64-riscv64",
-                "path": "bsp/qemu-virt64-riscv64"
+                "name": "qemu-virt64-riscv",
+                "description": "QEMU emulated virt RISC-V 64-bit machine. QEMU模拟的virt RISC-V 64位机器。",
+                "board": "qemu-virt64-riscv",
+                "path": "bsp/qemu-virt64-riscv"
+            }
+        ]
+    },
+    {
+        "manufacturer": "ST",
+        "boards": [
+            {
+                "name": "stm32f407-rt-spark",
+                "description": "RT-Thread official Spark board No.1, based on STM32F407. RT-Thread官方的星火一号开发板，基于STM32F407。",
+                "board": "stm32f407-rt-spark",
+                "path": "bsp/stm32/stm32f407-rt-spark"
+            },
+            {
+                "name": "stm32f412-st-nucleo",
+                "description": "ST official STM32F412 Nucleo development board. ST官方的STM32F412 Nucleo开发板。",
+                "board": "stm32f412-st-nucleo",
+                "path": "bsp/stm32/stm32f412-st-nucleo"
+            },
+            {
+                "name": "stm32f401-st-nucleo",
+                "description": "ST official STM32F401 Nucleo development board with ARM Cortex-M4. ST官方的STM32F401 Nucleo开发板，搭载ARM Cortex-M4内核。",
+                "board": "stm32f401-st-nucleo",
+                "path": "bsp/stm32/stm32f401-st-nucleo"
+            },
+            {
+                "name": "stm32f103-atk-nano",
+                "description": "Alientek STM32F103 Nano development board, based on STM32F103RB. 正点原子STM32F103 Nano开发板，基于STM32F103RB。",
+                "board": "stm32f103-atk-nano",
+                "path": "bsp/stm32/stm32f103-atk-nano"
+            },
+            {
+                "name": "stm32f103-blue-pill",
+                "description": "Popular low-cost STM32F103 Blue Pill board, widely used for learning and prototyping. 流行的低成本STM32F103蓝色药丸板，广泛用于学习和原型开发。",
+                "board": "stm32f103-blue-pill",
+                "path": "bsp/stm32/stm32f103-blue-pill"
+            },
+            {
+                "name": "stm32f407-atk-explorer",
+                "description": "Alientek STM32F407 Explorer development board with rich peripherals. 正点原子STM32F407探索者开发板，外设丰富。",
+                "board": "stm32f407-atk-explorer",
+                "path": "bsp/stm32/stm32f407-atk-explorer"
+            },
+            {
+                "name": "stm32f429-atk-apollo",
+                "description": "Alientek STM32F429 Apollo development board with LCD and camera support. 正点原子STM32F429阿波罗开发板，支持LCD和摄像头。",
+                "board": "stm32f429-atk-apollo",
+                "path": "bsp/stm32/stm32f429-atk-apollo"
+            },
+            {
+                "name": "stm32h750-artpi",
+                "description": "RT-Thread official ART-Pi development board, based on STM32H750 with high performance. RT-Thread官方ART-Pi开发板，基于高性能STM32H750。",
+                "board": "stm32h750-artpi",
+                "path": "bsp/stm32/stm32h750-artpi"
+            }
+        ]
+    },
+    {
+        "manufacturer": "Raspberry Pi",
+        "boards": [
+            {
+                "name": "raspberry-pico",
+                "description": "Raspberry Pi Pico board based on RP2040 microcontroller. 树莓派Pico开发板，基于RP2040微控制器。",
+                "board": "raspberry-pico",
+                "path": "bsp/raspberry-pico"
+            },
+            {
+                "name": "raspberry-pi-4b",
+                "description": "Raspberry Pi 4 Model B single-board computer with quad-core Cortex-A72. 树莓派4B单板计算机，搭载四核Cortex-A72。",
+                "board": "raspberry-pi-4b",
+                "path": "bsp/raspberry-pi/raspi4-64"
+            }
+        ]
+    },
+    {
+        "manufacturer": "Renesas",
+        "boards": [
+            {
+                "name": "ra6m3-hmi-board",
+                "description": "Renesas RA6M3 HMI development board with Cortex-M4 core and rich graphics features. 瑞萨RA6M3 HMI开发板，搭载Cortex-M4内核和丰富的图形功能。",
+                "board": "ra6m3-hmi-board",
+                "path": "bsp/renesas/ra6m3-hmi-board"
+            },
+            {
+                "name": "ra8d1-vision-board",
+                "description": "Renesas RA8D1 Vision Board with high-performance graphics and vision processing. 瑞萨RA8D1视觉开发板，具有高性能图形和视觉处理能力。",
+                "board": "ra8d1-vision-board",
+                "path": "bsp/renesas/ra8d1-vision-board"
+            },
+            {
+                "name": "rzn2l-etherkit",
+                "description": "Renesas RZ/N2L EtherKit for industrial Ethernet applications. 瑞萨RZ/N2L以太网套件，用于工业以太网应用。",
+                "board": "rzn2l-etherkit",
+                "path": "bsp/renesas/rzn2l_etherkit"
+            }
+        ]
+    },
+    {
+        "manufacturer": "Infineon",
+        "boards": [
+            {
+                "name": "psoc6-evaluationkit-062S2",
+                "description": "Infineon PSoC 6 Evaluation Kit with dual-core ARM Cortex-M4/M0+ processor. 英飞凌PSoC 6评估套件，搭载双核ARM Cortex-M4/M0+处理器。",
+                "board": "psoc6-evaluationkit-062S2",
+                "path": "bsp/Infineon/psoc6-evaluationkit-062S2"
+            }
+        ]
+    },
+    {
+        "manufacturer": "NXP",
+        "boards": [
+            {
+                "name": "imxrt1052-evk",
+                "description": "NXP i.MX RT1052 EVK board with ARM Cortex-M7 crossover MCU. 恩智浦i.MX RT1052评估板，搭载ARM Cortex-M7跨界MCU。",
+                "board": "imxrt1052-evk",
+                "path": "bsp/imxrt/imxrt1052-evk"
+            },
+            {
+                "name": "imxrt1064-evk",
+                "description": "NXP i.MX RT1064 EVK board with ARM Cortex-M7 and advanced peripherals. 恩智浦i.MX RT1064评估板，搭载ARM Cortex-M7和先进外设。",
+                "board": "imxrt1064-evk",
+                "path": "bsp/imxrt/imxrt1064-evk"
+            },
+            {
+                "name": "frdm-mcxa156",
+                "description": "NXP FRDM-MCXA156 Freedom development board with ARM Cortex-M33. 恩智浦FRDM-MCXA156自由开发板，搭载ARM Cortex-M33内核。",
+                "board": "frdm-mcxa156",
+                "path": "bsp/nxp/mcx/mcxa/frdm-mcxa156"
+            },
+            {
+                "name": "frdm-mcxa346",
+                "description": "NXP FRDM-MCXA346 Freedom development board with ARM Cortex-M33. 恩智浦FRDM-MCXA346自由开发板，搭载ARM Cortex-M33内核。",
+                "board": "frdm-mcxa346",
+                "path": "bsp/nxp/mcx/mcxa/frdm-mcxa346"
+            },
+            {
+                "name": "frdm-mcxn947",
+                "description": "NXP FRDM-MCXN947 Freedom development board with dual ARM Cortex-M33 cores. 恩智浦FRDM-MCXN947自由开发板，搭载双核ARM Cortex-M33内核。",
+                "board": "frdm-mcxn947",
+                "path": "bsp/nxp/mcx/mcxn/frdm-mcxn947"
+            }
+        ]
+    },
+    {
+        "manufacturer": "Allwinner",
+        "boards": [
+            {
+                "name": "allwinner-d1",
+                "description": "Allwinner D1 RISC-V based application processor. 全志D1基于RISC-V的应用处理器。",
+                "board": "allwinner-d1",
+                "path": "bsp/allwinner/d1"
+            }
+        ]
+    },
+    {
+        "manufacturer": "GigaDevice",
+        "boards": [
+            {
+                "name": "gd32450z-eval",
+                "description": "GigaDevice GD32450Z evaluation board with ARM Cortex-M4 and rich peripherals. 兆易创新GD32450Z评估板，搭载ARM Cortex-M4内核和丰富外设。",
+                "board": "gd32450z-eval",
+                "path": "bsp/gd32/arm/gd32450z-eval"
+            },
+            {
+                "name": "gd32407v-start",
+                "description": "GigaDevice GD32407V starter board with ARM Cortex-M4 core. 兆易创新GD32407V起始板，搭载ARM Cortex-M4内核。",
+                "board": "gd32407v-start",
+                "path": "bsp/gd32/arm/gd32407v-start"
             }
         ]
     }
