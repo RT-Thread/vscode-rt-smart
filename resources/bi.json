@@ -158,10 +158,16 @@
         "manufacturer": "GigaDevice",
         "boards": [
             {
-                "name": "gd32vf103-rvstar",
-                "description": "GigaDevice GD32VF103 RV-STAR board with RISC-V core. 兆易创新GD32VF103 RV-STAR开发板，搭载RISC-V内核。",
-                "board": "gd32vf103-rvstar",
-                "path": "bsp/gd32vf103-rvstar"
+                "name": "gd32450z-eval",
+                "description": "GigaDevice GD32450Z evaluation board with ARM Cortex-M4 and rich peripherals. 兆易创新GD32450Z评估板，搭载ARM Cortex-M4内核和丰富外设。",
+                "board": "gd32450z-eval",
+                "path": "bsp/gd32/arm/gd32450z-eval"
+            },
+            {
+                "name": "gd32407v-start",
+                "description": "GigaDevice GD32407V starter board with ARM Cortex-M4 core. 兆易创新GD32407V起始板，搭载ARM Cortex-M4内核。",
+                "board": "gd32407v-start",
+                "path": "bsp/gd32/arm/gd32407v-start"
             }
         ]
     }
