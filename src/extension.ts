@@ -15,7 +15,7 @@ import { initDockView } from './dock';
 import { setupVEnv } from './venv';
 import { initAPI } from './api';
 import { openWorkspaceProjectsWebview } from './webviews/project';
-import { initProjectTree } from './project/tree';
+import { initProjectTree, setCurrentSelectedBspItem } from './project/tree';
 import { DecorationProvider } from './project/fileDecorationProvider';
 import { getCurrentProjectInWorkspace } from './webviews/project';
 import { initCurrentProject } from './project/cmd';
@@ -73,6 +73,8 @@ export async function activate(context: vscode.ExtensionContext) {
                     DecorationProvider.getInstance().markFile(vscode.Uri.file(currentProject));
                     // 初始化当前项目到 cmd.ts 的 _currentProject 变量
                     initCurrentProject(currentProject);
+                    // 初始化当前选中的BSP项目，以便后续切换时能正确移除标记
+                    setCurrentSelectedBspItem(currentProject);
                 }
             }
         }

@@ -18,6 +18,17 @@ let currentSelectedBspItem: ProjectTreeItem | null = null;
 // 添加树视图刷新事件发射器
 let _onDidChangeTreeData: vscode.EventEmitter<ProjectTreeItem | undefined> | null = null;
 
+// 设置当前选中的BSP项目（用于初始化时设置）
+export function setCurrentSelectedBspItem(fn: string) {
+    // Create a minimal ProjectTreeItem for tracking
+    currentSelectedBspItem = new ProjectTreeItem(
+        path.basename(fn),
+        vscode.TreeItemCollapsibleState.None,
+        'project_bsp',
+        fn
+    );
+}
+
 export class ProjectTreeItem extends vscode.TreeItem {
     children: ProjectTreeItem[];
     fn: string = '';
