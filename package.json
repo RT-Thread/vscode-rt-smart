@@ -107,6 +107,11 @@
                 "icon": "$(console)"
             },
             {
+                "command": "extension.openProjectInNewWindow",
+                "title": "Open in New Window",
+                "icon": "$(empty-window)"
+            },
+            {
                 "command": "extension.handleTreeItemClick",
                 "title": "Handle Tree Item Click"
             }
@@ -142,6 +147,11 @@
                 },
                 {
                     "command": "extension.openTerminalProject",
+                    "when": "view == projectFilesId && viewItem == project_bsp",
+                    "group": "inline"
+                },
+                {
+                    "command": "extension.openProjectInNewWindow",
                     "when": "view == projectFilesId && viewItem == project_bsp",
                     "group": "inline"
                 }

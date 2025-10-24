@@ -333,7 +333,7 @@ export function listStarsTreeItem(bspFolder:string, node: any) {
     return children;
 }
 
-import {fastBuildProject, configProject, openTerminalProject, setCurrentProject} from './cmd';
+import {fastBuildProject, configProject, openTerminalProject, openProjectInNewWindow, setCurrentProject} from './cmd';
 export function initProjectTree(context:vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.fastBuildProject', (arg) => {
         fastBuildProject(arg);
@@ -343,6 +343,9 @@ export function initProjectTree(context:vscode.ExtensionContext) {
     });
     vscode.commands.registerCommand('extension.openTerminalProject', (arg) => {
         openTerminalProject(arg);
+    });
+    vscode.commands.registerCommand('extension.openProjectInNewWindow', (arg) => {
+        openProjectInNewWindow(arg);
     });
 
     // Add double-clicked
