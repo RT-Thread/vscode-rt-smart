@@ -32,15 +32,32 @@ export function configProject(arg: any) {
         const menuconfigMethod = getMenuconfigMethod();
         
         if (menuconfigMethod.type === 'extension') {
-            // For extension-based menuconfig, we need to:
-            // 1. Set the current working directory to the project
-            // 2. Execute the extension command
-            
-            // Change to the BSP directory first
-            executeCommand('cd ' + arg.fn);
-            
-            // Execute the extension command
-            vscode.commands.executeCommand(menuconfigMethod.command!);
+            // For rt-thread-kconfig extension, it handles multi-BSP scenarios automatically
+            if (menuconfigMethod.command === 'rt-thread-kconfig.menuconfig.windows') {
+                // Change to the BSP directory first
+                executeCommand('cd ' + arg.fn);
+                // Execute the extension command
+                vscode.commands.executeCommand(menuconfigMethod.command);
+            } 
+            // For vscode-kconfig-visual-editor, we need to open the Kconfig file explicitly
+            else if (menuconfigMethod.command === 'kconfig-visual-editor.open') {
+                const kconfigPath = path.join(arg.fn, 'Kconfig');
+                if (fs.existsSync(kconfigPath)) {
+                    // Open the Kconfig file with the visual editor
+                    vscode.workspace.openTextDocument(kconfigPath).then(doc => {
+                        vscode.window.showTextDocument(doc);
+                    });
+                } else {
+                    // Fallback to terminal if Kconfig doesn't exist
+                    let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
+                    executeCommand(cmd);
+                }
+            }
+            else {
+                // Generic extension command
+                executeCommand('cd ' + arg.fn);
+                vscode.commands.executeCommand(menuconfigMethod.command!);
+            }
         } else {
             // For terminal-based menuconfig
             let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
