@@ -46,7 +46,7 @@ export const MENUCONFIG_COMMANDS = {
  * Priority:
  * 1. If useTerminalMenuconfig is true, always use terminal
  * 2. Check for rt-thread.rt-thread-kconfig extension
- * 3. Check for ai-embedded.vscode-kconfig-visual-editor extension
+ * 3. Check for ai-embedded.vscode-kconfig-visual-editor extension (currently disabled)
  * 4. Fall back to terminal scons --menuconfig
  * 
  * @param kconfigPath Optional Kconfig file path for vscode-kconfig-visual-editor
@@ -71,13 +71,14 @@ export function getMenuconfigMethod(kconfigPath?: string): MenuconfigMethod {
     }
 
     // Priority 2: Check for vscode-kconfig-visual-editor extension
-    const kconfigVisualEditor = vscode.extensions.getExtension('ai-embedded.vscode-kconfig-visual-editor');
-    if (kconfigVisualEditor !== undefined) {
-        return {
-            type: 'extension',
-            command: MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR,
-        };
-    }
+    // TODO: Uncomment when vscode-kconfig-visual-editor is ready
+    // const kconfigVisualEditor = vscode.extensions.getExtension('ai-embedded.vscode-kconfig-visual-editor');
+    // if (kconfigVisualEditor !== undefined) {
+    //     return {
+    //         type: 'extension',
+    //         command: MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR,
+    //     };
+    // }
 
     // Priority 3: Fall back to terminal menuconfig
     return {

@@ -47,32 +47,27 @@ export function configProject(arg: any) {
                 executeCommand('cd ' + arg.fn);
                 // Execute the extension command
                 vscode.commands.executeCommand(menuconfigMethod.command);
-            } 
-            // For vscode-kconfig-visual-editor, we need to open the Kconfig file explicitly
-            else if (menuconfigMethod.command === MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR) {
-                const kconfigPath = path.join(arg.fn, 'Kconfig');
-                if (fs.existsSync(kconfigPath)) {
-                    // Open the Kconfig file with the visual editor
-                    vscode.workspace.openTextDocument(kconfigPath).then(
-                        doc => {
-                            vscode.window.showTextDocument(doc);
-                        },
-                        error => {
-                            vscode.window.showErrorMessage(`Failed to open Kconfig file: ${error.message}`);
-                            // Fallback to terminal on error
-                            executeTerminalMenuconfig(arg.fn);
-                        }
-                    );
-                } else {
-                    // Fallback to terminal if Kconfig doesn't exist
-                    executeTerminalMenuconfig(arg.fn);
-                }
             }
-            else {
-                // Generic extension command
-                executeCommand('cd ' + arg.fn);
-                vscode.commands.executeCommand(menuconfigMethod.command!);
-            }
+            // TODO: Add handling for vscode-kconfig-visual-editor when it's ready
+            // else if (menuconfigMethod.command === MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR) {
+            //     const kconfigPath = path.join(arg.fn, 'Kconfig');
+            //     if (fs.existsSync(kconfigPath)) {
+            //         // Open the Kconfig file with the visual editor
+            //         vscode.workspace.openTextDocument(kconfigPath).then(
+            //             doc => {
+            //                 vscode.window.showTextDocument(doc);
+            //             },
+            //             error => {
+            //                 vscode.window.showErrorMessage(`Failed to open or display Kconfig file: ${error.message}`);
+            //                 // Fallback to terminal on error
+            //                 executeTerminalMenuconfig(arg.fn);
+            //             }
+            //         );
+            //     } else {
+            //         // Fallback to terminal if Kconfig doesn't exist
+            //         executeTerminalMenuconfig(arg.fn);
+            //     }
+            // }
         } else {
             // For terminal-based menuconfig
             executeTerminalMenuconfig(arg.fn);
