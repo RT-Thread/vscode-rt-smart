@@ -27,6 +27,15 @@ export function fastBuildProject(arg: any) {
     return;
 }
 
+/**
+ * Helper function to execute terminal-based menuconfig for a BSP project
+ * @param bspPath The path to the BSP project
+ */
+function executeTerminalMenuconfig(bspPath: string) {
+    let cmd = 'scons -C ' + bspPath + ' --menuconfig';
+    executeCommand(cmd);
+}
+
 export function configProject(arg: any) {
     if (arg) {
         const menuconfigMethod = getMenuconfigMethod();
@@ -48,17 +57,15 @@ export function configProject(arg: any) {
                         doc => {
                             vscode.window.showTextDocument(doc);
                         },
-                        (error: Error) => {
+                        error => {
                             vscode.window.showErrorMessage(`Failed to open Kconfig file: ${error.message}`);
                             // Fallback to terminal on error
-                            let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
-                            executeCommand(cmd);
+                            executeTerminalMenuconfig(arg.fn);
                         }
                     );
                 } else {
                     // Fallback to terminal if Kconfig doesn't exist
-                    let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
-                    executeCommand(cmd);
+                    executeTerminalMenuconfig(arg.fn);
                 }
             }
             else {
@@ -68,8 +75,7 @@ export function configProject(arg: any) {
             }
         } else {
             // For terminal-based menuconfig
-            let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
-            executeCommand(cmd);
+            executeTerminalMenuconfig(arg.fn);
         }
     }
 
