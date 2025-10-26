@@ -32,7 +32,7 @@ export function fastBuildProject(arg: any) {
  * @param bspPath The path to the BSP project
  */
 function executeTerminalMenuconfig(bspPath: string) {
-    let cmd = 'scons -C ' + bspPath + ' --menuconfig';
+    const cmd = 'scons -C ' + bspPath + ' --menuconfig';
     executeCommand(cmd);
 }
 
