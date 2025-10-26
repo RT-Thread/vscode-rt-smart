@@ -180,6 +180,14 @@
                     "markdownDescription": "并行编译使用的 CPU 核心数（默认为 1）。\n\n设置大于 1 的值可以加快编译速度，例如：\n- `1`: 单核编译\n- `4`: 使用 4 个核心并行编译\n- `8`: 使用 8 个核心并行编译",
                     "scope": "resource",
                     "order": 1
+                },
+                "smart.useTerminalMenuconfig": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否只使用 scons --menuconfig 方式进行配置（默认为 false）。启用后将不使用图形化 Kconfig 编辑器插件。",
+                    "markdownDescription": "是否只使用 `scons --menuconfig` 方式进行配置（默认为 false）。\n\n- `false`: 优先使用已安装的 Kconfig 图形化编辑器插件\n- `true`: 始终使用终端字符界面方式",
+                    "scope": "resource",
+                    "order": 2
                 }
             }
         },

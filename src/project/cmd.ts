@@ -6,6 +6,7 @@ import * as path from 'path';
 import { getWorkspaceFolder } from '../api';
 import { executeCommand } from '../terminal';
 import { readWorkspaceJson, writeWorkspaceJson } from '../webviews/project';
+import { getMenuconfigMethod } from '../smart';
 
 let _currentProject: string = '';
 
@@ -28,9 +29,23 @@ export function fastBuildProject(arg: any) {
 
 export function configProject(arg: any) {
     if (arg) {
-        let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
-
-        executeCommand(cmd);
+        const menuconfigMethod = getMenuconfigMethod();
+        
+        if (menuconfigMethod.type === 'extension') {
+            // For extension-based menuconfig, we need to:
+            // 1. Set the current working directory to the project
+            // 2. Execute the extension command
+            
+            // Change to the BSP directory first
+            executeCommand('cd ' + arg.fn);
+            
+            // Execute the extension command
+            vscode.commands.executeCommand(menuconfigMethod.command!);
+        } else {
+            // For terminal-based menuconfig
+            let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
+            executeCommand(cmd);
+        }
     }
 
     return;
