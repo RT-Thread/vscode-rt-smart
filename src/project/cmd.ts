@@ -6,7 +6,7 @@ import * as path from 'path';
 import { getWorkspaceFolder } from '../api';
 import { executeCommand } from '../terminal';
 import { readWorkspaceJson, writeWorkspaceJson } from '../webviews/project';
-import { getMenuconfigMethod } from '../smart';
+import { getMenuconfigMethod, MENUCONFIG_COMMANDS } from '../smart';
 
 let _currentProject: string = '';
 
@@ -33,20 +33,28 @@ export function configProject(arg: any) {
         
         if (menuconfigMethod.type === 'extension') {
             // For rt-thread-kconfig extension, it handles multi-BSP scenarios automatically
-            if (menuconfigMethod.command === 'rt-thread-kconfig.menuconfig.windows') {
+            if (menuconfigMethod.command === MENUCONFIG_COMMANDS.RT_THREAD_KCONFIG) {
                 // Change to the BSP directory first
                 executeCommand('cd ' + arg.fn);
                 // Execute the extension command
                 vscode.commands.executeCommand(menuconfigMethod.command);
             } 
             // For vscode-kconfig-visual-editor, we need to open the Kconfig file explicitly
-            else if (menuconfigMethod.command === 'kconfig-visual-editor.open') {
+            else if (menuconfigMethod.command === MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR) {
                 const kconfigPath = path.join(arg.fn, 'Kconfig');
                 if (fs.existsSync(kconfigPath)) {
                     // Open the Kconfig file with the visual editor
-                    vscode.workspace.openTextDocument(kconfigPath).then(doc => {
-                        vscode.window.showTextDocument(doc);
-                    });
+                    vscode.workspace.openTextDocument(kconfigPath).then(
+                        doc => {
+                            vscode.window.showTextDocument(doc);
+                        },
+                        (error: Error) => {
+                            vscode.window.showErrorMessage(`Failed to open Kconfig file: ${error.message}`);
+                            // Fallback to terminal on error
+                            let cmd = 'scons -C ' + arg.fn + ' --menuconfig';
+                            executeCommand(cmd);
+                        }
+                    );
                 } else {
                     // Fallback to terminal if Kconfig doesn't exist
                     let cmd = 'scons -C ' + arg.fn + ' --menuconfig';

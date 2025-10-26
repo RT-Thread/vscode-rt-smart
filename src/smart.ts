@@ -34,6 +34,14 @@ export interface MenuconfigMethod {
 }
 
 /**
+ * Extension command constants for menuconfig
+ */
+export const MENUCONFIG_COMMANDS = {
+    RT_THREAD_KCONFIG: 'rt-thread-kconfig.menuconfig.windows',
+    KCONFIG_VISUAL_EDITOR: 'kconfig-visual-editor.open'
+};
+
+/**
  * Get the appropriate menuconfig method based on installed extensions and configuration
  * Priority:
  * 1. If useTerminalMenuconfig is true, always use terminal
@@ -58,7 +66,7 @@ export function getMenuconfigMethod(kconfigPath?: string): MenuconfigMethod {
     if (rtThreadKconfig !== undefined) {
         return {
             type: 'extension',
-            command: 'rt-thread-kconfig.menuconfig.windows'
+            command: MENUCONFIG_COMMANDS.RT_THREAD_KCONFIG
         };
     }
 
@@ -67,7 +75,7 @@ export function getMenuconfigMethod(kconfigPath?: string): MenuconfigMethod {
     if (kconfigVisualEditor !== undefined) {
         return {
             type: 'extension',
-            command: 'kconfig-visual-editor.open',
+            command: MENUCONFIG_COMMANDS.KCONFIG_VISUAL_EDITOR,
         };
     }
 
