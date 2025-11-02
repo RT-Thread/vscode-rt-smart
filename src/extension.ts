@@ -19,6 +19,7 @@ import { initProjectTree, setCurrentSelectedBspItem } from './project/tree';
 import { DecorationProvider } from './project/fileDecorationProvider';
 import { getCurrentProjectInWorkspace } from './webviews/project';
 import { initCurrentProject } from './project/cmd';
+import { initRTThreadAuth } from './auth/authProvider';
 
 let _context: vscode.ExtensionContext;
 
@@ -136,6 +137,9 @@ export async function activate(context: vscode.ExtensionContext) {
         });
         initProjectTree(context);
     }
+
+    /* initialize RT-Thread authentication */
+    initRTThreadAuth(context);
 
     /* initialize dock view always */
     initDockView(context);

@@ -114,7 +114,22 @@
             {
                 "command": "extension.handleTreeItemClick",
                 "title": "Handle Tree Item Click"
+            },
+            {
+                "command": "extension.RTThreadSignIn",
+                "title": "RT-Thread Account: Sign In"
+            },
+            {
+                "command": "extension.RTThreadSignOut",
+                "title": "RT-Thread Account: Sign Out"
             }
+        ],
+        "authentication": [
+        {
+            "id": "rt-thread",
+            "label": "RT-Thread Account",
+            "supportsMultipleAccounts": false
+        }
         ],
         "menus": {
             "view/title": [
