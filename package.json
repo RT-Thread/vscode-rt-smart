@@ -3,7 +3,8 @@
     "publisher": "rt-thread",
     "displayName": "RT-Thread Smart Extension",
     "description": "Smart Helper Extension for RT-Thread Development",
-    "version": "0.4.12",
+    "icon": "resources/logo.png",
+    "version": "0.4.13",
     "repository": {
         "url": "https://github.com/RT-Thread/vscode-rt-smart"
     },
