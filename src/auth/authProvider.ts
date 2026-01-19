@@ -6,6 +6,8 @@ import * as https from 'https';
 import * as http from 'http';
 import { URL } from 'url';
 
+const aiChatBaseUrl = 'https://ai.rt-thread.org';
+
 // Session data structure persisted to VS Code Secret Storage
 type StoredSession = {
     id: string;
@@ -25,19 +27,28 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
         this.output.appendLine(`[${new Date().toISOString()}] ${msg}`);
     }
     private mask(value: string, keyHint?: string): string {
-        if (!value) return '';
-        const sensitive = ['token', 'access_token', 'code', 'open_id'];
+        if (!value) {
+            return '';
+        }
+        const sensitive = ['token', 'sid', 'access_token', 'code', 'open_id', 'sub'];
         if (keyHint && sensitive.includes(keyHint)) {
-            if (value.length <= 8) return '*'.repeat(Math.max(4, value.length));
+            if (value.length <= 8) {
+                return '*'.repeat(Math.max(4, value.length));
+            }
             return `${value.slice(0, 4)}...${value.slice(-4)}`;
         }
-        if (value.length <= 8) return value; // keep short non-sensitive values
+        if (value.length <= 8) {
+            return value; // keep short non-sensitive values
+        }
         return `${value.slice(0, 24)}...(${value.length})`; // long params truncated for readability
     }
     private redactBody(body: string): string {
         let b = body || '';
         try {
-            b = b.replace(/("(?:open_id|token|access_token)"\s*:\s*")([^"]+)(")/gi, '$1***redacted***$3');
+            b = b.replace(
+                /("(?:open_id|sub|token|sid|access_token)"\s*:\s*")([^"]+)(")/gi,
+                '$1***redacted***$3',
+            );
         } catch {
             // ignore
         }
@@ -132,10 +143,11 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                 }
                 this.log(`Received auth-callback: ${uri.toString(true)}`);
                 const params = new URLSearchParams(uri.query);
-                let token = params.get('token') || '';
-                // Username displayed in Accounts view. Prefer value from proxy userInfo
+                let token = '';
+                // Username displayed in Accounts view. Prefer value from backend exchange
                 // if available; fall back to callback param; finally to a generic label.
                 let username = params.get('username') || 'user';
+                let accountId = username;
                 const scopes = (params.get('scopes') || 'default').split(',').filter(Boolean);
                 const state = params.get('state') || '';
                 const code = params.get('code') || '';
@@ -149,34 +161,55 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                     this.log(`State check: no expected state recorded (possibly resumed process).`);
                 }
 
-                // If no token but code is provided, try calling remote exchange interface to get open_id as token
-                if (!token && code) {
+                // Prefer exchanging auth code to backend sid (stable user identity in our system).
+                if (code) {
                     try {
-                        const proxyUrl = `https://api.rt-thread.org/account/client_proxy_rt_agent.php?code=${encodeURIComponent(code)}`;
-                        this.log(`Exchanging code via proxy: code=${this.mask(code, 'code')} -> ${proxyUrl}`);
-                        const resp = await httpGet(proxyUrl);
-                        this.log(`Proxy response: status=${resp.status}, body_len=${(resp.body || '').length}`);
-                        this.log(`Proxy body preview: ${this.redactBody(resp.body || '')}`);
-                        const json = JSON.parse(resp.body || '{}');
-                        const openId: string | undefined = json?.open_id;
-                        // Try derive a better display name from userInfo
-                        try {
-                            const ui = json?.userInfo ?? {};
-                            const inferred = ui.username?.toString().trim();
-                            if (inferred) {
-                                username = inferred;
-                                this.log(`Resolved display name from userInfo: ${username}`);
-                            }
-                        } catch {
-                            // ignore userInfo parsing errors
+                        // Upgrade to a backend session token (sid) for stable cross-client user mapping.
+                        const baseUrl = aiChatBaseUrl;
+                        const exchangeUrl = `${baseUrl}/api/auth/rt/exchange`;
+                        this.log(`Exchanging auth code to backend sid: ${exchangeUrl}`);
+                        const exchangeResp = await httpPostJson(exchangeUrl, { code });
+                        this.log(
+                            `Backend exchange response: status=${exchangeResp.status}, body_len=${(exchangeResp.body || '').length}`,
+                        );
+                        this.log(`Backend exchange body preview: ${this.redactBody(exchangeResp.body || '')}`);
+                        if (exchangeResp.status < 200 || exchangeResp.status >= 300) {
+                            throw new Error(`Backend exchange failed with status ${exchangeResp.status}.`);
                         }
-                        if (openId) {
-                            token = openId;
-                            this.log(`Obtained open_id from proxy: ${this.mask(openId, 'open_id')}`);
+                        const exJson = JSON.parse(exchangeResp.body || '{}');
+                        const sid: string | undefined = typeof exJson?.sid === 'string' ? exJson.sid : undefined;
+                        const backendUserId: string | undefined =
+                            typeof exJson?.userId === 'string' ? exJson.userId : undefined;
+                        const displayName: string | undefined =
+                            typeof exJson?.displayName === 'string' ? exJson.displayName : undefined;
+                        if (!sid) {
+                            throw new Error('Backend exchange response missing sid.');
                         }
+                        token = sid;
+                        if (backendUserId) {
+                            accountId = backendUserId;
+                        }
+                        if (displayName && displayName.trim()) {
+                            username = displayName.trim();
+                            this.log(`Resolved display name from backend: ${username}`);
+                        }
+                        this.log(`Obtained backend sid: ${this.mask(sid, 'sid')}`);
                     } catch (e) {
-                        // Ignore, will still enter no-token error branch later
-                        this.log(`Proxy exchange failed: ${String(e)}`);
+                        const message = `RT-Thread 登录成功，但后端会话交换失败。请检查网络连接或稍后重试：${aiChatBaseUrl}`;
+                        this.log(`Auth flow failed: ${String(e)}`);
+                        void vscode.window
+                            .showErrorMessage(`${message}。点击查看日志。`, '查看日志')
+                            .then((btn) => {
+                                if (btn) {
+                                    this.output.show(true);
+                                }
+                            });
+                        if (this.pendingAuth) {
+                            this.pendingAuth.reject(e);
+                            this.pendingAuth = undefined;
+                        }
+                        vscode.window.setStatusBarMessage('$(error) Sign-in failed: backend exchange error.', 3000);
+                        return;
                     }
                 }
 
@@ -203,7 +236,7 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                 const session: vscode.AuthenticationSession = {
                     id: `${Date.now()}`,
                     accessToken: token,
-                    account: { id: username, label: username },
+                    account: { id: accountId, label: username },
                     scopes,
                 };
 
@@ -282,7 +315,8 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
         const clientId = '46627107';
         const authorizePage = 'https://www.rt-thread.org/account/user/index.html';
 
-        const scopesStr = scopes.length ? scopes.join(',') : 'basic';
+        const effectiveScopes = scopes.length ? scopes : ['phone'];
+        const scopesStr = effectiveScopes.join(',');
         const authorizeUrl = vscode.Uri.parse(
             `${authorizePage.replace(/\/$/, '')}` +
             `?response_type=code` +
@@ -292,12 +326,13 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
             `&client_id=${encodeURIComponent(clientId)}` +
             `&redirect_uri=${encodeURIComponent(callbackBase)}`,
         );
+        const authorizeUrlStr = authorizeUrl.toString(true);
         try {
-            const u = new URL(authorizeUrl.toString());
-            this.log(`Opening authorize URL: ${authorizeUrl.toString()}`);
+            const u = new URL(authorizeUrlStr);
+            this.log(`Opening authorize URL: ${authorizeUrlStr}`);
             this.log(`Authorize query: ${this.dumpParams(u.searchParams)}`);
         } catch {
-            this.log(`Opening authorize URL (raw): ${authorizeUrl.toString()}`);
+            this.log(`Opening authorize URL (raw): ${authorizeUrlStr}`);
         }
         await vscode.env.openExternal(authorizeUrl);
 
@@ -328,16 +363,24 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
 
 }
 
-// Minimal GET request (for code -> open_id exchange)
-async function httpGet(urlStr: string, headers?: Record<string, string>): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
+async function httpPostJson(
+    urlStr: string,
+    body: any,
+    headers?: Record<string, string>,
+): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
     const u = new URL(urlStr);
+    const payload = Buffer.from(JSON.stringify(body ?? {}), 'utf-8');
     const opts: https.RequestOptions = {
-        method: 'GET',
+        method: 'POST',
         protocol: u.protocol,
         hostname: u.hostname,
         port: u.port || (u.protocol === 'https:' ? 443 : 80),
         path: u.pathname + (u.search || ''),
-        headers: { ...headers },
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': String(payload.length),
+            ...(headers ?? {}),
+        },
     };
     const mod = u.protocol === 'https:' ? https : http;
     return new Promise((resolve, reject) => {
@@ -350,10 +393,10 @@ async function httpGet(urlStr: string, headers?: Record<string, string>): Promis
             });
         });
         req.on('error', reject);
+        req.write(payload);
         req.end();
     });
 }
-
 
 // Provide initialization entry point, register authentication provider, URI handler, commands uniformly here
 export function initRTThreadAuth(context: vscode.ExtensionContext): void {

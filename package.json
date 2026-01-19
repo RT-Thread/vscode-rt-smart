@@ -64,6 +64,10 @@
                 "title": "Create RT-Thread Project"
             },
             {
+                "command": "extension.showChat",
+                "title": "RT-Thread: AI Chat"
+            },
+            {
                 "command": "extension.buildProject",
                 "title": "Build RT-Thread",
                 "icon": "$(github-action)"
