@@ -6,7 +6,34 @@ import * as https from 'https';
 import * as http from 'http';
 import { URL } from 'url';
 
-const aiChatBaseUrl = 'https://ai.rt-thread.org';
+const defaultAiChatBaseUrl = 'https://ai.rt-thread.org';
+
+function normalizeBaseUrl(baseUrl: string): string {
+    const trimmed = (baseUrl || '').trim();
+    if (!trimmed) {
+        return '';
+    }
+    return trimmed.replace(/\/+$/, '');
+}
+
+function getAiChatBaseUrl(): string {
+    const cfg = vscode.workspace.getConfiguration('smart');
+    const url = cfg.get<string>('aiChatBaseUrl');
+    return normalizeBaseUrl(url || defaultAiChatBaseUrl);
+}
+
+function getAiChatTimeoutMs(): number {
+    const cfg = vscode.workspace.getConfiguration('smart');
+    const timeout = cfg.get<number>('aiChatRequestTimeoutMs');
+    const value = typeof timeout === 'number' && Number.isFinite(timeout) ? timeout : 30000;
+    return Math.max(1000, Math.floor(value));
+}
+
+function shouldOpenAuthInVscode(): boolean {
+    const cfg = vscode.workspace.getConfiguration('smart');
+    const raw = cfg.get<boolean>('authOpenInVscode');
+    return raw === true;
+}
 
 // Session data structure persisted to VS Code Secret Storage
 type StoredSession = {
@@ -63,6 +90,51 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
         return pairs.join('&');
     }
 
+    private async tryCloseAuthTab(): Promise<void> {
+        if (!this.authTabOpenedInVscode || !this.authTabTargetUri) {
+            return;
+        }
+
+        const expected = this.authTabTargetUri;
+        const expectedState =
+            this.currentState || new URLSearchParams(expected.query).get('state') || '';
+        this.authTabOpenedInVscode = false;
+        this.authTabTargetUri = undefined;
+
+        try {
+            const candidates: vscode.Tab[] = [];
+            for (const group of vscode.window.tabGroups.all) {
+                for (const tab of group.tabs) {
+                    if (!(tab.input instanceof vscode.TabInputCustom)) {
+                        continue;
+                    }
+                    const uri = tab.input.uri;
+                    if (uri.scheme !== expected.scheme) {
+                        continue;
+                    }
+                    if (uri.authority !== expected.authority) {
+                        continue;
+                    }
+                    if (uri.path !== expected.path) {
+                        continue;
+                    }
+                    if (expectedState) {
+                        const gotState = new URLSearchParams(uri.query).get('state') || '';
+                        if (!gotState.includes(expectedState)) {
+                            continue;
+                        }
+                    }
+                    candidates.push(tab);
+                }
+            }
+            if (candidates.length) {
+                await vscode.window.tabGroups.close(candidates, true);
+            }
+        } catch {
+            // ignore
+        }
+    }
+
     // Pending login request (completed/failed through this Promise when browser callback arrives)
     private pendingAuth: {
         resolve: (value: vscode.AuthenticationSession | PromiseLike<vscode.AuthenticationSession>) => void;
@@ -71,6 +143,10 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
 
     // State associated with this login flow (for diagnosis/correlating request-callback)
     private currentState: string | undefined;
+
+    private authTabOpenedInVscode = false;
+    private authTabTargetUri: vscode.Uri | undefined;
+    private authOpenedExternally = false;
 
     // Secret Storage key name for saving/reading sessions
     private readonly secretKey = `${RTThreadAuthProvider.id}.session`;
@@ -141,6 +217,11 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                 if (uri.path !== '/auth-callback') {
                     return;
                 }
+                await this.tryCloseAuthTab();
+                if (this.authOpenedExternally) {
+                    this.authOpenedExternally = false;
+                    vscode.window.setStatusBarMessage('$(check) 登录成功，可以关闭浏览器页面。', 5000);
+                }
                 this.log(`Received auth-callback: ${uri.toString(true)}`);
                 const params = new URLSearchParams(uri.query);
                 let token = '';
@@ -165,10 +246,12 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                 if (code) {
                     try {
                         // Upgrade to a backend session token (sid) for stable cross-client user mapping.
-                        const baseUrl = aiChatBaseUrl;
+                        const baseUrl = getAiChatBaseUrl();
                         const exchangeUrl = `${baseUrl}/api/auth/rt/exchange`;
                         this.log(`Exchanging auth code to backend sid: ${exchangeUrl}`);
-                        const exchangeResp = await httpPostJson(exchangeUrl, { code });
+                        const exchangeResp = await httpPostJson(exchangeUrl, { code }, undefined, {
+                            timeoutMs: getAiChatTimeoutMs(),
+                        });
                         this.log(
                             `Backend exchange response: status=${exchangeResp.status}, body_len=${(exchangeResp.body || '').length}`,
                         );
@@ -195,7 +278,10 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
                         }
                         this.log(`Obtained backend sid: ${this.mask(sid, 'sid')}`);
                     } catch (e) {
-                        const message = `RT-Thread 登录成功，但后端会话交换失败。请检查网络连接或稍后重试：${aiChatBaseUrl}`;
+                        const baseUrl = getAiChatBaseUrl() || defaultAiChatBaseUrl;
+                        const message =
+                            `RT-Thread 登录成功，但后端会话交换失败。` +
+                            `请检查网络连接/代理，或在设置中配置 smart.aiChatBaseUrl（当前：${baseUrl}）`;
                         this.log(`Auth flow failed: ${String(e)}`);
                         void vscode.window
                             .showErrorMessage(`${message}。点击查看日志。`, '查看日志')
@@ -334,12 +420,31 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
         } catch {
             this.log(`Opening authorize URL (raw): ${authorizeUrlStr}`);
         }
-        await vscode.env.openExternal(authorizeUrl);
+        this.authTabOpenedInVscode = false;
+        this.authTabTargetUri = undefined;
+        this.authOpenedExternally = false;
+        if (shouldOpenAuthInVscode()) {
+            this.authTabTargetUri = authorizeUrl;
+            try {
+                await vscode.commands.executeCommand('simpleBrowser.show', authorizeUrlStr);
+                this.authTabOpenedInVscode = true;
+            } catch (e: any) {
+                this.authTabOpenedInVscode = false;
+                this.authTabTargetUri = undefined;
+                this.authOpenedExternally = true;
+                this.log(`simpleBrowser.show failed, fallback to external browser: ${String(e?.message ?? e)}`);
+                await vscode.env.openExternal(authorizeUrl);
+            }
+        } else {
+            this.authOpenedExternally = true;
+            await vscode.env.openExternal(authorizeUrl);
+        }
 
         const session = await new Promise<vscode.AuthenticationSession>((resolve, reject) => {
             // Set login timeout: fail if no callback within 1 minutes
             const timeout = setTimeout(() => {
                 this.pendingAuth = undefined;
+                void this.tryCloseAuthTab();
                 const err = new Error('Login timed out. Please try again.');
                 reject(err);
             }, 1 * 60 * 1000);
@@ -367,9 +472,14 @@ async function httpPostJson(
     urlStr: string,
     body: any,
     headers?: Record<string, string>,
+    requestConfig?: { timeoutMs?: number },
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
     const u = new URL(urlStr);
     const payload = Buffer.from(JSON.stringify(body ?? {}), 'utf-8');
+    const timeoutMs =
+        typeof requestConfig?.timeoutMs === 'number' && Number.isFinite(requestConfig.timeoutMs)
+            ? requestConfig.timeoutMs
+            : 30000;
     const opts: https.RequestOptions = {
         method: 'POST',
         protocol: u.protocol,
@@ -391,6 +501,9 @@ async function httpPostJson(
                 const bodyStr = Buffer.concat(chunks).toString('utf-8');
                 resolve({ status: res.statusCode || 0, headers: res.headers, body: bodyStr });
             });
+        });
+        req.setTimeout(Math.max(1000, Math.floor(timeoutMs)), () => {
+            req.destroy(new Error('Request timeout.'));
         });
         req.on('error', reject);
         req.write(payload);

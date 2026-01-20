@@ -180,6 +180,31 @@
             "type": "object",
             "title": "RT-Thread Smart",
             "properties": {
+                "smart.aiChatBaseUrl": {
+                    "type": "string",
+                    "default": "https://ai.rt-thread.org",
+                    "description": "AI Chat 后端地址（用于 RT-Thread 登录 code 交换 sid、以及 VSCode Chat 请求 /api/*）。",
+                    "markdownDescription": "AI Chat 后端地址（用于 RT-Thread 登录 code 交换 sid、以及 VSCode Chat 请求 `/api/*`）。\n\n**示例：**\n- `https://ai.rt-thread.org`\n- `http://127.0.0.1:3000`（本地启动 AiChat）",
+                    "scope": "resource",
+                    "order": 2
+                },
+                "smart.aiChatRequestTimeoutMs": {
+                    "type": "number",
+                    "default": 30000,
+                    "minimum": 1000,
+                    "description": "AI Chat 请求超时（毫秒）。网络不通时可避免长时间卡住。",
+                    "markdownDescription": "AI Chat 请求超时（毫秒）。网络不通时可避免长时间卡住。\n\n**示例：**\n- `10000`: 10 秒\n- `30000`: 30 秒（默认）",
+                    "scope": "resource",
+                    "order": 3
+                },
+                "smart.authOpenInVscode": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "RT-Thread 登录是否在 VSCode 内置浏览器中打开（登录完成后可自动关闭）。",
+                    "markdownDescription": "RT-Thread 登录是否在 VSCode 内置浏览器中打开（登录完成后可自动关闭）。\n\n开启后会优先使用 VSCode 的 Simple Browser；若不可用则回退到系统默认浏览器。",
+                    "scope": "resource",
+                    "order": 4
+                },
                 "smart.menuCommands": {
                     "type": "array",
                     "items": {
@@ -189,7 +214,7 @@
                     "description": "自定义构建菜单命令列表，使用 Ctrl+Shift+M 快捷键打开菜单。",
                     "markdownDescription": "自定义构建菜单命令列表，使用 `Ctrl+Shift+M` 快捷键打开菜单。\n\n**示例：**\n```json\n[\n  \"scons -c\",\n  \"scons --dist\",\n  \"scons --target=mdk5\"\n]\n```",
                     "scope": "resource",
-                    "order": 0
+                    "order": 10
                 },
                 "smart.parallelBuidNumber": {
                     "type": "number",
@@ -198,7 +223,7 @@
                     "description": "并行编译使用的 CPU 核心数（默认为 1）。设置大于 1 的值可以加快编译速度。",
                     "markdownDescription": "并行编译使用的 CPU 核心数（默认为 1）。\n\n设置大于 1 的值可以加快编译速度，例如：\n- `1`: 单核编译\n- `4`: 使用 4 个核心并行编译\n- `8`: 使用 8 个核心并行编译",
                     "scope": "resource",
-                    "order": 1
+                    "order": 11
                 }
             }
         },

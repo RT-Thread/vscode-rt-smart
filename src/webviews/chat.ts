@@ -1,42 +1,35 @@
 import * as vscode from 'vscode';
-import MarkdownIt from 'markdown-it';
-import { getMe, postChat, type ChatApiError } from '../ai/chatApi';
 
 let chatViewPanel: vscode.WebviewPanel | null = null;
+
 const title = 'RT-Thread AI Chat';
-const apiBaseUrl = 'https://ai.rt-thread.org';
+const defaultApiBaseUrl = 'https://ai.rt-thread.org';
 
-const md = new MarkdownIt({
-    html: false,
-    linkify: true,
-    breaks: true,
-    typographer: true,
-});
-
-md.validateLink = (url: string): boolean => {
-    const u = String(url || '').trim().toLowerCase();
-    return u.startsWith('https://') || u.startsWith('http://');
+type RpcResponseError = {
+    message: string;
+    status?: number;
+    requestId?: string;
 };
 
-const defaultLinkOpenRenderer =
-    md.renderer.rules.link_open ??
-    ((tokens, idx, options, _env, self) => {
-        return self.renderToken(tokens, idx, options);
-    });
-
-md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
-    const token = tokens[idx];
-    token.attrSet('target', '_blank');
-    token.attrSet('rel', 'noreferrer noopener');
-    return defaultLinkOpenRenderer(tokens, idx, options, env, self);
-};
-
-function renderMarkdownToHtml(source: string): string {
-    try {
-        return md.render(String(source ?? ''));
-    } catch {
-        return `<pre><code>${escapeHtml(String(source ?? ''))}</code></pre>`;
+function normalizeBaseUrl(baseUrl: string): string {
+    const trimmed = (baseUrl || '').trim();
+    if (!trimmed) {
+        return '';
     }
+    return trimmed.replace(/\/+$/, '');
+}
+
+function getAiChatBaseUrl(): string {
+    const cfg = vscode.workspace.getConfiguration('smart');
+    const url = cfg.get<string>('aiChatBaseUrl');
+    return normalizeBaseUrl(url || defaultApiBaseUrl);
+}
+
+function getAiChatTimeoutMs(): number {
+    const cfg = vscode.workspace.getConfiguration('smart');
+    const timeout = cfg.get<number>('aiChatRequestTimeoutMs');
+    const value = typeof timeout === 'number' && Number.isFinite(timeout) ? timeout : 30000;
+    return Math.max(1000, Math.floor(value));
 }
 
 function getNonce(): string {
@@ -48,33 +41,6 @@ function getNonce(): string {
     return nonce;
 }
 
-function escapeHtml(value: string): string {
-    return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function getApiBaseUrl(): string {
-    return apiBaseUrl;
-}
-
-function formatApiError(error: ChatApiError): string {
-    switch (error.kind) {
-        case 'network':
-            return `网络错误：${error.message}`;
-        case 'parse':
-            return `响应解析失败：${error.message}${error.requestId ? `（requestId=${error.requestId}）` : ''}`;
-        case 'http': {
-            const hint = error.error ? `${error.error}: ` : '';
-            const rid = error.requestId ? `（requestId=${error.requestId}）` : '';
-            return `后端错误(${error.status})${rid}：${hint}${error.message}`;
-        }
-    }
-}
-
 async function getRTThreadSession(createIfNone: boolean): Promise<vscode.AuthenticationSession | undefined> {
     try {
         return await vscode.authentication.getSession('rt-thread', [], { createIfNone });
@@ -83,426 +49,348 @@ async function getRTThreadSession(createIfNone: boolean): Promise<vscode.Authent
     }
 }
 
-function getWebviewHtml(webview: vscode.Webview): string {
+function buildHeaders(sid: string, extra?: Record<string, string>): Record<string, string> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(extra ?? {}),
+    };
+    if (sid) {
+        headers['Cookie'] = `sid=${sid}`;
+        headers['Authorization'] = `Bearer ${sid}`;
+    }
+    return headers;
+}
+
+function isAllowedApiPath(pathname: string): boolean {
+    const p = String(pathname || '').trim();
+    if (!p.startsWith('/')) {
+        return false;
+    }
+    return p.startsWith('/api/');
+}
+
+function joinBackendUrl(baseUrl: string, maybePath: string): string {
+    const raw = String(maybePath || '').trim();
+    if (!raw) {
+        return '';
+    }
+    if (/^https?:\/\//i.test(raw)) {
+        const b = normalizeBaseUrl(baseUrl);
+        return raw.startsWith(`${b}/`) || raw === b ? raw : '';
+    }
+    if (!isAllowedApiPath(raw)) {
+        return '';
+    }
+    return `${normalizeBaseUrl(baseUrl)}${raw}`;
+}
+
+async function proxyJson(
+    baseUrl: string,
+    sid: string,
+    url: string,
+    options: any,
+): Promise<{ ok: true; data: any } | { ok: false; error: RpcResponseError }> {
+    const fullUrl = joinBackendUrl(baseUrl, url);
+    if (!fullUrl) {
+        return { ok: false, error: { message: 'Forbidden request path.' } };
+    }
+
+    const method = typeof options?.method === 'string' ? options.method.toUpperCase() : 'GET';
+    const rawBody = options?.body;
+    const hasBody = rawBody !== undefined && rawBody !== null && method !== 'GET' && method !== 'HEAD';
+    const body =
+        hasBody && typeof rawBody === 'string'
+            ? rawBody
+            : hasBody
+                ? JSON.stringify(rawBody)
+                : undefined;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), getAiChatTimeoutMs());
+
+    try {
+        const res = await fetch(fullUrl, {
+            method,
+            headers: buildHeaders(sid, typeof options?.headers === 'object' ? options.headers : undefined),
+            body,
+            signal: controller.signal,
+        });
+        const requestId = res.headers.get('x-request-id') || undefined;
+        const text = await res.text();
+        let parsed: any = undefined;
+        if (text) {
+            try {
+                parsed = JSON.parse(text);
+            } catch {
+                parsed = undefined;
+            }
+        }
+
+        if (!res.ok) {
+            const message =
+                typeof parsed?.message === 'string'
+                    ? parsed.message
+                    : typeof parsed?.error === 'string'
+                        ? parsed.error
+                        : res.statusText || `Request failed (${res.status})`;
+            return { ok: false, error: { message, status: res.status, requestId } };
+        }
+
+        if (parsed === undefined) {
+            return { ok: false, error: { message: 'Invalid JSON response.', requestId } };
+        }
+
+        return { ok: true, data: parsed };
+    } catch (e: any) {
+        const msg = e?.name === 'AbortError' ? 'Request timeout.' : e?.message ? String(e.message) : String(e);
+        return { ok: false, error: { message: msg } };
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+type StreamEntry = { controller: AbortController; requestId?: string };
+
+async function proxyStream(
+    post: (message: any) => void,
+    activeStreams: Map<string, StreamEntry>,
+    baseUrl: string,
+    sid: string,
+    streamId: string,
+    url: string,
+    method: string,
+    body: any,
+): Promise<void> {
+    const fullUrl = joinBackendUrl(baseUrl, url);
+    if (!fullUrl) {
+        post({ type: 'rt.chat.stream.error', id: streamId, error: { message: 'Forbidden request path.' } });
+        post({ type: 'rt.chat.stream.end', id: streamId });
+        return;
+    }
+
+    const controller = new AbortController();
+    activeStreams.set(streamId, { controller });
+    const timeout = setTimeout(() => controller.abort(), getAiChatTimeoutMs());
+
+    try {
+        const rawBody =
+            body !== undefined && body !== null ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined;
+        const res = await fetch(fullUrl, {
+            method: method || 'POST',
+            headers: buildHeaders(sid),
+            body: rawBody,
+            signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        const requestId = res.headers.get('x-request-id') || undefined;
+        const entry = activeStreams.get(streamId);
+        if (entry) {
+            entry.requestId = requestId;
+        }
+
+        if (!res.ok) {
+            const text = await res.text();
+            let parsed: any = undefined;
+            if (text) {
+                try {
+                    parsed = JSON.parse(text);
+                } catch {
+                    parsed = undefined;
+                }
+            }
+            const message =
+                typeof parsed?.message === 'string'
+                    ? parsed.message
+                    : typeof parsed?.error === 'string'
+                        ? parsed.error
+                        : res.statusText || `Request failed (${res.status})`;
+            post({ type: 'rt.chat.stream.error', id: streamId, error: { message, status: res.status, requestId } });
+            return;
+        }
+
+        if (!res.body) {
+            post({
+                type: 'rt.chat.stream.error',
+                id: streamId,
+                error: { message: 'Stream not supported.', requestId },
+            });
+            return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data:')) {
+                    continue;
+                }
+                const dataStr = trimmed.slice(5).trim();
+                if (!dataStr) {
+                    continue;
+                }
+                if (dataStr === '[DONE]') {
+                    return;
+                }
+                let payload: any = undefined;
+                try {
+                    payload = JSON.parse(dataStr);
+                } catch {
+                    payload = undefined;
+                }
+                if (!payload) {
+                    continue;
+                }
+                post({ type: 'rt.chat.stream.event', id: streamId, event: payload });
+            }
+        }
+    } catch (e: any) {
+        if (controller.signal.aborted) {
+            return;
+        }
+        const msg = e?.message ? String(e.message) : String(e);
+        const requestId = activeStreams.get(streamId)?.requestId;
+        post({ type: 'rt.chat.stream.error', id: streamId, error: { message: msg, requestId } });
+    } finally {
+        clearTimeout(timeout);
+        activeStreams.delete(streamId);
+        post({ type: 'rt.chat.stream.end', id: streamId });
+    }
+}
+
+function getWebviewHtml(context: vscode.ExtensionContext, webview: vscode.Webview): string {
     const nonce = getNonce();
+
+    const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'resources', 'chat-ui', 'app.css'));
+    const jsUri = webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'resources', 'chat-ui', 'chat-ui.js'));
+
     const csp = [
         `default-src 'none';`,
         `img-src ${webview.cspSource} https: data:;`,
         `style-src ${webview.cspSource} 'unsafe-inline';`,
+        `font-src ${webview.cspSource} data:;`,
         `script-src 'nonce-${nonce}';`,
     ].join(' ');
 
-    return /* html */ `<!DOCTYPE html>
+    return /* html */ `<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="${csp}" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(title)}</title>
-    <style>
-      :root {
-        --bg: var(--vscode-editor-background);
-        --fg: var(--vscode-editor-foreground);
-        --border: var(--vscode-editorWidget-border);
-        --input-bg: var(--vscode-input-background);
-        --input-fg: var(--vscode-input-foreground);
-        --input-border: var(--vscode-input-border);
-        --button-bg: var(--vscode-button-background);
-        --button-fg: var(--vscode-button-foreground);
-        --button-bg-hover: var(--vscode-button-hoverBackground);
-        --muted: var(--vscode-descriptionForeground);
-        --user-bg: color-mix(in srgb, var(--vscode-button-background) 18%, transparent);
-        --assistant-bg: color-mix(in srgb, var(--vscode-editorWidget-background) 92%, transparent);
-      }
-
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        background: var(--bg);
-        color: var(--fg);
-        font-family: var(--vscode-font-family);
-        font-size: var(--vscode-font-size);
-      }
-
-      .app {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .header {
-        padding: 10px 12px;
-        border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .header .title {
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .header .status {
-        color: var(--muted);
-        font-size: 12px;
-        white-space: nowrap;
-      }
-
-      .header .right {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-      }
-
-      .header .right .status {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .chat {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .messages {
-        flex: 1;
-        overflow: auto;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .msg {
-        max-width: min(820px, 92%);
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-        line-height: 1.45;
-        word-break: break-word;
-      }
-
-      .msg.user {
-        align-self: flex-end;
-        background: var(--user-bg);
-      }
-
-      .msg.assistant {
-        align-self: flex-start;
-        background: var(--assistant-bg);
-      }
-
-      .msg.system {
-        align-self: flex-start;
-        background: color-mix(in srgb, var(--vscode-editorWidget-background) 80%, transparent);
-        color: var(--muted);
-      }
-
-      .msg a {
-        color: var(--vscode-textLink-foreground);
-        text-decoration: none;
-      }
-
-      .msg a:hover {
-        color: var(--vscode-textLink-activeForeground);
-        text-decoration: underline;
-      }
-
-      .msg p {
-        margin: 0;
-      }
-
-      .msg p + p {
-        margin-top: 0.6em;
-      }
-
-      .msg h1, .msg h2, .msg h3 {
-        margin: 0.8em 0 0.35em;
-        line-height: 1.25;
-      }
-
-      .msg ul, .msg ol {
-        margin: 0.4em 0 0.4em 1.2em;
-        padding: 0;
-      }
-
-      .msg li + li {
-        margin-top: 0.2em;
-      }
-
-      .msg blockquote {
-        margin: 0.6em 0;
-        padding: 0 0 0 10px;
-        border-left: 3px solid color-mix(in srgb, var(--vscode-textLink-foreground) 45%, transparent);
-        color: color-mix(in srgb, var(--fg) 85%, transparent);
-      }
-
-      .msg pre {
-        margin: 0.6em 0 0;
-        padding: 10px;
-        border-radius: 8px;
-        overflow: auto;
-        word-break: normal;
-        overflow-wrap: normal;
-        background: color-mix(in srgb, var(--vscode-editorWidget-background) 92%, transparent);
-        border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-      }
-
-      .msg code {
-        font-family: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
-        font-size: 0.95em;
-      }
-
-      .msg :not(pre) > code {
-        padding: 0 0.3em;
-        border-radius: 6px;
-        background: color-mix(in srgb, var(--vscode-editorWidget-background) 85%, transparent);
-        border: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
-      }
-
-      .msg pre code {
-        display: block;
-        padding: 0;
-        background: transparent;
-        border: none;
-        white-space: pre;
-        word-break: normal;
-        overflow-wrap: normal;
-      }
-
-      .msg table {
-        border-collapse: collapse;
-        margin: 0.6em 0;
-        width: 100%;
-      }
-
-      .msg th, .msg td {
-        border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-        padding: 6px 8px;
-        vertical-align: top;
-      }
-
-      .msg th {
-        background: color-mix(in srgb, var(--vscode-editorWidget-background) 85%, transparent);
-      }
-
-      .composer {
-        border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-        padding: 10px 12px;
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-      }
-
-      textarea {
-        flex: 1;
-        resize: none;
-        min-height: 38px;
-        max-height: 160px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        background: var(--input-bg);
-        color: var(--input-fg);
-        border: 1px solid color-mix(in srgb, var(--input-border) 70%, transparent);
-        outline: none;
-        font-family: inherit;
-      }
-
-      textarea:focus {
-        border-color: var(--vscode-focusBorder);
-      }
-
-      button {
-        height: 38px;
-        padding: 0 14px;
-        border: none;
-        border-radius: 8px;
-        background: var(--button-bg);
-        color: var(--button-fg);
-        cursor: pointer;
-        font-weight: 600;
-      }
-
-      button:hover {
-        background: var(--button-bg-hover);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: default;
-      }
-
-      .link {
-        color: var(--vscode-textLink-foreground);
-        text-decoration: none;
-        cursor: pointer;
-        font-size: 12px;
-      }
-
-      .link:hover {
-        color: var(--vscode-textLink-activeForeground);
-        text-decoration: underline;
-      }
-
-      .footer {
-        padding: 8px 12px 12px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${title}</title>
+    <link rel="stylesheet" href="${cssUri}" />
   </head>
-  <body>
-    <div class="app">
-      <div class="header">
-        <div id="chatTitle" class="title">RT-Thread AI Chat</div>
-        <div class="right">
-          <div id="status" class="status">未登录</div>
-          <a id="signin" class="link">登录</a>
-          <a id="signout" class="link" style="display:none">退出</a>
+  <body class="host-vscode">
+    <div class="page page-chat">
+      <header class="topbar">
+        <div class="brand"><span class="brand-dot"></span>RT-Thread AI 智能对话</div>
+        <div class="topbar-actions">
+          <div class="user-menu" id="user-menu">
+            <button
+              class="user-menu-button"
+              id="user-menu-button"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <span class="user-chip" id="user-chip">正在加载资料...</span>
+              <span class="user-menu-caret">▾</span>
+            </button>
+            <div class="user-menu-panel" id="user-menu-panel" hidden>
+              <div class="user-menu-header">
+                <div class="user-menu-name" id="menu-name">---</div>
+                <div class="user-menu-email" id="menu-email">---</div>
+              </div>
+              <div class="user-menu-list">
+                <div class="user-menu-item">
+                  <span>公司</span>
+                  <span id="menu-company">---</span>
+                </div>
+                <div class="user-menu-item">
+                  <span>擅长领域</span>
+                  <span id="menu-domain">---</span>
+                </div>
+              </div>
+              <div class="user-menu-actions">
+                <a class="admin-link" id="profile-link" href="/profile">个人信息</a>
+                <a class="admin-link" id="admin-link" href="/rt_thread_adzxcdfwrqwafvdsf_admin" hidden>管理员后台</a>
+                <button class="logout" id="logout" type="button">退出登录</button>
+              </div>
+            </div>
+          </div>
+          <button
+            class="conversation-drawer-trigger"
+            id="conversation-drawer-trigger"
+            type="button"
+            aria-label="打开对话列表"
+            hidden
+          >
+            ☰ 对话
+          </button>
         </div>
-      </div>
+      </header>
 
-      <div class="chat">
-        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+      <div class="conversation-drawer-backdrop" id="conversation-drawer-backdrop" hidden></div>
 
-        <div class="composer">
-          <textarea id="input" rows="1" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
-          <button id="send" type="button">发送</button>
-        </div>
-      </div>
+      <main class="chat-shell">
+        <aside class="conversation-panel">
+          <div class="conversation-header">
+            <div class="conversation-header-text">
+              <h2>对话</h2>
+              <p class="muted">管理与切换会话</p>
+            </div>
+            <div class="conversation-header-actions">
+              <button
+                class="button button-small conversation-toggle"
+                id="toggle-conversation"
+                type="button"
+                aria-label="收起对话列表"
+              >
+                收起
+              </button>
+              <button class="button button-small" id="new-conversation" type="button">
+                新建
+              </button>
+            </div>
+          </div>
+          <div class="conversation-list" id="conversation-list"></div>
+        </aside>
+
+        <section class="chat-main">
+          <div class="chat-panel">
+            <div class="chat-log" id="chat-log"></div>
+            <div class="chat-suggestions" id="chat-suggestions" hidden></div>
+
+            <form class="chat-form" id="chat-form">
+              <input
+                class="chat-input"
+                id="chat-input"
+                type="text"
+                placeholder="输入一句话..."
+                autocomplete="off"
+                required
+              />
+              <button class="chat-button" type="submit">发送</button>
+            </form>
+          </div>
+        </section>
+      </main>
     </div>
 
-    <script nonce="${nonce}">
-      const vscode = acquireVsCodeApi();
-      const messagesEl = document.getElementById('messages');
-      const inputEl = document.getElementById('input');
-      const sendBtn = document.getElementById('send');
-      const statusEl = document.getElementById('status');
-      const signinEl = document.getElementById('signin');
-      const signoutEl = document.getElementById('signout');
-
-      const state = {
-        signedIn: false,
-        backendOk: false,
-        busy: false,
-        userLabel: '',
-      };
-
-      function appendMessage(role, payload) {
-        const div = document.createElement('div');
-        div.className = 'msg ' + role;
-        if (payload && typeof payload === 'object') {
-          if (typeof payload.html === 'string') {
-            div.innerHTML = payload.html;
-          } else if (typeof payload.text === 'string') {
-            div.textContent = payload.text;
-          } else {
-            div.textContent = String(payload.text ?? '');
-          }
-        } else {
-          div.textContent = String(payload ?? '');
-        }
-        messagesEl.appendChild(div);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      function setStatus(partial) {
-        Object.assign(state, partial || {});
-
-        let label = '未登录';
-        if (state.signedIn && state.backendOk) {
-          label = state.userLabel || 'RT-Thread';
-        }
-        if (state.busy) {
-          label += ' · 处理中...';
-        }
-        statusEl.textContent = label;
-
-        signinEl.style.display = state.signedIn ? 'none' : '';
-        signoutEl.style.display = state.signedIn ? '' : 'none';
-
-        const canSend = state.signedIn && state.backendOk && !state.busy;
-        sendBtn.disabled = !canSend;
-        inputEl.disabled = !canSend;
-      }
-
-      function send() {
-        const text = (inputEl.value || '').trimEnd();
-        if (!text.trim()) return;
-        inputEl.value = '';
-        inputEl.style.height = '';
-        vscode.postMessage({ command: 'chat.send', text });
-      }
-
-      function autosize() {
-        inputEl.style.height = '';
-        inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
-      }
-
-      sendBtn.addEventListener('click', send);
-      inputEl.addEventListener('input', autosize);
-      inputEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          send();
-        }
-      });
-
-      signinEl.addEventListener('click', () => {
-        vscode.postMessage({ command: 'auth.signIn' });
-      });
-
-      signoutEl.addEventListener('click', () => {
-        vscode.postMessage({ command: 'auth.signOut' });
-      });
-
-      window.addEventListener('message', (event) => {
-        const msg = event.data;
-        if (!msg || !msg.command) return;
-        switch (msg.command) {
-          case 'chat.append':
-            appendMessage(msg.role || 'assistant', msg);
-            break;
-          case 'auth.status':
-            setStatus(msg);
-            break;
-          case 'chat.busy':
-            setStatus({ busy: !!msg.busy });
-            break;
-          case 'chat.reply':
-            appendMessage('assistant', msg);
-            break;
-          case 'chat.system':
-            appendMessage('system', msg);
-            break;
-          case 'chat.error':
-            appendMessage('system', msg);
-            break;
-          case 'chat.reset':
-            messagesEl.innerHTML = '';
-            break;
-        }
-      });
-
-      vscode.postMessage({ command: 'chat.ready' });
-      appendMessage('system', '你好！请先登录 RT-Thread 账号，然后开始对话。');
-      setStatus({ signedIn: false, backendOk: false, busy: false, userLabel: '' });
-    </script>
+    <script nonce="${nonce}" src="${jsUri}"></script>
   </body>
 </html>`;
 }
-
-type ResolvedBackendSession =
-    | { ok: true; baseUrl: string; sid: string; userId: string; userLabel: string }
-    | { ok: false; baseUrl: string };
 
 export function openChatWebview(context: vscode.ExtensionContext) {
     if (chatViewPanel) {
@@ -513,156 +401,216 @@ export function openChatWebview(context: vscode.ExtensionContext) {
     const panel = vscode.window.createWebviewPanel('rt-thread-chat', title, vscode.ViewColumn.Beside, {
         enableScripts: true,
         retainContextWhenHidden: true,
+        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'resources', 'chat-ui')],
     });
 
     const iconPath = vscode.Uri.joinPath(context.extensionUri, 'resources', 'images', 'rt-thread.png');
     panel.iconPath = iconPath;
-    panel.webview.html = getWebviewHtml(panel.webview);
+    panel.webview.html = getWebviewHtml(context, panel.webview);
 
-    let activeConversationId: string | null = null;
-    let busy = false;
+    const activeStreams = new Map<string, StreamEntry>();
+    let disposed = false;
 
-    const postChatMessage = (role: 'user' | 'assistant' | 'system', markdownText: string) => {
-        void panel.webview.postMessage({
-            command: 'chat.append',
-            role,
-            html: renderMarkdownToHtml(markdownText),
-        });
-    };
-
-    const postBusy = (b: boolean) => {
-        busy = b;
-        void panel.webview.postMessage({ command: 'chat.busy', busy: b });
-    };
-
-    const resolveBackendSession = async (opts?: { silent?: boolean }): Promise<ResolvedBackendSession> => {
-        const silent = !!opts?.silent;
-        const baseUrl = getApiBaseUrl();
-        const session = await getRTThreadSession(false);
-        if (!session?.accessToken) {
-            void panel.webview.postMessage({
-                command: 'auth.status',
-                signedIn: false,
-                backendOk: false,
-                userLabel: '',
-            });
-            return { ok: false, baseUrl };
+    const post = (message: any) => {
+        if (disposed) {
+            return;
         }
-
-        const me = await getMe(baseUrl, session.accessToken);
-        if (!me.ok) {
-            void panel.webview.postMessage({
-                command: 'auth.status',
-                signedIn: false,
-                backendOk: false,
-                userLabel: '',
-            });
-            if (silent) {
-                console.error('[ai-chat] backend check failed', { error: me.error });
-            } else {
-                postChatMessage('system', `后端检查失败：${formatApiError(me.error)}（${baseUrl}/api/me）`);
-            }
-            return { ok: false, baseUrl };
-        }
-
-        const userLabel = me.data.user?.name || session?.account.label || '';
-        void panel.webview.postMessage({
-            command: 'auth.status',
-            signedIn: true,
-            backendOk: true,
-            userLabel,
-        });
-        const userId = me.data.user?.id ? String(me.data.user.id) : '';
-        return { ok: true, baseUrl, sid: session.accessToken, userId, userLabel };
+        void panel.webview.postMessage(message);
     };
+
+    const authChangeDisposable = vscode.authentication.onDidChangeSessions((event) => {
+        if (event.provider.id !== 'rt-thread') {
+            return;
+        }
+        post({ type: 'rt.chat.auth.sessionsChanged' });
+    });
 
     panel.onDidDispose(() => {
+        disposed = true;
+        authChangeDisposable.dispose();
+        for (const entry of activeStreams.values()) {
+            try {
+                entry.controller.abort();
+            } catch {
+                // ignore
+            }
+        }
+        activeStreams.clear();
         chatViewPanel = null;
     });
 
     panel.webview.onDidReceiveMessage(async (message) => {
-        if (!message || typeof message.command !== 'string') {
+        if (!message || typeof message.type !== 'string' || typeof message.id !== 'string') {
             return;
         }
 
-        switch (message.command) {
-            case 'chat.ready':
-                await resolveBackendSession();
-                return;
-            case 'auth.signIn': {
-                postBusy(true);
-                // When backend check fails we may still have a stored (stale) sid.
-                // Force a fresh login so users don't get stuck in a "未登录" loop.
-                try {
-                    await vscode.commands.executeCommand('extension.RTThreadSignOut');
-                } catch {
-                    // ignore
+        const baseUrl = getAiChatBaseUrl();
+
+        switch (message.type) {
+            case 'rt.chat.rpc.request': {
+                const op = typeof message.op === 'string' ? message.op : '';
+                const payload = message.payload;
+
+                if (op === 'auth.signIn') {
+                    try {
+                        // When backend check fails we may still have a stored (stale) sid.
+                        // Force a fresh login so users don't get stuck in a "未登录" loop.
+                        try {
+                            await vscode.commands.executeCommand('extension.RTThreadSignOut');
+                        } catch {
+                            // ignore
+                        }
+
+                        const session = await getRTThreadSession(true);
+                        if (!session?.accessToken) {
+                            post({
+                                type: 'rt.chat.rpc.response',
+                                id: message.id,
+                                ok: false,
+                                error: { message: '登录已取消。' } satisfies RpcResponseError,
+                            });
+                            return;
+                        }
+                        post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: { ok: true } });
+                    } catch (e: any) {
+                        post({
+                            type: 'rt.chat.rpc.response',
+                            id: message.id,
+                            ok: false,
+                            error: { message: e?.message ? String(e.message) : String(e) } satisfies RpcResponseError,
+                        });
+                    }
+                    return;
                 }
-                const session = await getRTThreadSession(true);
-                postBusy(false);
-                if (!session) {
-                    postChatMessage('system', '登录已取消。');
+
+                if (op === 'auth.signOut') {
+                    try {
+                        await vscode.commands.executeCommand('extension.RTThreadSignOut');
+                        post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: { ok: true } });
+                    } catch (e: any) {
+                        post({
+                            type: 'rt.chat.rpc.response',
+                            id: message.id,
+                            ok: false,
+                            error: { message: e?.message ? String(e.message) : String(e) } satisfies RpcResponseError,
+                        });
+                    }
+                    return;
                 }
-                activeConversationId = null;
-                await resolveBackendSession();
-                return;
-            }
-            case 'auth.signOut': {
-                postBusy(true);
-                activeConversationId = null;
-                await vscode.commands.executeCommand('extension.RTThreadSignOut');
-                postBusy(false);
-                await resolveBackendSession({ silent: true });
-                postChatMessage('system', '已退出登录。');
-                return;
-            }
-            case 'chat.send': {
-                if (busy) {
+
+                if (op === 'ui.confirm') {
+                    const msgText = payload && typeof payload.message === 'string' ? payload.message : '';
+                    const confirmLabel = '确定';
+                    const picked = await vscode.window.showWarningMessage(msgText || '确认操作？', { modal: true }, confirmLabel);
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: picked === confirmLabel });
+                    return;
+                }
+
+                if (op === 'ui.prompt') {
+                    const msgText = payload && typeof payload.message === 'string' ? payload.message : '';
+                    const value = payload && typeof payload.value === 'string' ? payload.value : '';
+                    const result = await vscode.window.showInputBox({
+                        prompt: msgText || '请输入内容',
+                        value,
+                        ignoreFocusOut: true,
+                    });
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: result ?? null });
+                    return;
+                }
+
+                if (op === 'ui.notify') {
+                    const kind = payload && typeof payload.kind === 'string' ? payload.kind : 'info';
+                    const msgText = payload && typeof payload.message === 'string' ? payload.message : '';
+                    try {
+                        if (kind === 'error') {
+                            await vscode.window.showErrorMessage(msgText || '发生错误。');
+                        } else if (kind === 'warning') {
+                            await vscode.window.showWarningMessage(msgText || '提示。');
+                        } else {
+                            await vscode.window.showInformationMessage(msgText || '提示。');
+                        }
+                    } catch {
+                        // ignore
+                    }
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: { ok: true } });
+                    return;
+                }
+
+                if (op === 'openExternal') {
+                    const rawUrl = payload && typeof payload.url === 'string' ? payload.url : '';
+                    const b = baseUrl || defaultApiBaseUrl;
+                    const trimmed = String(rawUrl || '').trim();
+                    const isAbsolute = /^(https?:|mailto:)/i.test(trimmed);
+                    const target = isAbsolute ? trimmed : `${b}${trimmed || '/'}`;
+                    try {
+                        await vscode.env.openExternal(vscode.Uri.parse(target));
+                    } catch {
+                        // ignore
+                    }
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: { ok: true } });
+                    return;
+                }
+
+                if (op !== 'json') {
+                    post({
+                        type: 'rt.chat.rpc.response',
+                        id: message.id,
+                        ok: false,
+                        error: { message: `Unknown op: ${op}` } satisfies RpcResponseError,
+                    });
                     return;
                 }
 
                 const session = await getRTThreadSession(false);
                 if (!session?.accessToken) {
-                    postChatMessage('system', '请先登录 RT-Thread 账号。');
-                    await resolveBackendSession({ silent: true });
+                    post({
+                        type: 'rt.chat.rpc.response',
+                        id: message.id,
+                        ok: false,
+                        error: { message: 'Login required.', status: 401 } satisfies RpcResponseError,
+                    });
                     return;
                 }
 
-                const baseUrl = getApiBaseUrl();
-                const text = typeof message.text === 'string' ? message.text : String(message.text ?? '');
+                const url = payload && typeof payload.url === 'string' ? payload.url : '';
+                const options = payload ? payload.options : undefined;
+                const resp = await proxyJson(baseUrl, session.accessToken, url, options);
+                if (resp.ok) {
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: true, data: resp.data });
+                } else {
+                    post({ type: 'rt.chat.rpc.response', id: message.id, ok: false, error: resp.error });
+                }
+                return;
+            }
 
-                postChatMessage('user', text);
-                postBusy(true);
-                try {
-                    const resp = await postChat(baseUrl, session.accessToken, text, activeConversationId);
-                    if (!resp.ok) {
-                        let msg = formatApiError(resp.error);
-                        if (resp.error.kind === 'http' && resp.error.conversationId) {
-                            activeConversationId = resp.error.conversationId;
-                        }
-                        if (resp.error.kind === 'http') {
-                            if (resp.error.status === 401) {
-                                msg = `${msg}（请先登录 RT-Thread 账号）`;
-                            } else if (resp.error.error === 'ai_not_configured') {
-                                msg = `${msg}（AI 未配置，请在后端设置 LLM_API_KEY 或访问 ${baseUrl}/admin/ai）`;
-                            } else if (resp.error.error === 'ai_error') {
-                                msg = `${msg}（AI 调用失败，请检查后端 LLM 配置与网络，或访问 ${baseUrl}/admin/ai）`;
-                            }
-                        }
-                        if (resp.error.kind === 'network') {
-                            msg = `${msg}（请检查网络连接：${baseUrl}）`;
-                        }
-                        postChatMessage('system', msg);
-                        await resolveBackendSession({ silent: true });
-                        return;
-                    }
+            case 'rt.chat.stream.start': {
+                const url = typeof message.url === 'string' ? message.url : '';
+                const method = typeof message.method === 'string' ? message.method : 'POST';
+                const body = message.body;
 
-                    if (resp.data.conversationId) {
-                        activeConversationId = resp.data.conversationId;
+                const session = await getRTThreadSession(false);
+                if (!session?.accessToken) {
+                    post({
+                        type: 'rt.chat.stream.error',
+                        id: message.id,
+                        error: { message: 'Login required.', status: 401 } satisfies RpcResponseError,
+                    });
+                    post({ type: 'rt.chat.stream.end', id: message.id });
+                    return;
+                }
+
+                void proxyStream(post, activeStreams, baseUrl, session.accessToken, message.id, url, method, body);
+                return;
+            }
+
+            case 'rt.chat.stream.cancel': {
+                const entry = activeStreams.get(message.id);
+                if (entry) {
+                    try {
+                        entry.controller.abort();
+                    } catch {
+                        // ignore
                     }
-                    postChatMessage('assistant', resp.data.reply ?? '');
-                } finally {
-                    postBusy(false);
                 }
                 return;
             }
