@@ -8,6 +8,9 @@ RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 
 
 ### 版本说明
 
+**v0.4.13**
+- 添加aichat界面
+
 **v0.4.12**
 - 加入RT-Thread ELF文件符号分析的功能；
 - 调整界面，web页面颜色样式可以跟随vscode的浅色/深色自动进行切换；
