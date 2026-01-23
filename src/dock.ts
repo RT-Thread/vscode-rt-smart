@@ -38,6 +38,15 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 arguments: [],
             };
 
+            let chat = new vscode.TreeItem("AI Chat", vscode.TreeItemCollapsibleState.None);
+            chat.iconPath = new vscode.ThemeIcon("comment-discussion");
+            chat.label = "AI Chat";
+            chat.command = {
+                command: "extension.showChat",
+                title: "show ai chat page",
+                arguments: [],
+            };
+
             let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
             about.iconPath = new vscode.ThemeIcon("info");
             about.label = "About";
@@ -47,7 +56,7 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
                 arguments: [],
             };
 
-            return [createProject, rtSetting, about];
+            return [createProject, rtSetting, chat, about];
         }
 
         if (!element) {
@@ -81,6 +90,16 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
 
                 children.push(item);
             };
+
+            let chat = new vscode.TreeItem("AI Chat", vscode.TreeItemCollapsibleState.None);
+            chat.iconPath = new vscode.ThemeIcon("comment-discussion");
+            chat.label = "AI Chat";
+            chat.command = {
+                command: "extension.showChat",
+                title: "show ai chat page",
+                arguments: [],
+            };
+            children.push(chat);
 
             let analyze = new vscode.TreeItem("Symbolic Analysis", vscode.TreeItemCollapsibleState.None);
             analyze.iconPath = new vscode.ThemeIcon("search-fuzzy");

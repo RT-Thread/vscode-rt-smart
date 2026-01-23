@@ -8,6 +8,7 @@ import { openSettingWebview } from './webviews/setting';
 import { openAboutWebview } from './webviews/about';
 import { openCreateProjectWebview } from './webviews/create-project';
 import { openAnalyzeWebview } from './webviews/analyze';
+import { openChatWebview } from './webviews/chat';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
 import { getMenuItems, getParallelBuildNumber } from './smart';
@@ -129,6 +130,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     vscode.commands.registerCommand('extension.showAnalyze', () => {
         openAnalyzeWebview(context);
+    });
+    vscode.commands.registerCommand('extension.showChat', () => {
+        openChatWebview(context);
     });
 
     if (isRTThreadWorksapce) {
