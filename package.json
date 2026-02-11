@@ -7,6 +7,7 @@
     "repository": {
         "url": "https://github.com/RT-Thread/vscode-rt-smart"
     },
+    "icon": "resources/images/RT-Thread.png",
     "workspaces": [
         "src/vue"
     ],
@@ -27,7 +28,7 @@
                 {
                     "id": "rt-thread",
                     "title": "RT-Thread",
-                    "icon": "resources/images/rt-thread.png"
+                    "icon": "resources/images/RT-Thread.svg"
                 }
             ]
         },
