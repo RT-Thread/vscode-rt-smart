@@ -1,6 +1,9 @@
 .vscode/**
 .vscode-test/**
 src/**
+out/test/**
+AGENTS.md
+CLAUDE.md
 ref/**
 .gitignore
 .yarnrc
@@ -20,13 +23,17 @@ vsc-extension-quickstart.md
 !node_modules/mdurl/**
 !node_modules/punycode.js/**
 !node_modules/uc.micro/**
-!node_modules/highlight.js/**
+# Include only the core and languages registered by the Markdown renderer.
+!node_modules/highlight.js/package.json
+!node_modules/highlight.js/LICENSE
+!node_modules/highlight.js/lib/core.js
+!node_modules/highlight.js/lib/languages/c.js
+!node_modules/highlight.js/lib/languages/cpp.js
+!node_modules/highlight.js/lib/languages/python.js
+!node_modules/highlight.js/lib/languages/javascript.js
+!node_modules/highlight.js/lib/languages/typescript.js
 
 # Exclude unnecessary files from included packages to reduce size
-node_modules/highlight.js/**/*.md
-node_modules/highlight.js/styles/**
-node_modules/highlight.js/scss/**
-node_modules/highlight.js/es/**
 node_modules/markdown-it*/**/*.md
 **/.git/**
 **/package-lock.json

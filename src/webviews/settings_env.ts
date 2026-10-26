@@ -232,14 +232,11 @@ export async function updateEnvFunction(webview: vscode.Webview) {
     const homeDir = os.homedir();
     const scriptsDir = path.join(homeDir, '.env', 'tools', 'scripts');
     const packagesDir = path.join(homeDir, '.env', 'packages', 'packages');
-    const sdkDir = path.join(homeDir, '.env', 'packages', 'sdk');
     try {
         webview.postMessage({ command: 'installProgress', type: 'info', message: '正在更新 ~/.env/tools/scripts ...' });
         await executeCommand('git pull origin', webview, scriptsDir);
         webview.postMessage({ command: 'installProgress', type: 'info', message: '正在更新 ~/.env/packages/packages ...' });
         await executeCommand('git pull origin', webview, packagesDir);
-        webview.postMessage({ command: 'installProgress', type: 'info', message: '正在更新 ~/.env/packages/sdk ...' });
-        await executeCommand('git pull origin', webview, sdkDir);
         webview.postMessage({ command: 'installProgress', type: 'success', message: 'Env 更新完成！' });
     } catch (error) {
         webview.postMessage({ command: 'installProgress', type: 'error', message: `Env 更新失败: ${error}` });

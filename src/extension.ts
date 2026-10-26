@@ -7,7 +7,6 @@ import * as os from 'os';
 import { openSettingWebview } from './webviews/setting';
 import { openAboutWebview } from './webviews/about';
 import { openCreateProjectWebview } from './webviews/create-project';
-import { openAnalyzeWebview } from './webviews/analyze';
 import { openChatWebview } from './webviews/chat';
 import { initOnDidChangeListener } from './listener';
 import { executeCommand, initTerminal } from './terminal';
@@ -21,6 +20,7 @@ import { DecorationProvider } from './project/fileDecorationProvider';
 import { getCurrentProjectInWorkspace } from './webviews/project';
 import { initCurrentProject } from './project/cmd';
 import { initRTThreadAuth } from './auth/authProvider';
+import { registerWebBrowser } from './browser';
 
 let _context: vscode.ExtensionContext;
 
@@ -128,9 +128,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.showAbout', () => {
         openAboutWebview(context);
     });
-    vscode.commands.registerCommand('extension.showAnalyze', () => {
-        openAnalyzeWebview(context);
-    });
     vscode.commands.registerCommand('extension.showChat', () => {
         openChatWebview(context);
     });
@@ -143,7 +140,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     /* initialize RT-Thread authentication */
-    initRTThreadAuth(context);
+    const authProvider = initRTThreadAuth(context);
+    registerWebBrowser(context, authProvider);
 
     /* initialize dock view always */
     initDockView(context);

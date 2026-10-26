@@ -4,7 +4,7 @@
     "displayName": "RT-Thread Smart Extension",
     "description": "Smart Helper Extension for RT-Thread Development",
     "icon": "resources/logo.png",
-    "version": "0.4.13",
+    "version": "0.4.14",
     "repository": {
         "url": "https://github.com/RT-Thread/vscode-rt-smart"
     },
@@ -20,7 +20,8 @@
     ],
     "activationEvents": [
         "workspaceContains:rtconfig.h",
-        "onView:rt-thread"
+        "onView:rt-thread",
+        "onUri"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -60,6 +61,10 @@
             {
                 "command": "extension.showSetting",
                 "title": "Show RT-Thread Setting"
+            },
+            {
+                "command": "extension.openWebUrl",
+                "title": "RT-Thread: Open Web URL in Editor"
             },
             {
                 "command": "extension.showCreateProject",
@@ -241,7 +246,7 @@
         ]
     },
     "scripts": {
-        "package:vs": "vsce package --no-dependencies",
+        "package:vs": "vsce package",
         "vscode:prepublish": "npm run compile",
         "build:vue": "npm run build --workspace=smart-vue",
         "compile": "npm run build:vue && tsc -p ./",
@@ -261,8 +266,7 @@
         "markdown-it-sub": "^1.0.0",
         "markdown-it-sup": "^1.0.0",
         "markdown-it-task-lists": "^2.1.1",
-        "vue": "^3.3.8",
-        "vue-router": "^4.5.0"
+        "vue": "^3.3.8"
     },
     "extensionDependencies": [
         "ms-python.python"

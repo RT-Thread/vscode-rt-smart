@@ -10,7 +10,6 @@ const name = "create-project";
 const title = "RT-Thread Create Project";
 
 const cfgFn = path.join(os.homedir(), '.env/cfg.json');
-const sdkCfgFn = path.join(os.homedir(), '.env/tools/scripts/sdk_cfg.json');
 
 let extensionInfo = {
 	version: "0.1.1",
@@ -35,7 +34,6 @@ let extensionInfo = {
 			]
 		}
 	],
-	SDKConfig: {},
 	configInfo: [{ name: "RT-Thread", path: "d:/workspace/rt-thread", description: "RT-Thread主干路径" }]
 };
 
@@ -67,12 +65,6 @@ export function openCreateProjectWebview(context: vscode.ExtensionContext) {
 		let cfgObj = readJsonObject(cfgFn);
 		if (cfgObj) {
 			extensionInfo.configInfo = cfgObj.RTThreadConfig;
-		}
-
-		// 更新SDK相关信息
-		let sdkCfgObj = readJsonObject(sdkCfgFn);
-		if (sdkCfgObj) {
-			extensionInfo.SDKConfig = sdkCfgObj;
 		}
 
 		// And set its HTML content
