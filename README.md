@@ -2,11 +2,21 @@
 
 RT-Thread VSCode扩展是一款专为RT-Thread及RT-Thread Smart (版本>5.2.0) 开发的VSCode辅助工具。该插件遵循简化与灵活扩展的设计原则，旨在最小化对VSCode干预，同时允许用户利用RT-Thread的脚本功能来实现个性化定制。
 
+当前设置页面聚焦 Env 的安装、更新和状态，保留创建工程所需的 RT-Thread 根目录配置。SDK 管理器、工具链设置、Kconfig webview 和 Symbolic Analysis 已移除；终端 menuconfig 及已有 Kconfig 扩展集成保留。
+
+网页可通过 `RT-Thread: Open Web URL in Editor` 命令或 `code --open-url` 在编辑器内打开。详细用法见 [项目文档](docs/README.md)。
+
 ### env脚本状态
 
 虚拟Python环境安装状态: **${status}**
 
 ### 版本说明
+
+**v0.4.14**
+- 移除 Kconfig webview、SDK 管理器、工具链设置和 Symbolic Analysis；
+- RT-Thread Setting 聚焦 Env 安装、更新及状态，保留工程根目录配置；
+- 新增编辑器内网页命令及 `code --open-url` 入口；
+- 修正 VSIX 运行时依赖打包，并精简高亮库文件。
 
 **v0.4.13**
 - 添加aichat界面
