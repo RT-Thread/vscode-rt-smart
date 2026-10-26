@@ -70,16 +70,6 @@ export let cmds: Object = {
                         "scons --target=vsc -n -s"
                     ]
                 }
-            },
-            {
-                name : "sdk settings",
-                iconId : "settings",
-                cmd : {
-                    title : "sdk-setting",
-                    arguments : [
-                        "sdk"
-                    ]
-                }
             }
         ],
         name: 'Settings',

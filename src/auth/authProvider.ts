@@ -43,7 +43,7 @@ type StoredSession = {
     scopes: string[];
 };
 
-export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
+export class RTThreadAuthProvider implements vscode.AuthenticationProvider, vscode.UriHandler {
     public static readonly id = 'rt-thread';
     public static readonly label = 'RT-Thread';
 
@@ -209,143 +209,139 @@ export class RTThreadAuthProvider implements vscode.AuthenticationProvider {
     }
 
     /**
-     * Register URI callback handler: receive callbacks like vscode://<extensionid>/auth-callback?token=...
+     * Receive callbacks like vscode://<extensionid>/auth-callback?token=...
      */
-    registerUriHandler(): vscode.Disposable {
-        return vscode.window.registerUriHandler({
-            handleUri: async (uri: vscode.Uri) => {
-                if (uri.path !== '/auth-callback') {
-                    return;
-                }
-                await this.tryCloseAuthTab();
-                if (this.authOpenedExternally) {
-                    this.authOpenedExternally = false;
-                    vscode.window.setStatusBarMessage('$(check) 登录成功，可以关闭浏览器页面。', 5000);
-                }
-                this.log(`Received auth-callback: ${uri.toString(true)}`);
-                const params = new URLSearchParams(uri.query);
-                let token = '';
-                // Username displayed in Accounts view. Prefer value from backend exchange
-                // if available; fall back to callback param; finally to a generic label.
-                let username = params.get('username') || 'user';
-                let accountId = username;
-                const scopes = (params.get('scopes') || 'default').split(',').filter(Boolean);
-                const state = params.get('state') || '';
-                const code = params.get('code') || '';
+    async handleUri(uri: vscode.Uri): Promise<void> {
+        if (uri.path !== '/auth-callback') {
+            return;
+        }
+        await this.tryCloseAuthTab();
+        if (this.authOpenedExternally) {
+            this.authOpenedExternally = false;
+            vscode.window.setStatusBarMessage('$(check) 登录成功，可以关闭浏览器页面。', 5000);
+        }
+        this.log(`Received auth-callback: ${uri.toString(true)}`);
+        const params = new URLSearchParams(uri.query);
+        let token = '';
+        // Username displayed in Accounts view. Prefer value from backend exchange
+        // if available; fall back to callback param; finally to a generic label.
+        let username = params.get('username') || 'user';
+        let accountId = username;
+        const scopes = (params.get('scopes') || 'default').split(',').filter(Boolean);
+        const state = params.get('state') || '';
+        const code = params.get('code') || '';
+        this.log(
+            `Callback params: ${this.dumpParams(params)} | username=${username} | scopes=${scopes.join(',') || '(none)'} | state=${state}`,
+        );
+        if (this.currentState) {
+            const matched = state && state.includes(this.currentState);
+            this.log(`State check: expected=${this.currentState} | got=${state} | matched=${matched}`);
+        } else {
+            this.log(`State check: no expected state recorded (possibly resumed process).`);
+        }
+
+        // Prefer exchanging auth code to backend sid (stable user identity in our system).
+        if (code) {
+            try {
+                // Upgrade to a backend session token (sid) for stable cross-client user mapping.
+                const baseUrl = getAiChatBaseUrl();
+                const exchangeUrl = `${baseUrl}/api/auth/rt/exchange`;
+                this.log(`Exchanging auth code to backend sid: ${exchangeUrl}`);
+                const exchangeResp = await httpPostJson(exchangeUrl, { code }, undefined, {
+                    timeoutMs: getAiChatTimeoutMs(),
+                });
                 this.log(
-                    `Callback params: ${this.dumpParams(params)} | username=${username} | scopes=${scopes.join(',') || '(none)'} | state=${state}`,
+                    `Backend exchange response: status=${exchangeResp.status}, body_len=${(exchangeResp.body || '').length}`,
                 );
-                if (this.currentState) {
-                    const matched = state && state.includes(this.currentState);
-                    this.log(`State check: expected=${this.currentState} | got=${state} | matched=${matched}`);
-                } else {
-                    this.log(`State check: no expected state recorded (possibly resumed process).`);
+                this.log(`Backend exchange body preview: ${this.redactBody(exchangeResp.body || '')}`);
+                if (exchangeResp.status < 200 || exchangeResp.status >= 300) {
+                    throw new Error(`Backend exchange failed with status ${exchangeResp.status}.`);
                 }
-
-                // Prefer exchanging auth code to backend sid (stable user identity in our system).
-                if (code) {
-                    try {
-                        // Upgrade to a backend session token (sid) for stable cross-client user mapping.
-                        const baseUrl = getAiChatBaseUrl();
-                        const exchangeUrl = `${baseUrl}/api/auth/rt/exchange`;
-                        this.log(`Exchanging auth code to backend sid: ${exchangeUrl}`);
-                        const exchangeResp = await httpPostJson(exchangeUrl, { code }, undefined, {
-                            timeoutMs: getAiChatTimeoutMs(),
-                        });
-                        this.log(
-                            `Backend exchange response: status=${exchangeResp.status}, body_len=${(exchangeResp.body || '').length}`,
-                        );
-                        this.log(`Backend exchange body preview: ${this.redactBody(exchangeResp.body || '')}`);
-                        if (exchangeResp.status < 200 || exchangeResp.status >= 300) {
-                            throw new Error(`Backend exchange failed with status ${exchangeResp.status}.`);
-                        }
-                        const exJson = JSON.parse(exchangeResp.body || '{}');
-                        const sid: string | undefined = typeof exJson?.sid === 'string' ? exJson.sid : undefined;
-                        const backendUserId: string | undefined =
-                            typeof exJson?.userId === 'string' ? exJson.userId : undefined;
-                        const displayName: string | undefined =
-                            typeof exJson?.displayName === 'string' ? exJson.displayName : undefined;
-                        if (!sid) {
-                            throw new Error('Backend exchange response missing sid.');
-                        }
-                        token = sid;
-                        if (backendUserId) {
-                            accountId = backendUserId;
-                        }
-                        if (displayName && displayName.trim()) {
-                            username = displayName.trim();
-                            this.log(`Resolved display name from backend: ${username}`);
-                        }
-                        this.log(`Obtained backend sid: ${this.mask(sid, 'sid')}`);
-                    } catch (e) {
-                        const baseUrl = getAiChatBaseUrl() || defaultAiChatBaseUrl;
-                        const message =
-                            `RT-Thread 登录成功，但后端会话交换失败。` +
-                            `请检查网络连接/代理，或在设置中配置 smart.aiChatBaseUrl（当前：${baseUrl}）`;
-                        this.log(`Auth flow failed: ${String(e)}`);
-                        void vscode.window
-                            .showErrorMessage(`${message}。点击查看日志。`, '查看日志')
-                            .then((btn) => {
-                                if (btn) {
-                                    this.output.show(true);
-                                }
-                            });
-                        if (this.pendingAuth) {
-                            this.pendingAuth.reject(e);
-                            this.pendingAuth = undefined;
-                        }
-                        vscode.window.setStatusBarMessage('$(error) Sign-in failed: backend exchange error.', 3000);
-                        return;
-                    }
+                const exJson = JSON.parse(exchangeResp.body || '{}');
+                const sid: string | undefined = typeof exJson?.sid === 'string' ? exJson.sid : undefined;
+                const backendUserId: string | undefined =
+                    typeof exJson?.userId === 'string' ? exJson.userId : undefined;
+                const displayName: string | undefined =
+                    typeof exJson?.displayName === 'string' ? exJson.displayName : undefined;
+                if (!sid) {
+                    throw new Error('Backend exchange response missing sid.');
                 }
-
-                if (!token) {
-                    const err = new Error('No token (or exchangeable code) in callback.');
-                    this.log(
-                        `Sign-in failed: missing token. state=${state}, username=${username}, scopes=${scopes.join(',')}`,
-                    );
-                    void vscode.window
-                        .showErrorMessage('RT-Thread 登录失败：未获取到 token（或 code 交换失败）。点击查看日志。', '查看日志')
-                        .then((btn) => {
-                            if (btn) {
-                                this.output.show(true);
-                            }
-                        });
-                    if (this.pendingAuth) {
-                        this.pendingAuth.reject(err);
-                        this.pendingAuth = undefined;
-                    }
-                    vscode.window.setStatusBarMessage('$(error) Sign-in failed: No token in callback.', 3000);
-                    return;
+                token = sid;
+                if (backendUserId) {
+                    accountId = backendUserId;
                 }
-
-                const session: vscode.AuthenticationSession = {
-                    id: `${Date.now()}`,
-                    accessToken: token,
-                    account: { id: accountId, label: username },
-                    scopes,
-                };
-
-                // If there is a pending login promise, resolve it.
+                if (displayName && displayName.trim()) {
+                    username = displayName.trim();
+                    this.log(`Resolved display name from backend: ${username}`);
+                }
+                this.log(`Obtained backend sid: ${this.mask(sid, 'sid')}`);
+            } catch (e) {
+                const baseUrl = getAiChatBaseUrl() || defaultAiChatBaseUrl;
+                const message =
+                    `RT-Thread 登录成功，但后端会话交换失败。` +
+                    `请检查网络连接/代理，或在设置中配置 smart.aiChatBaseUrl（当前：${baseUrl}）`;
+                this.log(`Auth flow failed: ${String(e)}`);
+                void vscode.window
+                    .showErrorMessage(`${message}。点击查看日志。`, '查看日志')
+                    .then((btn) => {
+                        if (btn) {
+                            this.output.show(true);
+                        }
+                    });
                 if (this.pendingAuth) {
-                    this.log(
-                        `Resolving pending login for ${username}, scopes=${scopes.join(',')}. token=${this.mask(token, 'token')}`,
-                    );
-                    this.pendingAuth.resolve(session);
+                    this.pendingAuth.reject(e);
                     this.pendingAuth = undefined;
-                    this.currentState = undefined;
-                    return;
                 }
+                vscode.window.setStatusBarMessage('$(error) Sign-in failed: backend exchange error.', 3000);
+                return;
+            }
+        }
 
-                // Fallback: no pending login (e.g., user initiated from Accounts view
-                // or VS Code reactivated the extension). Persist the session and
-                // notify VS Code so the Accounts menu updates.
-                this.log(`No pending login. Persisting session for ${username}, scopes=${scopes.join(',')}.`);
-                await this.context.secrets.store(this.secretKey, JSON.stringify(this.fromVsCodeSession(session)));
-                this._onDidChangeSessions.fire({ added: [session], removed: [], changed: [] });
-                vscode.window.setStatusBarMessage('$(check) RT-Thread: Signed in', 3000);
-            },
-        });
+        if (!token) {
+            const err = new Error('No token (or exchangeable code) in callback.');
+            this.log(
+                `Sign-in failed: missing token. state=${state}, username=${username}, scopes=${scopes.join(',')}`,
+            );
+            void vscode.window
+                .showErrorMessage('RT-Thread 登录失败：未获取到 token（或 code 交换失败）。点击查看日志。', '查看日志')
+                .then((btn) => {
+                    if (btn) {
+                        this.output.show(true);
+                    }
+                });
+            if (this.pendingAuth) {
+                this.pendingAuth.reject(err);
+                this.pendingAuth = undefined;
+            }
+            vscode.window.setStatusBarMessage('$(error) Sign-in failed: No token in callback.', 3000);
+            return;
+        }
+
+        const session: vscode.AuthenticationSession = {
+            id: `${Date.now()}`,
+            accessToken: token,
+            account: { id: accountId, label: username },
+            scopes,
+        };
+
+        // If there is a pending login promise, resolve it.
+        if (this.pendingAuth) {
+            this.log(
+                `Resolving pending login for ${username}, scopes=${scopes.join(',')}. token=${this.mask(token, 'token')}`,
+            );
+            this.pendingAuth.resolve(session);
+            this.pendingAuth = undefined;
+            this.currentState = undefined;
+            return;
+        }
+
+        // Fallback: no pending login (e.g., user initiated from Accounts view
+        // or VS Code reactivated the extension). Persist the session and
+        // notify VS Code so the Accounts menu updates.
+        this.log(`No pending login. Persisting session for ${username}, scopes=${scopes.join(',')}.`);
+        await this.context.secrets.store(this.secretKey, JSON.stringify(this.fromVsCodeSession(session)));
+        this._onDidChangeSessions.fire({ added: [session], removed: [], changed: [] });
+        vscode.window.setStatusBarMessage('$(check) RT-Thread: Signed in', 3000);
     }
 
     /**
@@ -511,8 +507,8 @@ async function httpPostJson(
     });
 }
 
-// Provide initialization entry point, register authentication provider, URI handler, commands uniformly here
-export function initRTThreadAuth(context: vscode.ExtensionContext): void {
+// Register the authentication provider and commands; URI routing is owned by the extension.
+export function initRTThreadAuth(context: vscode.ExtensionContext): RTThreadAuthProvider {
     const provider = new RTThreadAuthProvider(context);
     context.subscriptions.push(provider);
 
@@ -523,9 +519,6 @@ export function initRTThreadAuth(context: vscode.ExtensionContext): void {
         { supportsMultipleAccounts: false },
     );
     context.subscriptions.push(authProviderDisposable);
-
-    const uriHandlerDisposable = provider.registerUriHandler();
-    context.subscriptions.push(uriHandlerDisposable);
 
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.RTThreadSignIn', async () => {
@@ -546,4 +539,6 @@ export function initRTThreadAuth(context: vscode.ExtensionContext): void {
             }
         }),
     );
+
+    return provider;
 }

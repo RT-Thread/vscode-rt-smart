@@ -101,16 +101,6 @@ class CmdTreeDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
             };
             children.push(chat);
 
-            let analyze = new vscode.TreeItem("Symbolic Analysis", vscode.TreeItemCollapsibleState.None);
-            analyze.iconPath = new vscode.ThemeIcon("search-fuzzy");
-            analyze.label = "Symbolic Analysis";
-            analyze.command = {
-                command: "extension.showAnalyze",
-                title: "show symbolic analysis page",
-                arguments: [],
-            };
-            children.push(analyze);
-
             let about = new vscode.TreeItem("About", vscode.TreeItemCollapsibleState.None);
             about.iconPath = new vscode.ThemeIcon("info");
             about.label = "About";
